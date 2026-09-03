@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fancy Text Collection</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d0f14;color:#f1f3f5}
+header{padding:42px 20px 30px;text-align:center;background:linear-gradient(180deg,#171b25,#0d0f14);border-bottom:1px solid #252a35}
+h1{margin:0 0 10px;font-size:clamp(30px,7vw,52px)}
+.subtitle{margin:0;color:#aeb5c2}
+.container{max-width:1100px;margin:auto;padding:24px 18px 50px}
+.search{width:100%;padding:15px 17px;border-radius:12px;border:1px solid #303644;background:#171a22;color:white;font-size:16px;outline:none;margin-bottom:24px}
+.search:focus{border-color:#6875f5;box-shadow:0 0 0 3px #6875f522}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:#151820;border:1px solid #272d39;border-radius:14px;padding:16px;transition:.18s}
+.card:hover{transform:translateY(-2px);border-color:#48516a}
+.label{font-size:13px;color:#9fa7b5;margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.font{min-height:62px;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;border:1px solid #303644;border-radius:10px;background:#0f1218;color:#fff;font-size:24px;cursor:pointer;user-select:none;overflow:auto}
+.font:hover{background:#1b202b;border-color:#6875f5}
+.copied{border-color:#54d18b!important;background:#12251c!important}
+.status{text-align:center;height:22px;margin:20px 0 0;color:#65df9b;font-size:14px;opacity:0;transition:.2s}
+.status.show{opacity:1}
+.empty{text-align:center;color:#8e96a5;padding:40px;display:none}
+footer{text-align:center;color:#737b89;font-size:13px;margin-top:35px}
+</style>
+</head>
+<body>
+<header>
+<h1>𝙵𝚊𝚗𝚌𝚢 𝚃𝚎𝚡𝚝 𝙲𝚘𝚕𝚕𝚎𝚌𝚝𝚒𝚘𝚗</h1>
+<p class="subtitle">Click any style to instantly copy it.</p>
+</header>
+<main class="container">
+<input id="search" class="search" type="search" placeholder="🔍 Search fonts..." autocomplete="off">
+<div id="grid" class="grid"></div>
+<div id="empty" class="empty">No styles found.</div>
+<div id="status" class="status">✓ Copied!</div>
+<footer>Fancy Text Collection • Easy to copy, easy to use</footer>
+</main>
+<script>
+const styles=[
+["Monospace","𝙴𝚡𝚊𝚖𝚙𝚕𝚎"],
+["Bold","𝐄𝐱𝐚𝐦𝐩𝐥𝐞"],
+["Italic","𝘌𝘹𝘢𝘮𝘱𝘭𝘦"],
+["Bold Italic","𝑬𝒙𝒂𝒎𝒑𝒍𝒆"],
+["Script","𝓔𝔁𝓪𝓶𝓹𝓵𝓮"],
+["Bold Script","𝓔𝓧𝓐𝓜𝓟𝓛𝓔"],
+["Fraktur","𝔈𝔵𝔞𝔪𝔭𝔩𝔢"],
+["Bold Fraktur","𝕰𝖝𝖆𝖒𝖕𝖑𝖊"],
+["Double Struck","𝔼𝕩𝕒𝕞𝕡𝕝𝕖"],
+["Sans Serif","𝖤𝗑𝖺𝗆𝗉𝗅𝖾"],
+["Sans Bold","𝗘𝘅𝗮𝗺𝗽𝗹𝗲"],
+["Sans Italic","𝘌𝘹𝘢𝘮𝘱𝘭𝘦"],
+["Sans Bold Italic","𝙀𝙭𝙖𝙢𝙥𝙡𝙚"],
+["Fullwidth","Ｅｘａｍｐｌｅ"],
+["Circled","Ⓔⓧⓐⓜⓟⓛⓔ"],
+["Squared","🄴🅇🄰🄼🄿🄻🄴"],
+["Negative Squared","🅴🆇🅰🅼🅿🅻🅴"],
+["Small Caps","ᴇxᴀᴍᴘʟᴇ"],
+["Superscript","ᴱˣᵃᵐᵖˡᵉ"],
+["Subscript","ₑₓₐₘₚₗₑ"],
+["Underline","E̲x̲a̲m̲p̲l̲e"],
+["Double Underline","E̳x̳a̳m̳p̳l̳e̳"],
+["Strikethrough","E̶x̶a̶m̶p̶l̶e̶"],
+["Overline","E̅x̅a̅m̅p̅l̅e̅"],
+["Dot Above","Ėẋȧṁṗl̇ė"],
+["Dot Below","Ẹx̣ạṃp̣ḷẹ"],
+["Ring Above","E̊x̊åm̊p̊l̊e̊"],
+["Tilde","Ẽx̃ãm̃p̃l̃ẽ"],
+["Acute","Éxáḿṕĺé"],
+["Grave","Èxàm̀p̀l̀è"],
+["Circled Numbers","❶ ❷ ❸ ❹ ❺ ❻ ❼"],
+["Regional Flags","🇪 🇽 🇦 🇲 🇵 🇱 🇪"],
+["Decorative 乂","乂𝙴𝚡𝚊𝚖𝚙𝚕𝚎乂"],
+["Decorative 『』","『𝙴𝚡𝚊𝚖𝚙𝚕𝚎』"],
+["Decorative 【】","【𝙴𝚡𝚊𝚖𝚙𝚕𝚎】"],
+["Decorative 〘〙","〘𝙴𝚡𝚊𝚖𝚙𝚕𝚎〙"],
+["Decorative 《》","《𝙴𝚡𝚊𝚖𝚙𝚕𝚎》"],
+["Decorative 〔〕","〔𝙴𝚡𝚊𝚖𝚙𝚕𝚎〕"],
+["Decorative 〈〉","〈𝙴𝚡𝚊𝚖𝚙𝚕𝚎〉"],
+["Decorative ༺༻","༺𝙴𝚡𝚊𝚖𝚙𝚕𝚎༻"],
+["Decorative ꧁꧂","꧁𝙴𝚡𝚊𝚖𝚙𝚕𝚎꧂"],
+["Decorative ༒","༒𝙴𝚡𝚊𝚖𝚙𝚕𝚎༒"],
+["Decorative ✦","✦ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ✦"],
+["Decorative ✧","✧ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ✧"],
+["Decorative ★","★ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ★"],
+["Decorative ♡","♡ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ♡"],
+["Decorative ☾","☾ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ☽"]
+];
+
+const grid=document.getElementById("grid"),search=document.getElementById("search"),empty=document.getElementById("empty"),status=document.getElementById("status");
+function render(q=""){
+ grid.innerHTML="";
+ q=q.toLowerCase().trim();
+ const found=styles.filter(([n,t])=>n.toLowerCase().includes(q)||t.toLowerCase().includes(q));
+ found.forEach(([name,text])=>{
+  const card=document.createElement("div");card.className="card";
+  card.innerHTML=`<div class="label">${name}</div><div class="font" title="Click to copy"></div>`;
+  const box=card.querySelector(".font");box.textContent=text;
+  box.onclick=()=>copyText(text,box);grid.appendChild(card);
+ });
+ empty.style.display=found.length?"none":"block";
+}
+async function copyText(text,box){
+ try{await navigator.clipboard.writeText(text)}
+ catch{const a=document.createElement("textarea");a.value=text;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove()}
+ box.classList.add("copied");status.classList.add("show");
+ clearTimeout(window.t);window.t=setTimeout(()=>{box.classList.remove("copied");status.classList.remove("show")},900);
+}
+search.oninput=()=>render(search.value);render();
+</script>
+</body>
+</html>
