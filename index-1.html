@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Luka's Utils — clean, fast utilities for fonts, Discord formatting, code, symbols and colours.">
+<title>Luka's Utils</title>
+<style>
+:root{
+ --bg:#0f1012;--surface:#17191d;--surface2:#1e2127;--surface3:#252932;
+ --text:#f5f7fa;--muted:#aeb4bf;--accent:#6672f5;--accent2:#7c86ff;
+ --border:#2b3038;--good:#43d17a;--shadow:0 12px 35px rgba(0,0,0,.22)
+}
+body.light{
+ --bg:#f4f6f8;--surface:#fff;--surface2:#f0f2f5;--surface3:#e7eaf0;
+ --text:#17191d;--muted:#646b78;--border:#d9dde5;--shadow:0 12px 30px rgba(20,25,35,.08)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;transition:background .2s,color .2s}
+button,a,input,textarea,select{font:inherit}
+a{text-decoration:none;color:inherit}
+.topbar{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
+.nav{max-width:1120px;margin:auto;padding:11px 18px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.brand{font-weight:800;margin-right:auto;letter-spacing:.2px}
+.nav a,.theme{padding:8px 10px;border:1px solid transparent;border-radius:8px;color:var(--muted)}
+.nav a:hover,.theme:hover{color:var(--text);background:var(--surface);border-color:var(--border)}
+.theme{background:transparent;cursor:pointer}
+header{max-width:1120px;margin:auto;padding:72px 18px 55px}
+.eyebrow{color:var(--accent2);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(38px,7vw,66px);line-height:1.03;margin:12px 0}
+.hero-copy{max-width:680px;color:var(--muted);font-size:17px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.primary,.secondary{padding:11px 15px;border-radius:9px;border:1px solid var(--border);cursor:pointer}
+.primary{background:var(--accent);color:white;border-color:var(--accent)}
+.secondary{background:var(--surface);color:var(--text)}
+.primary:hover,.secondary:hover{transform:translateY(-1px)}
+main{max-width:1120px;margin:auto;padding:0 18px 70px}
+section{scroll-margin-top:75px;margin-top:52px}
+.section-title{display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap;margin-bottom:14px}
+.section-title h2{margin:0;font-size:25px}
+.section-title p{margin:4px 0 0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:13px}
+.card,.tool{background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow)}
+.card{padding:20px;cursor:pointer;transition:.15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card-icon{font-size:24px}.card h3{margin:10px 0 5px}.card p{margin:0;color:var(--muted)}
+.search{width:300px;max-width:100%;padding:10px 12px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:9px;outline:none}
+.search:focus,textarea:focus,select:focus,input[type=text]:focus{border-color:var(--accent)}
+.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.copy-item{width:100%;text-align:left;padding:13px 14px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.12s}
+.copy-item:hover{border-color:var(--accent);background:var(--surface2)}
+.copy-item .name{font-weight:700;font-size:13px}.copy-item .value{display:block;color:var(--muted);margin-top:4px;white-space:pre-wrap;word-break:break-word}
+.copy-item.copied{border-color:var(--good)}
+.tool{padding:19px}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:7px}
+textarea,select,input[type=text]{width:100%;padding:11px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:9px;outline:none}
+textarea{resize:vertical;min-height:125px}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px}
+.preview{margin-top:13px;padding:16px;min-height:76px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;white-space:pre-wrap;word-break:break-word}
+.copy-result{width:100%;margin-top:10px}
+.color-input{width:100%;height:46px;border:1px solid var(--border);border-radius:9px;background:var(--surface2);padding:4px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.swatch{width:32px;height:32px;padding:0;border-radius:50%;border:2px solid var(--border);cursor:pointer}
+.value-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.value-row{display:flex;gap:6px}.value-row input{min-width:0}
+.small-copy{padding:9px 10px}
+.note{color:var(--muted);font-size:13px;margin-top:12px}
+footer{border-top:1px solid var(--border);text-align:center;padding:28px 18px;color:var(--muted)}
+.toast{position:fixed;right:18px;bottom:18px;background:var(--surface3);border:1px solid var(--border);box-shadow:var(--shadow);padding:10px 14px;border-radius:9px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.18s;z-index:50}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:700px){
+ .brand{width:100%;margin:0 0 3px}.nav{justify-content:center}.nav a{font-size:13px}
+ header{padding:48px 18px 38px}.tool-grid,.value-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar"><nav class="nav">
+<a class="brand" href="#home">✦ Luka's Utils</a>
+<a href="#fonts">Fonts</a><a href="#discord">Discord</a><a href="#code">Code</a><a href="#misc">Misc</a><a href="#generator">Generator</a><a href="#colors">Colours</a>
+<button class="theme" id="themeBtn" type="button">☾</button>
+</nav></div>
+
+<header id="home">
+<div class="eyebrow">UTILITY TOOLKIT</div>
+<h1>Luka's Utils</h1>
+<p class="hero-copy">A clean collection of copy-ready fonts, Discord formatting, code styles, symbols and useful text tools.</p>
+<div class="hero-actions"><a class="primary" href="#generator">Open Font Generator</a><a class="secondary" href="#fonts">Browse Fonts</a></div>
+</header>
+
+<main>
+<section>
+<div class="section-title"><div><h2>Everything in one place</h2><p>Pick a tool and get straight to it.</p></div></div>
+<div class="grid">
+<div class="card" onclick="jump('fonts')"><div class="card-icon">🎨</div><h3>Cool Fonts</h3><p>Unicode styles and decorative text.</p></div>
+<div class="card" onclick="jump('discord')"><div class="card-icon">💬</div><h3>Discord Formatting</h3><p>Markdown and copy-ready formatting.</p></div>
+<div class="card" onclick="jump('code')"><div class="card-icon">💻</div><h3>Code & Quotes</h3><p>Code blocks, commands and quotes.</p></div>
+<div class="card" onclick="jump('misc')"><div class="card-icon">🧩</div><h3>Miscellaneous</h3><p>Symbols, dividers and decorations.</p></div>
+<div class="card" onclick="jump('generator')"><div class="card-icon">✨</div><h3>Font Generator</h3><p>Convert your own text instantly.</p></div>
+<div class="card" onclick="jump('colors')"><div class="card-icon">🌈</div><h3>Colour Picker</h3><p>HEX, RGB and HSL values.</p></div>
+</div>
+</section>
+
+<section id="fonts"><div class="section-title"><div><h2>🎨 Cool Fonts</h2><p>Click any result to copy it.</p></div><input class="search" data-target="fontList" placeholder="Search fonts"></div><div id="fontList" class="list"></div></section>
+<section id="discord"><div class="section-title"><div><h2>💬 Discord Formatting</h2><p>Copy the syntax you need.</p></div><input class="search" data-target="discordList" placeholder="Search formatting"></div><div id="discordList" class="list"></div></section>
+<section id="code"><div class="section-title"><div><h2>💻 Code & Quotes</h2><p>Ready-to-paste examples.</p></div><input class="search" data-target="codeList" placeholder="Search code"></div><div id="codeList" class="list"></div></section>
+<section id="misc"><div class="section-title"><div><h2>🧩 Miscellaneous</h2><p>Symbols and decorative building blocks.</p></div><input class="search" data-target="miscList" placeholder="Search symbols"></div><div id="miscList" class="list"></div></section>
+
+<section id="generator"><div class="section-title"><div><h2>✨ Font Generator</h2><p>Type anything and preview it live.</p></div></div>
+<div class="tool">
+<label for="generatorInput">Your text</label><textarea id="generatorInput" placeholder="Type something...">Welcome to Luka's Utils!</textarea>
+<div class="tool-grid">
+<div><label for="fontSelect">Font style</label><select id="fontSelect"></select></div>
+<div><label>Action</label><button class="primary copy-result" id="generatorCopy" type="button">Copy Result</button></div>
+</div>
+<div class="preview" id="generatorOutput"></div>
+<div class="note">Tip: Unicode font support varies slightly by device and app. Styles with known emoji-like rendering issues are intentionally excluded.</div>
+</div></section>
+
+<section id="colors"><div class="section-title"><div><h2>🌈 Colour Picker</h2><p>Pick a colour and copy its values.</p></div></div>
+<div class="tool">
+<div class="tool-grid">
+<div><label for="colorPicker">Colour</label><input class="color-input" id="colorPicker" type="color" value="#5865F2"></div>
+<div><label for="hexInput">HEX</label><input id="hexInput" type="text" value="#5865F2" maxlength="7" placeholder="#5865F2"></div>
+</div>
+<div class="swatches" id="swatches"></div>
+<div class="value-grid">
+<div><label>RGB</label><div class="value-row"><input id="rgbValue" readonly><button class="small-copy" data-copy-field="rgbValue">Copy</button></div></div>
+<div><label>HSL</label><div class="value-row"><input id="hslValue" readonly><button class="small-copy" data-copy-field="hslValue">Copy</button></div></div>
+<div><label>HEX</label><div class="value-row"><input id="hexValue" readonly><button class="small-copy" data-copy-field="hexValue">Copy</button></div></div>
+</div>
+<div class="preview" id="colorPreview">Colour preview text</div>
+<div class="note">Note: Discord's normal chat does not support arbitrary text colours. This tool gives you colour values and a live preview.</div>
+</div></section>
+</main>
+
+<footer>Luka's Utils • Simple tools. Clean interface.</footer>
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+"use strict";
+
+const collections = {
+fonts: [
+["Bold","𝐄𝐱𝐚𝐦𝐩𝐥𝐞"],["Italic","𝘌𝘹𝘢𝘮𝘱𝘭𝘦"],["Bold Italic","𝑬𝒙𝒂𝒎𝒑𝒍𝒆"],
+["Script","𝓔𝔁𝓪𝓶𝓹𝓵𝓮"],["Fraktur","𝔈𝔵𝔞𝔪𝔭𝔩𝔢"],["Bold Fraktur","𝕰𝖝𝖆𝖒𝖕𝖑𝖊"],
+["Double Struck","𝔼𝕩𝕒𝕞𝕡𝕝𝕖"],["Sans Serif","𝖤𝗑𝖺𝗆𝗉𝗅𝖾"],["Sans Bold","𝗘𝘅𝗮𝗺𝗽𝗹𝗲"],
+["Sans Italic","𝘌𝘹𝘢𝘮𝘱𝘭𝘦"],["Sans Bold Italic","𝙀𝙭𝙖𝙢𝙥𝙡𝙚"],["Monospace","𝙴𝚡𝚊𝚖𝚙𝚕𝚎"],
+["Fullwidth","Ｅｘａｍｐｌｅ"],["Small Caps","ᴇxᴀᴍᴘʟᴇ"],["Underline","E̲x̲a̲m̲p̲l̲e"],
+["Double Underline","E̳x̳a̳m̳p̳l̳e̳"],["Strikethrough","E̶x̶a̶m̶p̶l̶e̶"],["Overline","E̅x̅a̅m̅p̅l̅e̅"],
+["Dot Above","Ėẋȧṁṗl̇ė"],["Dot Below","Ẹx̣ạṃp̣ḷẹ"],["Ring Above","E̊x̊åm̊p̊l̊e̊"],
+["Tilde","Ẽx̃ãm̃p̃l̃ẽ"],["『』 Decorative","『𝙴𝚡𝚊𝚖𝚙𝚕𝚎』"],["【】 Decorative","【𝙴𝚡𝚊𝚖𝚙𝚕𝚎】"],
+["《》 Decorative","《𝙴𝚡𝚊𝚖𝚙𝚕𝚎》"],["꧁꧂ Decorative","꧁𝙴𝚡𝚊𝚖𝚙𝚕𝚎꧂"],["✦ Decorative","✦ 𝙴𝚡𝚊𝚖𝚙𝚕𝚎 ✦"]
+],
+discord: [
+["Bold","**Example**"],["Italic","*Example*"],["Bold Italic","***Example***"],["Underline","__Example__"],
+["Underline + Bold","__**Example**__"],["Strikethrough","~~Example~~"],["Spoiler","||Example||"],["Inline Code","`Example`"],
+["Heading","## Example"],["Subheading","### Example"],["Quote","> Example"],
+["Multiline Quote",">>> Example\nSecond line"],["Bullet List","- Example"],["Numbered List","1. Example"],
+["Code Block","```text\nExample\n```"]
+],
+code: [
+["Inline Code","`print(\"Hello\")`"],["Python Block","```python\nprint(\"Hello\")\n```"],
+["JavaScript Block","```js\nconsole.log(\"Hello\");\n```"],["JSON Block","```json\n{\"name\":\"Example\"}\n```"],
+["HTML Block","```html\n<h1>Example</h1>\n```"],["CSS Block","```css\n.example { display: block; }\n```"],
+["Quote","> This is a quote."],["Multiline Quote",">>> This is a longer quote.\nSecond line."],
+["Code + Quote","> `Example`"],["Command Style","`/example command`"]
+],
+misc: [
+["Stars","★ ☆ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯"],["Hearts","♡ ♥ ❤ ❥ ❣ ❦ ❧"],
+["Arrows","← → ↑ ↓ ↔ ↕ ↗ ↘ ↙ ↖ ➜ ➤"],["Checkmarks","✓ ✔ ☑ ✅"],
+["Crosses","✕ ✖ ✗ ✘ ❌"],["Bullets","• ◦ ▪ ▫ ‣ ⁃"],["Divider","──────────────"],
+["Fancy Divider","━━━━━━ ✦ ━━━━━━"],["Aesthetic Divider","─── ⋆⋅☆⋅⋆ ───"],
+["Brackets","『 』 【 】 〔 〕 〈 〉 《 》"],["Sparkles","✧ ✦ ✨ ⋆ ˚ ✩"],
+["Music","♪ ♫ ♬ ♩"],["Weather","☀ ☁ ☂ ☃ ☾"],["Chess","♔ ♕ ♖ ♗ ♘ ♙"],
+["Math Symbols","∞ ≠ ≈ ≤ ≥ ± × ÷ √"],["Gaming","⚔ 🛡 ⚡ 🎮 🏆"],
+["Minecraft Style","⛏ ⚒ ◈ ◆ ◇"],["Corners","╔ ╗ ╚ ╝ ╠ ╣ ╦ ╩"],
+["Box","┌────────┐\n│ Example │\n└────────┘"]
+]
+};
+
+const fontMaps = {
+"Bold":[0x1D400,0x1D41A],"Italic":[0x1D434,0x1D44E],"Bold Italic":[0x1D468,0x1D482],
+"Double Struck":[0x1D538,0x1D552],"Sans Serif":[0x1D5A0,0x1D5BA],"Sans Bold":[0x1D5D4,0x1D5EE],
+"Sans Italic":[0x1D608,0x1D622],"Sans Bold Italic":[0x1D63C,0x1D656],"Monospace":[0x1D670,0x1D68A]
+};
+
+function escapeHTML(s){
+ return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+}
+function renderCollection(arr,id){
+ const el=document.getElementById(id);
+ el.innerHTML="";
+ arr.forEach(([name,value])=>{
+   const b=document.createElement("button");
+   b.type="button"; b.className="copy-item";
+   b.dataset.name=name.toLowerCase();
+   b.innerHTML='<span class="name"></span><span class="value"></span>';
+   b.querySelector(".name").textContent=name;
+   b.querySelector(".value").textContent=value;
+   b.addEventListener("click",()=>copyText(value,b));
+   el.appendChild(b);
+ });
+}
+function copyText(text,button){
+ const done=()=>{showToast("Copied!");if(button){button.classList.add("copied");const old=button.innerHTML;button.innerHTML='<span class="name">✓ Copied!</span><span class="value"></span>';button.querySelector(".value").textContent=text;setTimeout(()=>{button.classList.remove("copied");button.innerHTML=old},850)}};
+ if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done).catch(()=>{fallback(text);done()});
+ else {fallback(text);done();}
+}
+function fallback(text){
+ const area=document.createElement("textarea");area.value=text;area.style.position="fixed";area.style.opacity="0";
+ document.body.appendChild(area);area.focus();area.select();try{document.execCommand("copy")}catch(e){}area.remove();
+}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove("show"),1100)}
+function jump(id){document.getElementById(id).scrollIntoView({behavior:"smooth"})}
+
+renderCollection(collections.fonts,"fontList");renderCollection(collections.discord,"discordList");renderCollection(collections.code,"codeList");renderCollection(collections.misc,"miscList");
+
+document.querySelectorAll(".search").forEach(input=>{
+ input.addEventListener("input",()=>{
+  const q=input.value.trim().toLowerCase();
+  document.querySelectorAll("#"+input.dataset.target+" .copy-item").forEach(item=>{
+   item.hidden=!item.dataset.name.includes(q);
+  });
+ });
+});
+
+const fontSelect=document.getElementById("fontSelect");
+Object.keys(fontMaps).concat(["Fullwidth","Small Caps"]).forEach(name=>fontSelect.add(new Option(name,name)));
+
+function convertText(text,type){
+ if(type==="Fullwidth") return [...text].map(c=>c===" "?"　":(/[!-~]/.test(c)?String.fromCharCode(c.charCodeAt(0)+0xFEE0):c)).join("");
+ if(type==="Small Caps"){
+  const m={a:"ᴀ",b:"ʙ",c:"ᴄ",d:"ᴅ",e:"ᴇ",f:"ғ",g:"ɢ",h:"ʜ",i:"ɪ",j:"ᴊ",k:"ᴋ",l:"ʟ",m:"ᴍ",n:"ɴ",o:"ᴏ",p:"ᴘ",q:"ǫ",r:"ʀ",s:"s",t:"ᴛ",u:"ᴜ",v:"ᴠ",w:"ᴡ",x:"x",y:"ʏ",z:"ᴢ"};
+  return [...text].map(c=>m[c.toLowerCase()]||c).join("");
+ }
+ const map=fontMaps[type];if(!map)return text;
+ return [...text].map(c=>{
+  const n=c.charCodeAt(0);
+  if(n>=65&&n<=90)return String.fromCodePoint(map[0]+n-65);
+  if(n>=97&&n<=122)return String.fromCodePoint(map[1]+n-97);
+  return c;
+ }).join("");
+}
+const generatorInput=document.getElementById("generatorInput"),generatorOutput=document.getElementById("generatorOutput");
+function updateGenerator(){generatorOutput.textContent=convertText(generatorInput.value,fontSelect.value)}
+generatorInput.addEventListener("input",updateGenerator);fontSelect.addEventListener("change",updateGenerator);updateGenerator();
+document.getElementById("generatorCopy").addEventListener("click",e=>copyText(generatorOutput.textContent,e.currentTarget));
+
+function hexOK(v){return /^#[0-9a-fA-F]{6}$/.test(v)}
+function updateColor(v){
+ if(!hexOK(v))return;
+ document.getElementById("colorPicker").value=v;document.getElementById("hexInput").value=v;document.getElementById("hexValue").value=v;
+ const r=parseInt(v.slice(1,3),16),g=parseInt(v.slice(3,5),16),b=parseInt(v.slice(5,7),16);
+ document.getElementById("rgbValue").value=`${r}, ${g}, ${b}`;
+ let R=r/255,G=g/255,B=b/255,max=Math.max(R,G,B),min=Math.min(R,G,B),d=max-min,h=0,s=0,l=(max+min)/2;
+ if(d){s=d/(1-Math.abs(2*l-1));if(max===R)h=60*(((G-B)/d)%6);else if(max===G)h=60*((B-R)/d+2);else h=60*((R-G)/d+4);if(h<0)h+=360}
+ document.getElementById("hslValue").value=`${Math.round(h)}°, ${Math.round(s*100)}%, ${Math.round(l*100)}%`;
+ const preview=document.getElementById("colorPreview");preview.style.color=v;preview.style.borderColor=v;
+}
+document.getElementById("colorPicker").addEventListener("input",e=>updateColor(e.target.value));
+document.getElementById("hexInput").addEventListener("change",e=>{let v=e.target.value.trim();if(v[0]!=="#")v="#"+v;if(hexOK(v))updateColor(v);else e.target.value=document.getElementById("hexValue").value});
+document.querySelectorAll("[data-copy-field]").forEach(b=>b.addEventListener("click",()=>copyText(document.getElementById(b.dataset.copyField).value,b)));
+["#5865F2","#43B581","#FEE75C","#EB459E","#ED4245","#57F287","#3498DB","#9B59B6","#F47B67","#FFFFFF","#000000"].forEach(v=>{
+ const b=document.createElement("button");b.type="button";b.className="swatch";b.style.background=v;b.title=v;b.setAttribute("aria-label","Use "+v);b.addEventListener("click",()=>updateColor(v));document.getElementById("swatches").appendChild(b);
+});
+updateColor("#5865F2");
+
+const themeBtn=document.getElementById("themeBtn");
+function setTheme(light){document.body.classList.toggle("light",light);localStorage.setItem("lukaTheme",light?"light":"dark");themeBtn.textContent=light?"☀":"☾"}
+themeBtn.addEventListener("click",()=>setTheme(!document.body.classList.contains("light")));
+if(localStorage.getItem("lukaTheme")==="light")setTheme(true);
+</script>
+</body>
+</html>
