@@ -2,8 +2,7 @@ name: Discord GitHub Feed
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   release:
     types: [published]
 
@@ -15,7 +14,34 @@ jobs:
       - name: Send update to Discord
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          curl -H "Content-Type: application/json" \
-            -d "{\"username\":\"Luka's Utils\",\"content\":\"🔨 **New update to Luka's Utils!**\\n📦 Repository: \`${{ github.repository }}\`\\n👤 Author: **${{ github.actor }}**\\n🌿 Branch: \`${{ github.ref_name }}\`\\n🔗 https://github.com/${{ github.repository }}/commit/${{ github.sha }}\"}" \
-            "$WEBHOOK"
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          payload = {
+              "username": "Luka's Utils",
+              "content": (
+                  "🔨 **New update to Luka's Utils!**\n"
+                  f"📦 Repository: `{os.environ['REPOSITORY']}`\n"
+                  f"👤 Author: **{os.environ['ACTOR']}**\n"
+                  f"🌿 Branch: `{os.environ['BRANCH']}`\n"
+                  f"🔗 https://github.com/{os.environ['REPOSITORY']}/commit/{os.environ['SHA']}"
+              )
+          }
+
+          request = urllib.request.Request(
+              os.environ["WEBHOOK"],
+              data=json.dumps(payload).encode("utf-8"),
+              headers={"Content-Type": "application/json"},
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              print(f"Discord response: {response.status}")
+          PY
