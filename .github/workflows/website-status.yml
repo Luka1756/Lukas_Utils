@@ -1,0 +1,23 @@
+name: Website Status
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check website
+        run: |
+          URL="https://luka1756.github.io/Lukas_Utils/"
+          STATUS=$(curl -L -o /dev/null -s -w "%{http_code}" "$URL")
+
+          if [ "$STATUS" = "200" ]; then
+            echo "Website is ONLINE"
+          else
+            echo "Website is OFFLINE (HTTP $STATUS)"
+            exit 1
+          fi
