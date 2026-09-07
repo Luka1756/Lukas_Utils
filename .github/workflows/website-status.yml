@@ -10,14 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check website
+      - name: Check website and send status
+        env:
+          WEBHOOK: ${{ secrets.WEBSITE_STATUS_WEBHOOK }}
         run: |
           URL="https://luka1756.github.io/Lukas_Utils/"
           STATUS=$(curl -L -o /dev/null -s -w "%{http_code}" "$URL")
 
           if [ "$STATUS" = "200" ]; then
-            echo "Website is ONLINE"
+            MESSAGE="🟢 **Website Online**\n\n🌐 Luka's Utils is currently **ONLINE**\n📡 HTTP Status: \`200 OK\`\n🔗 https://luka1756.github.io/Lukas_Utils/"
           else
-            echo "Website is OFFLINE (HTTP $STATUS)"
-            exit 1
+            MESSAGE="🔴 **Website Offline**\n\n⚠️ Luka's Utils appears to be **OFFLINE**\n📡 HTTP Status: \`$STATUS\`"
           fi
+
+          curl -H "Content-Type: application/json" \
+            -d "{\"username\":\"Luka's Utils Status\",\"content\":\"$MESSAGE\"}" \
+            "$WEBHOOK"
