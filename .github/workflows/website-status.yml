@@ -10,17 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check website and send status
+      - name: Check website and maintenance status
         env:
           WEBHOOK: ${{ secrets.WEBSITE_STATUS_WEBHOOK }}
         run: |
           URL="https://luka1756.github.io/Lukas_Utils/"
+
           STATUS=$(curl -L -o /dev/null -s -w "%{http_code}" "$URL")
 
-          if [ "$STATUS" = "200" ]; then
-            MESSAGE="🟢 **Website Online**\n\n🌐 Luka's Utils is currently **ONLINE**\n📡 HTTP Status: \`200 OK\`\n🔗 https://luka1756.github.io/Lukas_Utils/"
+          MAINTENANCE=$(curl -L -s \
+            "https://raw.githubusercontent.com/${{ github.repository }}/main/maintenance.txt" \
+            | tr -d '\r\n')
+
+          if [ "$STATUS" != "200" ]; then
+            TITLE="🔴  LUKA'S UTILS — STATUS"
+            MESSAGE="🔴 **WEBSITE OFFLINE**
+
+          🌐 **Site:** Luka's Utils
+          📡 **HTTP Status:** \`$STATUS\`
+
+          ⚠️ The website appears to be unreachable."
+
+          elif [ "$MAINTENANCE" = "ON" ]; then
+            TITLE="🟡  LUKA'S UTILS — MAINTENANCE"
+            MESSAGE="🟡 **WEBSITE IN MAINTENANCE**
+
+          🌐 **Site:** Luka's Utils
+          🛠️ **Status:** \`MAINTENANCE\`
+
+          The website is currently undergoing maintenance.
+          Updates will resume once maintenance is complete."
+
           else
-            MESSAGE="🔴 **Website Offline**\n\n⚠️ Luka's Utils appears to be **OFFLINE**\n📡 HTTP Status: \`$STATUS\`"
+            TITLE="🟢  LUKA'S UTILS — STATUS"
+            MESSAGE="🟢 **WEBSITE ONLINE**
+
+          🌐 **Site:** Luka's Utils
+          📡 **HTTP Status:** \`200 OK\`
+          ⏱️ **Check:** Daily
+
+          🔗 https://luka1756.github.io/Lukas_Utils/"
+
           fi
 
           curl -H "Content-Type: application/json" \
