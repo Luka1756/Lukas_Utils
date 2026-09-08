@@ -1,0 +1,45 @@
+name: Toggle Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      maintenance:
+        description: "Maintenance mode"
+        required: true
+        type: choice
+        options:
+          - "ON"
+          - "OFF"
+
+permissions:
+  contents: write
+
+jobs:
+  toggle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update maintenance mode
+        env:
+          MAINTENANCE: ${{ inputs.maintenance }}
+        run: |
+          echo "$MAINTENANCE" > maintenance.txt
+
+      - name: Save maintenance setting
+        env:
+          MAINTENANCE: ${{ inputs.maintenance }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maintenance.txt
+
+          if git diff --cached --quiet; then
+            echo "Maintenance mode is already $MAINTENANCE."
+            exit 0
+          fi
+
+          git commit -m "Toggle maintenance mode to $MAINTENANCE"
+          git push
