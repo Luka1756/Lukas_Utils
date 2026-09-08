@@ -14,34 +14,17 @@ jobs:
       - name: Send update to Discord
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          REPOSITORY: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          BRANCH: ${{ github.ref_name }}
-          SHA: ${{ github.sha }}
         run: |
-          python - <<'PY'
-          import json
-          import os
-          import urllib.request
+          RESPONSE=$(curl -sS -o response.txt -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d '{"username":"Luka'\''s Utils","content":"🔨 **New update to Luka'\''s Utils!**"}' \
+            "$WEBHOOK")
 
-          payload = {
-              "username": "Luka's Utils",
-              "content": (
-                  "🔨 **New update to Luka's Utils!**\n"
-                  f"📦 Repository: `{os.environ['REPOSITORY']}`\n"
-                  f"👤 Author: **{os.environ['ACTOR']}**\n"
-                  f"🌿 Branch: `{os.environ['BRANCH']}`\n"
-                  f"🔗 https://github.com/{os.environ['REPOSITORY']}/commit/{os.environ['SHA']}"
-              )
-          }
+          echo "Discord HTTP status: $RESPONSE"
+          echo "Discord response:"
+          cat response.txt
 
-          request = urllib.request.Request(
-              os.environ["WEBHOOK"],
-              data=json.dumps(payload).encode("utf-8"),
-              headers={"Content-Type": "application/json"},
-              method="POST"
-          )
-
-          with urllib.request.urlopen(request) as response:
-              print(f"Discord response: {response.status}")
-          PY
+          if [ "$RESPONSE" -lt 200 ] || [ "$RESPONSE" -ge 300 ]; then
+            exit 1
+          fi
