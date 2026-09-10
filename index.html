@@ -13,6 +13,8 @@
 </head>
 <body>
 
+<div class="bg-fx" aria-hidden="true"></div>
+
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header" id="site-header">
@@ -192,6 +194,18 @@
               <button type="button" class="case-btn active" data-hour-mode="12">12h</button>
               <button type="button" class="case-btn" data-hour-mode="24">24h</button>
             </div>
+          </div>
+
+          <div class="ts-tz-compare">
+            <p class="panel-sub no-margin ts-tz-label">Compare timezones</p>
+            <div class="tz-search-wrap">
+              <div class="tz-search-row">
+                <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="text" id="tz-search-input" placeholder="Add a city or timezone" autocomplete="off">
+              </div>
+              <div class="tz-search-results" id="tz-search-results" hidden></div>
+            </div>
+            <div class="tz-rows" id="tz-rows"></div>
           </div>
 
           <div class="ts-highlight-row" id="ts-highlight-row"></div>

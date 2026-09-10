@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — Luka's Utils</title>
+<meta name="description" content="Version history for Luka's Utils.">
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%2322d3ee'/%3E%3Cpath d='M12 4l1.6 4.9L18 10.5l-4.4 1.6L12 17l-1.6-4.9L6 10.5l4.4-1.6z' fill='%2309100f'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .changelog-main{ max-width: var(--max-w-wide); margin: 0 auto; padding: 40px 20px 80px; }
+  .changelog-back{ display:inline-flex; align-items:center; gap:6px; color: var(--text-dim); text-decoration:none; font-size:13.5px; margin-bottom: 24px; }
+  .changelog-back:hover{ color: var(--accent); }
+  .changelog-intro{ color: var(--text-dim); font-size:14px; margin: 8px 0 32px; max-width: 60ch; }
+  .version-entry{ border:1px solid var(--border); background: var(--bg-card); border-radius: var(--radius-md); padding: 22px; margin-bottom: 16px; }
+  .version-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom: 4px; }
+  .version-number{ font-family: var(--mono); font-weight:700; font-size:16px; color: var(--accent); }
+  .version-tag{ font-size:14px; color: var(--text-dim); }
+  .version-latest{ font-family: var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color: var(--accent-ink); background: var(--accent); border-radius:99px; padding:2px 8px; }
+  .version-group{ margin: 16px 0 6px; font-size:12px; font-weight:700; color: var(--text-dim); }
+  .version-group:first-of-type{ margin-top: 14px; }
+  .version-list{ margin:0 0 4px; padding-left: 20px; color: var(--text-dim); font-size:13.5px; line-height:1.7; }
+  .version-list li{ margin-bottom: 2px; }
+  .version-note{ color: var(--text-dimmer); font-size:12.5px; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="index.html" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+  </div>
+</header>
+
+<main class="changelog-main">
+  <a class="changelog-back" href="index.html">← Back to Luka's Utils</a>
+  <h1 class="section-title">Changelog</h1>
+  <p class="changelog-intro">What's changed, version by version. Older updates before v8.0 aren't tracked here.</p>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.4</span>
+      <span class="version-tag">Timezone comparison</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Timestamp builder can now compare multiple timezones at once — searchable city/timezone picker instead of a giant dropdown</li>
+      <li>Each row shows local time, UTC offset, and a date badge when it crosses into a different day</li>
+      <li>Fully DST-aware and correctly handles midnight-crossing in both directions, using the browser's built-in timezone data — no external lookups</li>
+      <li>Add/remove rows freely; your list is remembered next time you visit</li>
+      <li>Stays connected to the rest of the tool — same presets, 12h/24h toggle, and Discord tags as before</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.3</span>
+      <span class="version-tag">Changelog page</span>
+    </div>
+    <ul class="version-list">
+      <li>Added this page — a proper version history instead of a dead footer link</li>
+      <li>Matches the main site's theme automatically, including your saved light/dark preference</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.2</span>
+      <span class="version-tag">Ambient background &amp; interaction polish</span>
+    </div>
+    <ul class="version-list">
+      <li>Added a subtle, slow-drifting background glow and a faint grid texture for depth — fully static under reduced-motion</li>
+      <li>Smooth hover transitions across cards and buttons: a small lift on style/template/palette cards and primary buttons, gentle color fades on smaller pills and icons</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.1</span>
+      <span class="version-tag">Quality-of-life fixes</span>
+    </div>
+    <ul class="version-list">
+      <li>The main text input now stays visible (sticky) while scrolling through Styles, Discord Tools, or anywhere else</li>
+      <li>Updated the support server invite link across the header, mobile menu, and footer</li>
+      <li>Fixed category/quick-link jumps landing partially hidden behind the sticky bars</li>
+      <li>Fixed a mobile-menu overlap edge case with the sticky input</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.0</span>
+      <span class="version-tag">The Discord Tools update</span>
+    </div>
+    <p class="version-group">New tools, across 9 categories</p>
+    <ul class="version-list">
+      <li><strong>Time</strong> — Timestamp builder: presets, 12h/24h, local/UTC, live relative-time preview, Unix timestamp, all 7 <code>&lt;t:…&gt;</code> formats explained</li>
+      <li><strong>IDs</strong> — Snowflake decoder, CDN image URL builder</li>
+      <li><strong>Permissions</strong> — bidirectional calculator (checkboxes ↔ integer)</li>
+      <li><strong>Colors</strong> — role color converter with a live preview pill</li>
+      <li><strong>Embeds</strong> — visual embed builder with live preview and copyable JSON</li>
+      <li><strong>Emojis</strong> — custom emoji tag inspector/builder</li>
+      <li><strong>Invites</strong> — offline link formatter, plus an optional public info lookup</li>
+      <li><strong>Text</strong> — markdown formats, templates, ANSI colors, message length, text cleaner, markdown preview, mention formatter, message preview</li>
+      <li><strong>Developer</strong> — JSON formatter, Base64, UUID generator, Unix converter, webhook payload builder</li>
+    </ul>
+    <p class="version-group">Layout &amp; navigation</p>
+    <ul class="version-list">
+      <li>Sidebar-style category navigation on desktop instead of one long row of tools</li>
+      <li>Wider layout, "Popular" quick-links, and a live tool search</li>
+      <li>Mobile layout unchanged — still no horizontal scrolling</li>
+    </ul>
+    <p class="version-group">Fixes</p>
+    <ul class="version-list">
+      <li>Fixed a page-load error that could break interactivity</li>
+      <li>Fixed a filter-state bug between Styles categories and the sidebar</li>
+    </ul>
+  </div>
+
+  <p class="version-note">Built by one person, improved whenever something bugs me about it.</p>
+</main>
+
+</body>
+</html>

@@ -797,6 +797,8 @@
         <span class="ts-code">&lt;t:${unix}:${f.code}&gt;</span>
       </button>
     `).join('');
+
+    renderTzRows(date);
   }
   timestampInput?.addEventListener('input', renderTimestamps);
   timestampGrid?.addEventListener('click', (e) => {
@@ -843,11 +845,151 @@
     const map = { now: 0, '1h': 3600000, '1d': 86400000, '1w': 604800000 };
     setTimestampFromDate(new Date(now.getTime() + (map[btn.dataset.tsPreset] || 0)));
   });
+
+  /* ---- Timezone comparison ---- */
+  const tzSearchInput = document.getElementById('tz-search-input');
+  const tzSearchResults = document.getElementById('tz-search-results');
+  const tzRowsContainer = document.getElementById('tz-rows');
+  const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const FALLBACK_TIMEZONES = [
+    'UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
+    'America/Sao_Paulo','America/Mexico_City','America/Toronto','Europe/London','Europe/Paris',
+    'Europe/Berlin','Europe/Madrid','Europe/Moscow','Africa/Cairo','Africa/Johannesburg',
+    'Asia/Dubai','Asia/Karachi','Asia/Kolkata','Asia/Dhaka','Asia/Bangkok','Asia/Singapore',
+    'Asia/Hong_Kong','Asia/Shanghai','Asia/Tokyo','Asia/Seoul','Australia/Sydney',
+    'Australia/Perth','Pacific/Auckland',
+  ];
+  let ALL_TIMEZONES = FALLBACK_TIMEZONES;
+  try {
+    if (typeof Intl.supportedValuesOf === 'function') {
+      const supported = Intl.supportedValuesOf('timeZone');
+      if (Array.isArray(supported) && supported.length) ALL_TIMEZONES = supported;
+    }
+  } catch {}
+
+  function tzDisplayName(tz){
+    const parts = tz.split('/');
+    return (parts[parts.length - 1] || tz).replace(/_/g, ' ');
+  }
+  function tzRegion(tz){
+    const parts = tz.split('/');
+    return parts.length > 1 ? parts.slice(0, -1).join(' / ').replace(/_/g, ' ') : '';
+  }
+  function tzOffsetLabel(date, tz){
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts(date);
+      const part = parts.find(p => p.type === 'timeZoneName');
+      return part ? part.value.replace('GMT', 'UTC').replace('UTC0', 'UTC') || 'UTC' : '';
+    } catch { return ''; }
+  }
+  function tzTimeLabel(date, tz){
+    try {
+      return new Intl.DateTimeFormat([], { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: tsHourMode === '12' }).format(date);
+    } catch { return '—'; }
+  }
+  function tzDateKey(date, tz){
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+    } catch { return ''; }
+  }
+  function tzDayDiff(date, tz){
+    const a = tzDateKey(date, tz);
+    const b = tzDateKey(date, BROWSER_TZ);
+    if (!a || !b || a === b) return null;
+    const diff = Math.round((new Date(a + 'T00:00:00Z') - new Date(b + 'T00:00:00Z')) / 86400000);
+    if (diff === 0) return null;
+    return diff > 0 ? `+${diff}d` : `${diff}d`;
+  }
+
+  function loadSavedZones(){
+    try {
+      const raw = localStorage.getItem('lu_timezones');
+      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) return arr; }
+    } catch {}
+    return [BROWSER_TZ];
+  }
+  function saveZones(){
+    try { localStorage.setItem('lu_timezones', JSON.stringify(tzState.zones)); } catch {}
+  }
+  const tzState = { zones: loadSavedZones() };
+
+  function renderTzRows(date){
+    if (!tzRowsContainer) return;
+    if (!date || !tzState.zones.length) {
+      tzRowsContainer.innerHTML = `<p class="tz-empty-note">No timezones added yet — search above to add one.</p>`;
+      return;
+    }
+    tzRowsContainer.innerHTML = tzState.zones.map(tz => {
+      const dayDiff = tzDayDiff(date, tz);
+      return `
+        <div class="tz-row" data-tz="${escapeHtml(tz)}">
+          <div class="tz-row-main">
+            <span class="tz-city">${escapeHtml(tzDisplayName(tz))}</span>
+            <span class="tz-offset">${escapeHtml(tzOffsetLabel(date, tz))}</span>
+          </div>
+          <div class="tz-row-time">
+            <span class="tz-time">${escapeHtml(tzTimeLabel(date, tz))}</span>
+            ${dayDiff ? `<span class="tz-date-badge" title="${escapeHtml(tzDateKey(date, tz))}">${dayDiff}</span>` : ''}
+          </div>
+          <button type="button" class="tz-remove" data-remove-tz="${escapeHtml(tz)}" aria-label="Remove ${escapeHtml(tzDisplayName(tz))}">×</button>
+        </div>`;
+    }).join('');
+  }
+  tzRowsContainer?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove-tz]');
+    if (!btn) return;
+    tzState.zones = tzState.zones.filter(z => z !== btn.dataset.removeTz);
+    saveZones();
+    renderTimestamps();
+  });
+
+  function renderTzSearch(query){
+    if (!query) { tzSearchResults.hidden = true; tzSearchResults.innerHTML = ''; return; }
+    const q = query.toLowerCase();
+    const matches = ALL_TIMEZONES
+      .filter(tz => !tzState.zones.includes(tz))
+      .filter(tz => tz.toLowerCase().replace(/_/g, ' ').includes(q))
+      .slice(0, 8);
+    if (!matches.length) {
+      tzSearchResults.innerHTML = `<div class="tz-search-empty">No matching city or timezone.</div>`;
+      tzSearchResults.hidden = false;
+      return;
+    }
+    const refDate = getTimestampDate() || new Date();
+    tzSearchResults.innerHTML = matches.map(tz => `
+      <button type="button" class="tz-result" data-add-tz="${escapeHtml(tz)}">
+        ${escapeHtml(tzDisplayName(tz))}${tzRegion(tz) ? ` <span style="color:var(--text-dimmer)">— ${escapeHtml(tzRegion(tz))}</span>` : ''}
+        <span class="tz-result-offset">${escapeHtml(tzOffsetLabel(refDate, tz))}</span>
+      </button>
+    `).join('');
+    tzSearchResults.hidden = false;
+  }
+  tzSearchInput?.addEventListener('input', () => renderTzSearch(tzSearchInput.value.trim()));
+  tzSearchInput?.addEventListener('focus', () => { if (tzSearchInput.value.trim()) renderTzSearch(tzSearchInput.value.trim()); });
+  tzSearchResults?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-add-tz]');
+    if (!btn) return;
+    const tz = btn.dataset.addTz;
+    if (!tzState.zones.includes(tz)) { tzState.zones.push(tz); saveZones(); }
+    tzSearchInput.value = '';
+    tzSearchResults.hidden = true;
+    tzSearchResults.innerHTML = '';
+    renderTimestamps();
+  });
+  document.addEventListener('click', (e) => {
+    if (tzSearchResults && !tzSearchResults.hidden && !e.target.closest('.tz-search-wrap')) {
+      tzSearchResults.hidden = true;
+    }
+  });
+  tzSearchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { tzSearchResults.hidden = true; tzSearchInput.blur(); }
+  });
+
   (function initTimestampDefault(){
     if (!timestampInput) return;
     setTimestampFromDate(new Date());
   })();
-  // Keep the relative-time preview fresh even if the user just leaves the tool open
+  // Keep the relative-time preview (and live timezone rows) fresh while the tool is open
   setInterval(() => { if (timestampInput?.value) renderTimestamps(); }, 30000);
 
   // 3. Role color converter
