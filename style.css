@@ -127,7 +127,7 @@ input, textarea, pre, code,
   border-bottom: 1px solid var(--border-soft);
 }
 .header-inner{
-  max-width: 1040px; margin:0 auto;
+  max-width: 1220px; margin:0 auto;
   display:flex; align-items:center; gap: 24px;
   padding: 14px 20px;
 }
@@ -149,6 +149,8 @@ input, textarea, pre, code,
   font-size:13.5px; text-decoration:none; cursor:pointer; padding:6px 4px;
 }
 .text-btn:hover{ color: var(--accent); }
+.support-link{ display:none; }
+@media (min-width: 860px){ .support-link{ display:inline-flex; } }
 
 /* smooth, restrained transitions for every small interactive control */
 .icon-btn, .filter-pill, .fav-heart, .format-btn, .ansi-btn, .popular-chip,
@@ -223,7 +225,8 @@ input, textarea, pre, code,
 .case-btn{
   border:1px solid var(--border); background: var(--bg);
   color: var(--text-dim); border-radius: 5px;
-  width:36px; height:30px; font-size:12px; cursor:pointer; font-family: var(--mono);
+  min-width:36px; height:30px; padding: 0 10px; font-size:12px; cursor:pointer; font-family: var(--mono);
+  white-space: nowrap;
 }
 .case-btn.active{ border-color: var(--accent); color: var(--accent); }
 .size-group{ display:flex; align-items:center; gap:8px; flex:1; min-width:150px; max-width:220px; }
@@ -507,7 +510,7 @@ input, textarea, pre, code,
 
 /* ============ footer ============ */
 .site-footer{ border-top:1px solid var(--border-soft); margin-top:56px; }
-.footer-inner{ max-width: 1040px; margin:0 auto; padding: 24px 20px 40px; }
+.footer-inner{ max-width: 1220px; margin:0 auto; padding: 24px 20px 40px; }
 .footer-brand-name{ font-family: var(--mono); font-weight:600; font-size:14px; margin:0 0 4px; }
 .footer-tagline{ color: var(--text-dimmer); font-size:12.5px; margin:0 0 8px; }
 .footer-links{ display:flex; gap:18px; flex-wrap:wrap; }

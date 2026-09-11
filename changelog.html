@@ -55,9 +55,22 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v8.5</span>
+      <span class="version-tag">Responsive polish pass</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Fixed a real mobile overflow bug — the header could exceed the viewport width on phones around 360-390px wide (the "Support server" text link plus 3 icon buttons didn't fit; it's already in the mobile menu, so removed the duplicate)</li>
+      <li>Fixed the Timestamp Builder's Local/UTC and 12h/24h toggle buttons, which had a fixed width sized for 2-character labels and could clip longer text like "Local"</li>
+      <li>Widened the header and footer to match the rest of the site's content width on large screens, instead of looking narrower than the sections below them</li>
+      <li>Audited spacing, wrapping, hover behavior, and background performance across desktop, tablet, and mobile — full regression pass confirmed nothing else broke</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v8.4</span>
       <span class="version-tag">Timezone comparison</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Timestamp builder can now compare multiple timezones at once — searchable city/timezone picker instead of a giant dropdown</li>
