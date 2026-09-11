@@ -1397,7 +1397,9 @@
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/__(.+?)__/g, '<u>$1</u>');
     html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
     html = html.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
+    html = html.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
     html = html.replace(/\n/g, '<br>');
     return html;
   }
@@ -1422,7 +1424,7 @@
   const inviteInput = document.getElementById('invite-input');
   const inviteOutput = document.getElementById('invite-output');
   function extractInviteCode(raw){
-    const trimmed = raw.trim();
+    const trimmed = raw.trim().replace(/\/+$/, '');
     const match = trimmed.match(/(?:discord\.gg\/|discord(?:app)?\.com\/invite\/)?([\w-]{2,32})$/);
     return match ? match[1] : null;
   }

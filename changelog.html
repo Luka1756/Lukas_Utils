@@ -55,9 +55,23 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v8.6</span>
+      <span class="version-tag">Bug sweep</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Fixed the Message Preview tool silently failing to render single-asterisk italics and blockquotes — the standalone Markdown Preview tool had this working, but the Message Preview used a slightly older copy of the same logic that was missing both</li>
+      <li>Fixed invite links with a trailing slash (a common copy-paste artifact) failing to parse in the Invite Formatter</li>
+      <li>Full correctness pass on the math: re-verified snowflake decoding, all 32 permission bit values, hex/RGB/decimal color conversion, Base64 UTF-8 round-tripping, UUID format, and timezone/DST calculations directly, not just visually</li>
+      <li>Confirmed the Invite Lookup remains the only feature that contacts an external API, and that it fails gracefully</li>
+      <li>Confirmed every original tool is still present and untouched — nothing was lost across the last several updates</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v8.5</span>
       <span class="version-tag">Responsive polish pass</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Fixed a real mobile overflow bug — the header could exceed the viewport width on phones around 360-390px wide (the "Support server" text link plus 3 icon buttons didn't fit; it's already in the mobile menu, so removed the duplicate)</li>
