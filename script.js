@@ -111,31 +111,31 @@
     { id:'bold-sans', name:'Bold Sans', desc:'Clean and confidently loud', kind:'unicode', badge:'unicode', fn:'boldSans' },
     { id:'soft-italic', name:'Soft Italic', desc:'A little lift, no noise', kind:'unicode', badge:'unicode', fn:'softItalic' },
     { id:'bold-italic', name:'Bold Italic', desc:'Editorial emphasis', kind:'unicode', badge:'unicode', fn:'boldItalic' },
-    { id:'double-struck', name:'Double Struck', desc:'Academic outline energy', kind:'unicode', badge:'unicode', fn:'doubleStruck' },
+    { id:'double-struck', name:'Double Struck', desc:'Academic outline energy', kind:'unicode', badge:'unicode', fn:'doubleStruck', keywords:'blackboard hollow outline math' },
     { id:'small-caps', name:'Small Caps', desc:'Compact uppercase rhythm', kind:'unicode', badge:'unicode', fn:'smallCaps' },
-    { id:'script', name:'Script', desc:'Handwritten flourish', kind:'unicode', badge:'unicode', fn:'script' },
-    { id:'fraktur', name:'Fraktur', desc:'Gothic blackletter mood', kind:'unicode', badge:'unicode', fn:'fraktur' },
-    { id:'monospace', name:'Monospace', desc:'Even, typewriter spacing', kind:'unicode', badge:'unicode', fn:'monospace', mono:true },
+    { id:'script', name:'Script', desc:'Handwritten flourish', kind:'unicode', badge:'unicode', fn:'script', keywords:'cursive handwriting fancy' },
+    { id:'fraktur', name:'Fraktur', desc:'Gothic blackletter mood', kind:'unicode', badge:'unicode', fn:'fraktur', keywords:'gothic old english medieval' },
+    { id:'monospace', name:'Monospace', desc:'Even, typewriter spacing', kind:'unicode', badge:'unicode', fn:'monospace', mono:true, keywords:'code typewriter mono fixed-width' },
     { id:'emoji-safe-bold', name:'Emoji-safe Bold', desc:'Styles letters, leaves emoji clusters alone', kind:'unicode', badge:'discord', fn:'emojiSafeBold' },
 
-    { id:'circled', name:'Circled', desc:'Every character gets a halo', kind:'symbols', badge:'varies', fn:'circled' },
-    { id:'squared', name:'Squared', desc:'Boxed-out display type', kind:'symbols', badge:'varies', fn:'squared' },
-    { id:'fullwidth', name:'Fullwidth', desc:'Vaporwave terminal spacing', kind:'symbols', badge:'unicode', fn:'fullwidth' },
-    { id:'regional-letters', name:'Regional Letters', desc:'Flag-style letter signals', kind:'symbols', badge:'varies', fn:'regionalLetters' },
+    { id:'circled', name:'Circled', desc:'Every character gets a halo', kind:'symbols', badge:'varies', fn:'circled', keywords:'circle round bubble' },
+    { id:'squared', name:'Squared', desc:'Boxed-out display type', kind:'symbols', badge:'varies', fn:'squared', keywords:'square box block' },
+    { id:'fullwidth', name:'Fullwidth', desc:'Vaporwave terminal spacing', kind:'symbols', badge:'unicode', fn:'fullwidth', keywords:'wide aesthetic spaced' },
+    { id:'regional-letters', name:'Regional Letters', desc:'Flag-style letter signals', kind:'symbols', badge:'varies', fn:'regionalLetters', keywords:'flag emoji letters' },
 
-    { id:'ascii-frame', name:'ASCII Frame', desc:'Compatibility-friendly bracket frame', kind:'decorative', badge:'discord', fn:'asciiFrame' },
-    { id:'upside-down', name:'Upside Down', desc:'Flips and reverses your text', kind:'decorative', badge:'discord', fn:'upsideDown' },
-    { id:'strike-line', name:'Strike Line', desc:'Crossed-out with combining marks', kind:'decorative', badge:'discord', fn:'strikeLine' },
+    { id:'ascii-frame', name:'ASCII Frame', desc:'Compatibility-friendly bracket frame', kind:'decorative', badge:'discord', fn:'asciiFrame', keywords:'brackets border frame' },
+    { id:'upside-down', name:'Upside Down', desc:'Flips and reverses your text', kind:'decorative', badge:'discord', fn:'upsideDown', keywords:'flip mirror reverse' },
+    { id:'strike-line', name:'Strike Line', desc:'Crossed-out with combining marks', kind:'decorative', badge:'discord', fn:'strikeLine', keywords:'strikethrough cross out' },
     { id:'underline-deco', name:'Underline', desc:'A quiet underline accent', kind:'decorative', badge:'discord', fn:'underlineDeco' },
-    { id:'zalgo', name:'Zalgo', desc:'Glitched signal texture', kind:'decorative', badge:'varies', fn:'zalgo' },
-    { id:'sparkline', name:'Sparkline', desc:'Symbols around your text', kind:'decorative', badge:'discord', fn:'sparkline' },
+    { id:'zalgo', name:'Zalgo', desc:'Glitched signal texture', kind:'decorative', badge:'varies', fn:'zalgo', keywords:'glitch corrupted creepy cursed' },
+    { id:'sparkline', name:'Sparkline', desc:'Symbols around your text', kind:'decorative', badge:'discord', fn:'sparkline', keywords:'sparkle star decorative' },
 
     { id:'discord-bold', name:'Discord Bold', desc:'Native markdown emphasis', kind:'discord', badge:'discord', fn:'discordBold', mono:true },
     { id:'discord-italic', name:'Discord Italic', desc:'Native markdown emphasis', kind:'discord', badge:'discord', fn:'discordItalic', mono:true },
     { id:'discord-bold-italic', name:'Discord Bold Italic', desc:'Both at once', kind:'discord', badge:'discord', fn:'discordBoldItalic', mono:true },
-    { id:'discord-strike', name:'Discord Strikethrough', desc:'Crosses it out', kind:'discord', badge:'discord', fn:'discordStrike', mono:true },
-    { id:'discord-spoiler', name:'Discord Spoiler', desc:'Hides text until tapped', kind:'discord', badge:'discord', fn:'discordSpoiler', mono:true },
-    { id:'discord-code', name:'Discord Code', desc:'Inline code formatting', kind:'discord', badge:'discord', fn:'discordCode', mono:true },
+    { id:'discord-strike', name:'Discord Strikethrough', desc:'Crosses it out', kind:'discord', badge:'discord', fn:'discordStrike', mono:true, keywords:'strikethrough cross out' },
+    { id:'discord-spoiler', name:'Discord Spoiler', desc:'Hides text until tapped', kind:'discord', badge:'discord', fn:'discordSpoiler', mono:true, keywords:'hide blur censor' },
+    { id:'discord-code', name:'Discord Code', desc:'Inline code formatting', kind:'discord', badge:'discord', fn:'discordCode', mono:true, keywords:'inline code snippet' },
   ];
 
   /* ============ Discord Lab: markdown + secret formats ============ */
@@ -258,16 +258,29 @@
   function matchesQuery(style, q){
     if (!q) return true;
     q = q.toLowerCase();
-    return style.name.toLowerCase().includes(q) || style.desc.toLowerCase().includes(q) || style.kind.includes(q);
+    return style.name.toLowerCase().includes(q) || style.desc.toLowerCase().includes(q)
+      || style.kind.includes(q) || (style.keywords && style.keywords.toLowerCase().includes(q));
+  }
+  function syncFilterPillsForSearch(q){
+    const pills = document.querySelectorAll('#filter-row .filter-pill');
+    if (q) {
+      pills.forEach(p => p.classList.toggle('active', p.dataset.filter === 'all'));
+    } else {
+      pills.forEach(p => p.classList.toggle('active', p.dataset.filter === state.filter));
+    }
   }
 
   function render(){
     const q = state.query.trim();
     const list = STYLES.filter(s => {
       if (state.onlyFavorites && !state.favorites.has(s.id)) return false;
-      if (state.filter !== 'all' && s.kind !== state.filter) return false;
+      // While actively searching, search spans every category — the active filter
+      // pill is bypassed rather than silently hiding otherwise-matching results.
+      if (!q && state.filter !== 'all' && s.kind !== state.filter) return false;
       return matchesQuery(s, q);
     });
+
+    syncFilterPillsForSearch(q);
 
     if (list.length === 0) {
       grid.innerHTML = '';
@@ -1213,7 +1226,8 @@
       group.querySelectorAll('.tool-grid > .panel').forEach(panel => {
         const title = panel.querySelector('.panel-title')?.textContent.toLowerCase() || '';
         const sub = panel.querySelector('.panel-sub')?.textContent.toLowerCase() || '';
-        const match = !q || title.includes(q) || sub.includes(q);
+        const keywords = (panel.dataset.keywords || '').toLowerCase();
+        const match = !q || title.includes(q) || sub.includes(q) || keywords.includes(q);
         panel.style.display = match ? '' : 'none';
         if (match) groupHasVisible = true;
       });

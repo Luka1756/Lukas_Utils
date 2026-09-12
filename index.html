@@ -172,7 +172,7 @@
     <div class="tool-group" id="group-time">
       <h3 class="group-title">Time</h3>
       <div class="tool-grid">
-        <div class="panel span-2 featured-panel" id="tool-timestamp">
+        <div class="panel span-2 featured-panel" id="tool-timestamp" data-keywords="clock unix epoch relative discord tag">
           <h4 class="panel-title small">Timestamp builder</h4>
           <p class="panel-sub">Pick a date and time, get every Discord <code>&lt;t:…&gt;</code> tag with a live preview of how it'll actually read.</p>
 
@@ -220,14 +220,14 @@
     <div class="tool-group" id="group-ids">
       <h3 class="group-title">IDs</h3>
       <div class="tool-grid">
-        <div class="panel" id="tool-snowflake">
+        <div class="panel" id="tool-snowflake" data-keywords="id creation date decode">
           <h4 class="panel-title small">Snowflake decoder</h4>
           <p class="panel-sub">Works for any Discord ID — user, server, channel, or message. Paste it to see when it was created.</p>
           <input type="text" id="snowflake-input" class="text-input" placeholder="e.g. 175928847299117063" inputmode="numeric" autocomplete="off">
           <div class="tool-output" id="snowflake-output"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="avatar icon banner link url">
           <h4 class="panel-title small">CDN image URL</h4>
           <p class="panel-sub">Builds a Discord CDN link from an ID, and a hash if you have one.</p>
           <div class="cdn-form" id="cdn-form">
@@ -253,7 +253,7 @@
     <div class="tool-group" id="group-permissions">
       <h3 class="group-title">Permissions</h3>
       <div class="tool-grid">
-        <div class="panel span-2" id="tool-permissions">
+        <div class="panel span-2" id="tool-permissions" data-keywords="perms bitfield integer bot role">
           <h4 class="panel-title small">Permissions calculator</h4>
           <p class="panel-sub">Check boxes to get a permission integer, or paste one to see what it grants. Covers Discord's standard permission set.</p>
           <div class="perm-integer-row">
@@ -268,7 +268,7 @@
     <div class="tool-group" id="group-colors">
       <h3 class="group-title">Colors</h3>
       <div class="tool-grid">
-        <div class="panel">
+        <div class="panel" data-keywords="hex rgb decimal role">
           <h4 class="panel-title small">Role color converter</h4>
           <p class="panel-sub">The decimal value is what you'd paste into a bot's role color field.</p>
           <div class="color-input-row">
@@ -285,7 +285,7 @@
     <div class="tool-group" id="group-embeds">
       <h3 class="group-title">Embeds</h3>
       <div class="tool-grid">
-        <div class="panel span-2" id="tool-embed">
+        <div class="panel span-2" id="tool-embed" data-keywords="json fields preview bot">
           <h4 class="panel-title small">Embed builder</h4>
           <p class="panel-sub">Fill in what you need, copy the JSON, paste it into your bot or webhook payload.</p>
           <div class="embed-form">
@@ -324,7 +324,7 @@
     <div class="tool-group" id="group-emojis">
       <h3 class="group-title">Emojis</h3>
       <div class="tool-grid">
-        <div class="panel">
+        <div class="panel" data-keywords="custom emoji format cdn">
           <h4 class="panel-title small">Emoji tag</h4>
           <p class="panel-sub">Paste a custom emoji tag to inspect it, or type name:id to build one.</p>
           <input type="text" id="emoji-tag-input" class="text-input" placeholder="&lt;:name:123456789012345678&gt; or name:id" autocomplete="off">
@@ -337,14 +337,14 @@
     <div class="tool-group" id="group-invites">
       <h3 class="group-title">Invites</h3>
       <div class="tool-grid">
-        <div class="panel">
+        <div class="panel" data-keywords="server link code">
           <h4 class="panel-title small">Invite formatter</h4>
           <p class="panel-sub">Paste an invite code or link to get a clean, canonical <code>discord.gg</code> link.</p>
           <input type="text" id="invite-input" class="text-input" placeholder="Uh7k7pxRPk or discord.gg/Uh7k7pxRPk" autocomplete="off">
           <div class="tool-output" id="invite-output"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="server info api">
           <h4 class="panel-title small">Invite lookup</h4>
           <p class="panel-sub">Looks up publicly available server info for an invite. This is the one tool that contacts Discord's API — nothing happens until you tap the button.</p>
           <input type="text" id="invite-lookup-input" class="text-input" placeholder="Invite code or link" autocomplete="off">
@@ -358,7 +358,7 @@
     <div class="tool-group" id="group-text">
       <h3 class="group-title">Text</h3>
       <div class="tool-grid">
-        <div class="panel">
+        <div class="panel" data-keywords="bold italic spoiler code format">
           <h4 class="panel-title small">Markdown formats</h4>
           <p class="panel-sub">Pick a format — it applies to your text above automatically.</p>
           <div class="format-grid" id="format-grid"></div>
@@ -369,7 +369,7 @@
           <button class="btn-solid btn-discord" id="copy-discord-format" type="button">Copy Discord format</button>
         </div>
 
-        <div class="panel" id="templates">
+        <div class="panel" id="templates" data-keywords="announcement rules preset message">
           <h4 class="panel-title small">Templates</h4>
           <p class="panel-sub">A few starting points — pick one and it drops your text in.</p>
           <div class="template-grid" id="template-grid"></div>
@@ -380,7 +380,7 @@
           </div>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="terminal codeblock colorize">
           <h4 class="panel-title small">ANSI colors</h4>
           <p class="panel-sub">Color your text inside a Discord code block.</p>
           <div class="ansi-swatches" id="ansi-swatches"></div>
@@ -388,14 +388,14 @@
           <button class="btn-outline" id="copy-ansi" type="button">Copy ANSI code</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="character count limit">
           <h4 class="panel-title small">Message length</h4>
           <p class="panel-sub">Checks your text against Discord's message and embed limits, with a line count too.</p>
           <textarea id="length-input" class="text-input textarea" rows="3" placeholder="Paste or type a message"></textarea>
           <div class="length-bars" id="length-bars"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="whitespace trim strip markdown">
           <h4 class="panel-title small">Text cleaner</h4>
           <p class="panel-sub">Strips Markdown, trims stray spaces, and collapses blank lines.</p>
           <textarea id="cleaner-input" class="text-input textarea" rows="3" placeholder="Paste messy text"></textarea>
@@ -407,14 +407,14 @@
           <button class="btn-outline small" id="copy-cleaner" type="button">Copy</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="render html live preview">
           <h4 class="panel-title small">Markdown preview</h4>
           <p class="panel-sub">See how Discord Markdown actually renders before you send it.</p>
           <textarea id="md-preview-input" class="text-input textarea" rows="3" placeholder="**bold**, *italic*, ||spoiler||, `code`...">**bold**, *italic*, __underline__, ~~strike~~, `code`, ||spoiler||</textarea>
           <div class="md-preview-box" id="md-preview-output"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="ping tag user role channel">
           <h4 class="panel-title small">Mention formatter</h4>
           <p class="panel-sub">Builds the raw text for a user, role, or channel mention.</p>
           <div class="mention-form">
@@ -428,7 +428,7 @@
           <div class="tool-output" id="mention-output"></div>
         </div>
 
-        <div class="panel span-2">
+        <div class="panel span-2" data-keywords="chat bubble render">
           <h4 class="panel-title small">Message preview</h4>
           <p class="panel-sub">A rough approximation of how your text (from the box at the top of the page) would look as a message, with your embed below it if you've built one.</p>
           <div class="message-preview-box" id="message-preview-box"></div>
@@ -440,7 +440,7 @@
     <div class="tool-group" id="group-developer">
       <h3 class="group-title">Developer</h3>
       <div class="tool-grid">
-        <div class="panel">
+        <div class="panel" data-keywords="validate pretty print">
           <h4 class="panel-title small">JSON formatter</h4>
           <p class="panel-sub">Paste JSON to validate and pretty-print it.</p>
           <textarea id="json-fmt-input" class="text-input textarea" rows="4" placeholder="Paste JSON"></textarea>
@@ -451,7 +451,7 @@
           <button class="btn-outline small" id="copy-json-fmt" type="button">Copy</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="encode decode">
           <h4 class="panel-title small">Base64</h4>
           <p class="panel-sub">Encode or decode text — handles emoji and non-English text correctly.</p>
           <div class="case-group" id="base64-mode-toggle">
@@ -466,21 +466,21 @@
           <button class="btn-outline small" id="copy-base64" type="button">Copy</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="guid random unique id">
           <h4 class="panel-title small">UUID generator</h4>
           <p class="panel-sub">Generates a random v4 UUID.</p>
           <div class="tool-output" id="uuid-output"></div>
           <button class="btn-outline small" id="generate-uuid" type="button">Generate new</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" data-keywords="epoch convert date">
           <h4 class="panel-title small">Unix timestamp</h4>
           <p class="panel-sub">Paste a unix timestamp (seconds or ms) or a date, get the other one back.</p>
           <input type="text" id="unix-input" class="text-input" placeholder="1717000000 or 2024-05-29T12:00" autocomplete="off">
           <div class="tool-output" id="unix-output"></div>
         </div>
 
-        <div class="panel span-2">
+        <div class="panel span-2" data-keywords="bot post json content">
           <h4 class="panel-title small">Webhook payload</h4>
           <p class="panel-sub">Combines your text (from the top of the page) and the embed you built above into a payload ready for a Discord webhook <code>POST</code>.</p>
           <div class="output-box">

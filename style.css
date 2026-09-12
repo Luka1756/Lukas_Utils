@@ -21,7 +21,7 @@
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --max-w: 640px;
   --max-w-wide: 880px;
-  --max-w-hub: 1220px;
+  --max-w-hub: 1280px;
   --sidebar-w: 200px;
   --header-h: 61px;
   --scroll-offset: 232px;
@@ -127,7 +127,7 @@ input, textarea, pre, code,
   border-bottom: 1px solid var(--border-soft);
 }
 .header-inner{
-  max-width: 1220px; margin:0 auto;
+  max-width: 1280px; margin:0 auto;
   display:flex; align-items:center; gap: 24px;
   padding: 14px 20px;
 }
@@ -244,6 +244,10 @@ input, textarea, pre, code,
 }
 .wide{ max-width: var(--max-w-wide); }
 .hub{ max-width: var(--max-w-hub); }
+/* Styles gets a bit more room than the shared hub width so the card wall
+   can reach a comfortable 4th column on very wide screens. Scoped to just
+   this section — Discord Tools keeps its existing width. */
+.styles-section.hub{ max-width: 1400px; }
 .section-head{ display:flex; align-items:baseline; gap:10px; margin-bottom: 6px; }
 .section-title{ font-family: var(--sans); font-size: 21px; font-weight:700; margin: 0; letter-spacing:-.01em; }
 .section-count{ font-family: var(--mono); font-size:12px; color: var(--text-dimmer); }
@@ -319,10 +323,11 @@ input, textarea, pre, code,
 .results-empty{ color: var(--text-dim); font-size:14px; padding: 16px 0; }
 
 /* ============ style cards ============ */
-.card-grid{ display:grid; gap:10px; grid-template-columns: 1fr; }
-@media (min-width: 640px){ .card-grid{ grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1080px){ .card-grid{ grid-template-columns: 1fr 1fr 1fr; } }
-@media (min-width: 1480px){ .card-grid{ grid-template-columns: 1fr 1fr 1fr 1fr; } }
+/* Self-sizing grid: each card gets a real minimum width, and the grid packs
+   as many equal-width columns as actually fit — no fixed breakpoint jumps,
+   no lonely last-row card, and it naturally collapses to one column on
+   narrow/mobile screens without a separate mobile-specific rule. */
+.card-grid{ display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 
 .style-card{
   border:1px solid var(--border); background: var(--bg-card);
@@ -510,7 +515,7 @@ input, textarea, pre, code,
 
 /* ============ footer ============ */
 .site-footer{ border-top:1px solid var(--border-soft); margin-top:56px; }
-.footer-inner{ max-width: 1220px; margin:0 auto; padding: 24px 20px 40px; }
+.footer-inner{ max-width: 1280px; margin:0 auto; padding: 24px 20px 40px; }
 .footer-brand-name{ font-family: var(--mono); font-weight:600; font-size:14px; margin:0 0 4px; }
 .footer-tagline{ color: var(--text-dimmer); font-size:12.5px; margin:0 0 8px; }
 .footer-links{ display:flex; gap:18px; flex-wrap:wrap; }

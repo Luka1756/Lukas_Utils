@@ -55,9 +55,36 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v8.8</span>
+      <span class="version-tag">Styles grid width correction</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>v8.7 claimed the grid could reach a 4th column on wide screens — checked the actual math and it was short by 8 pixels, so it silently stayed at 3 columns no matter how wide the window got</li>
+      <li>Widened the Styles/Discord Tools content area slightly so a 4th column genuinely fits, with comfortable card width to spare</li>
+      <li>Widened the header and footer to match, so nothing looks narrower than the content again</li>
+      <li>CSS-only change — script.js untouched, sidebar/mobile layout unaffected, confirmed with the full regression suite</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
+      <span class="version-number">v8.7</span>
+      <span class="version-tag">Search fix &amp; Styles grid layout</span>
+    </div>
+    <ul class="version-list">
+      <li>Fixed a real UX bug: searching Styles while a category filter was active silently hid otherwise-matching results from other categories. Search now spans all categories while typing, and clearing it restores whatever category you had selected</li>
+      <li>Added keyword aliases to both the Styles and Discord Tools search (e.g. "gothic" finds Fraktur, "guid" finds the UUID generator) so results aren't limited to exact tool names</li>
+      <li>Rebuilt the Styles card grid to size itself to the available space instead of jumping between fixed breakpoints — columns now adapt smoothly to any width, cards stay evenly sized with equal gaps, and a lone last-row card no longer sits awkwardly to one side</li>
+      <li>Widened the Styles section slightly on very large screens so the grid can comfortably reach a 4th column</li>
+      <li>Mobile layout untouched — same category pills and card behavior as before</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v8.6</span>
       <span class="version-tag">Bug sweep</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Fixed the Message Preview tool silently failing to render single-asterisk italics and blockquotes — the standalone Markdown Preview tool had this working, but the Message Preview used a slightly older copy of the same logic that was missing both</li>
