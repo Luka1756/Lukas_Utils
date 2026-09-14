@@ -83,6 +83,22 @@
     hiddenDots: s => [...s].join('\u2800'),
     zeroWidth: s => [...s].join('\u200b'),
     secretCode: s => `||\`${s}\`||`,
+    superscript: s => enclose(s, ch => SUPERSCRIPT_MAP[ch]),
+    subscript: s => enclose(s, ch => SUBSCRIPT_MAP[ch]),
+    boldFraktur: s => mapAlpha(s, { upperStart:0x1D56C, lowerStart:0x1D586 }),
+    sansBoldItalic: s => mapAlpha(s, { upperStart:0x1D63C, lowerStart:0x1D656 }),
+  };
+
+  const SUPERSCRIPT_MAP = {
+    a:'ᵃ',b:'ᵇ',c:'ᶜ',d:'ᵈ',e:'ᵉ',f:'ᶠ',g:'ᵍ',h:'ʰ',i:'ⁱ',j:'ʲ',k:'ᵏ',l:'ˡ',m:'ᵐ',
+    n:'ⁿ',o:'ᵒ',p:'ᵖ',r:'ʳ',s:'ˢ',t:'ᵗ',u:'ᵘ',v:'ᵛ',w:'ʷ',x:'ˣ',y:'ʸ',z:'ᶻ',
+    '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
+    '+':'⁺','-':'⁻','=':'⁼','(':'⁽',')':'⁾',
+  };
+  const SUBSCRIPT_MAP = {
+    a:'ₐ',e:'ₑ',h:'ₕ',i:'ᵢ',j:'ⱼ',k:'ₖ',l:'ₗ',m:'ₘ',n:'ₙ',o:'ₒ',p:'ₚ',r:'ᵣ',s:'ₛ',t:'ₜ',u:'ᵤ',v:'ᵥ',x:'ₓ',
+    '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉',
+    '+':'₊','-':'₋','=':'₌','(':'₍',')':'₎',
   };
 
   function regionalLetter(ch){
@@ -107,6 +123,10 @@
 
   /* ============ Style catalog ============ */
   const STYLES = [
+    { id:'superscript', name:'Superscript', desc:'Small raised characters', kind:'unicode', badge:'varies', fn:'superscript', keywords:'exponent power small raised' },
+    { id:'subscript', name:'Subscript', desc:'Small lowered characters', kind:'unicode', badge:'varies', fn:'subscript', keywords:'chemistry formula small lowered' },
+    { id:'bold-fraktur', name:'Bold Fraktur', desc:'Heavier gothic blackletter', kind:'unicode', badge:'unicode', fn:'boldFraktur', keywords:'gothic old english medieval heavy' },
+    { id:'sans-bold-italic', name:'Sans Bold Italic', desc:'Loud and leaning', kind:'unicode', badge:'unicode', fn:'sansBoldItalic' },
     { id:'bold-serif', name:'Bold Serif', desc:'Weighty mathematical serif', kind:'unicode', badge:'unicode', fn:'boldSerif' },
     { id:'bold-sans', name:'Bold Sans', desc:'Clean and confidently loud', kind:'unicode', badge:'unicode', fn:'boldSans' },
     { id:'soft-italic', name:'Soft Italic', desc:'A little lift, no noise', kind:'unicode', badge:'unicode', fn:'softItalic' },
@@ -1042,8 +1062,10 @@
     { label:'Embed title', max: 256 },
   ];
   function renderLength(){
-    const len = [...lengthInput.value].length;
-    const lines = lengthInput.value.length ? lengthInput.value.split('\n').length : 0;
+    const raw = lengthInput.value;
+    const len = [...raw].length;
+    const lines = raw.length ? raw.split('\n').length : 0;
+    const words = raw.trim() ? raw.trim().split(/\s+/).length : 0;
     const bars = LENGTH_LIMITS.map(l => {
       const pct = Math.min(100, (len / l.max) * 100);
       const over = len > l.max;
@@ -1053,7 +1075,9 @@
           <div class="length-bar-track"><div class="length-bar-fill ${over ? 'over' : ''}" style="width:${pct}%"></div></div>
         </div>`;
     }).join('');
-    lengthBars.innerHTML = bars + `<div class="row" style="margin-top:2px"><span>Lines</span><span>${lines}</span></div>`;
+    lengthBars.innerHTML = bars
+      + `<div class="row" style="margin-top:2px"><span>Words</span><span>${words}</span></div>`
+      + `<div class="row"><span>Lines</span><span>${lines}</span></div>`;
   }
   lengthInput?.addEventListener('input', renderLength);
   renderLength();
@@ -1359,25 +1383,84 @@
   /* ============ Markdown preview ============ */
   const mdPreviewInput = document.getElementById('md-preview-input');
   const mdPreviewOutput = document.getElementById('md-preview-output');
+  /* ============ Shared Discord Markdown renderer ============ */
+  /* Used by both the Markdown preview tool and the Message/Webhook previews,
+     so there's exactly one implementation to keep correct (a prior bug came
+     from these two drifting out of sync). Supports headings, lists, quotes,
+     code, inline emphasis, spoilers, and links (masked + bare URLs). */
+  function renderDiscordMarkdown(raw){
+    const lines = raw.split('\n');
+    const blocks = [];
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.startsWith('```')) {
+        const codeLines = [];
+        i++;
+        while (i < lines.length && !lines[i].startsWith('```')) { codeLines.push(lines[i]); i++; }
+        i++;
+        blocks.push({ type:'code', text: codeLines.join('\n') });
+        continue;
+      }
+      const h = line.match(/^(#{1,3})\s+(.*)$/);
+      if (h) { blocks.push({ type:'heading', level: h[1].length, text: h[2] }); i++; continue; }
+      const bq = line.match(/^>\s?(.*)$/);
+      if (bq) { blocks.push({ type:'quote', text: bq[1] }); i++; continue; }
+      const ul = line.match(/^[-*]\s+(.*)$/);
+      if (ul) {
+        const items = [ul[1]]; i++;
+        while (i < lines.length) { const m2 = lines[i].match(/^[-*]\s+(.*)$/); if (!m2) break; items.push(m2[1]); i++; }
+        blocks.push({ type:'ul', items }); continue;
+      }
+      const ol = line.match(/^\d+\.\s+(.*)$/);
+      if (ol) {
+        const items = [ol[1]]; i++;
+        while (i < lines.length) { const m2 = lines[i].match(/^\d+\.\s+(.*)$/); if (!m2) break; items.push(m2[1]); i++; }
+        blocks.push({ type:'ol', items }); continue;
+      }
+      blocks.push({ type:'p', text: line }); i++;
+    }
+
+    function inline(str){
+      let html = escapeHtml(str);
+      const stash = [];
+      const hold = (snippet) => { stash.push(snippet); return `\u0000${stash.length - 1}\u0000`; };
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
+        (_, text, url) => hold(`<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`));
+      html = html.replace(/(https?:\/\/[^\s<]+)/g, (m) => hold(`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`));
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/__(.+?)__/g, '<u>$1</u>');
+      html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+      html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
+      html = html.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
+      html = html.replace(/\u0000(\d+)\u0000/g, (_, idx) => stash[Number(idx)]);
+      return html;
+    }
+
+    return blocks.map(b => {
+      if (b.type === 'heading') return `<div class="md-h${b.level}">${inline(b.text)}</div>`;
+      if (b.type === 'quote') return `<blockquote>${inline(b.text)}</blockquote>`;
+      if (b.type === 'ul') return `<ul>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ul>`;
+      if (b.type === 'ol') return `<ol>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ol>`;
+      if (b.type === 'code') return `<pre>${escapeHtml(b.text)}</pre>`;
+      return b.text ? `<p>${inline(b.text)}</p>` : '<br>';
+    }).join('');
+  }
+
   function renderMarkdownPreview(){
     if (!mdPreviewOutput) return;
-    let html = escapeHtml(mdPreviewInput.value);
-    html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre>${code}</pre>`);
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.+?)__/g, '<u>$1</u>');
-    html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-    html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
-    html = html.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
-    html = html.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
-    html = html.replace(/\n/g, '<br>');
-    mdPreviewOutput.innerHTML = html;
+    mdPreviewOutput.innerHTML = renderDiscordMarkdown(mdPreviewInput.value);
   }
   mdPreviewInput?.addEventListener('input', renderMarkdownPreview);
   mdPreviewOutput?.addEventListener('click', (e) => {
     const spoiler = e.target.closest('[data-spoiler]');
     if (spoiler) spoiler.classList.toggle('revealed');
+  });
+  document.getElementById('copy-md-raw')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(mdPreviewInput.value).catch(() => {});
+    showToast('Copied!');
   });
   renderMarkdownPreview();
 
@@ -1385,6 +1468,11 @@
   const mentionTypeSelect = document.getElementById('mention-type-select');
   const mentionIdInput = document.getElementById('mention-id-input');
   const mentionOutput = document.getElementById('mention-output');
+  const MENTION_EXPLAIN = {
+    user: 'Pings that specific user, if they can see the channel.',
+    role: 'Pings everyone with that role, if the role is mentionable.',
+    channel: 'Shows as a clickable link to that channel.',
+  };
   function renderMention(){
     const id = mentionIdInput.value.trim();
     if (!/^\d{15,20}$/.test(id)) { mentionOutput.innerHTML = `<span class="err">Enter a valid ID (15-20 digits).</span>`; return; }
@@ -1392,6 +1480,7 @@
     const tag = type === 'user' ? `<@${id}>` : type === 'role' ? `<@&${id}>` : `<#${id}>`;
     mentionOutput.innerHTML = `
       <div class="row"><span>Mention</span><span>${escapeHtml(tag)}</span></div>
+      <div class="row"><span>Does</span><span>${escapeHtml(MENTION_EXPLAIN[type] || '')}</span></div>
       <button type="button" class="copy-link" data-copy-url="${escapeHtml(tag)}">Copy</button>`;
   }
   [mentionTypeSelect, mentionIdInput].forEach(el => el?.addEventListener('input', renderMention));
@@ -1403,20 +1492,6 @@
   });
 
   /* ============ Message preview ============ */
-  function discordMarkdownToHtml(str){
-    let html = escapeHtml(str);
-    html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre>${code}</pre>`);
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.+?)__/g, '<u>$1</u>');
-    html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-    html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
-    html = html.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
-    html = html.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
-    html = html.replace(/\n/g, '<br>');
-    return html;
-  }
   function renderMessagePreview(){
     if (!messagePreviewBox) return;
     const text = applyCase(state.text) || '';
@@ -1429,10 +1504,37 @@
       <div class="mp-avatar">L</div>
       <div class="mp-body">
         <div class="mp-head"><span class="mp-username">Luka's Utils</span><span class="mp-time">Today at ${now.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' })}</span></div>
-        <div class="mp-content">${discordMarkdownToHtml(text)}</div>
+        <div class="mp-content">${renderDiscordMarkdown(text)}</div>
         ${embedHtml}
       </div>`;
   }
+
+  /* ============ Webhook message builder ============ */
+  const webhookUsernameInput = document.getElementById('webhook-username-input');
+  const webhookAvatarInput = document.getElementById('webhook-avatar-input');
+  const webhookContentInput = document.getElementById('webhook-content-input');
+  const webhookPreviewBox = document.getElementById('webhook-preview-box');
+  function renderWebhookPreview(){
+    if (!webhookPreviewBox) return;
+    const name = webhookUsernameInput.value.trim() || 'Webhook';
+    const avatarUrl = webhookAvatarInput.value.trim();
+    const content = webhookContentInput.value;
+    const now = new Date();
+    const embed = currentEmbedObject();
+    const hasEmbed = Object.keys(embed).length > 0;
+    const avatarHtml = avatarUrl
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"><span style="display:none">${escapeHtml(name[0]?.toUpperCase() || 'W')}</span>`
+      : escapeHtml(name[0]?.toUpperCase() || 'W');
+    webhookPreviewBox.innerHTML = `
+      <div class="mp-avatar wh-avatar">${avatarHtml}</div>
+      <div class="mp-body">
+        <div class="mp-head"><span class="mp-username">${escapeHtml(name)}</span><span class="wh-tag">BOT</span><span class="mp-time">Today at ${now.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' })}</span></div>
+        <div class="mp-content">${renderDiscordMarkdown(content)}</div>
+        ${hasEmbed ? `<div class="mp-embed-wrap">${embedPreviewEl.innerHTML}</div>` : ''}
+      </div>`;
+  }
+  [webhookUsernameInput, webhookAvatarInput, webhookContentInput].forEach(el => el?.addEventListener('input', renderWebhookPreview));
+  renderWebhookPreview();
 
   /* ============ Invites ============ */
   const inviteInput = document.getElementById('invite-input');
@@ -1585,6 +1687,202 @@
   });
   renderMessagePreview();
   renderWebhookPayload();
+
+  /* ============ Markdown cheat sheet ============ */
+  const CHEATSHEET = [
+    { label:'Bold', syntax:'**text**' },
+    { label:'Italic', syntax:'*text*' },
+    { label:'Bold italic', syntax:'***text***' },
+    { label:'Underline', syntax:'__text__' },
+    { label:'Strikethrough', syntax:'~~text~~' },
+    { label:'Spoiler', syntax:'||text||' },
+    { label:'Inline code', syntax:'`code`' },
+    { label:'Code block', syntax:'```\ncode\n```' },
+    { label:'Quote', syntax:'> text' },
+    { label:'Big heading', syntax:'# text' },
+    { label:'Medium heading', syntax:'## text' },
+    { label:'Small heading', syntax:'### text' },
+    { label:'Bullet list', syntax:'- item' },
+    { label:'Numbered list', syntax:'1. item' },
+    { label:'Masked link', syntax:'[text](https://example.com)' },
+  ];
+  const cheatsheetSearch = document.getElementById('cheatsheet-search');
+  const cheatsheetList = document.getElementById('cheatsheet-list');
+  function renderCheatsheet(){
+    if (!cheatsheetList) return;
+    const q = (cheatsheetSearch?.value || '').trim().toLowerCase();
+    const items = CHEATSHEET.filter(c => !q || c.label.toLowerCase().includes(q) || c.syntax.toLowerCase().includes(q));
+    cheatsheetList.innerHTML = items.length ? items.map(c => `
+      <div class="cheatsheet-row">
+        <div class="cheatsheet-main">
+          <span class="cheatsheet-label">${escapeHtml(c.label)}</span>
+          <span class="cheatsheet-syntax">${escapeHtml(c.syntax.replace(/\n/g, ' '))}</span>
+        </div>
+        <div class="cheatsheet-preview">${renderDiscordMarkdown(c.syntax)}</div>
+        <button type="button" class="copy-btn small" data-copy-cheat="${escapeHtml(c.syntax)}">Copy</button>
+      </div>
+    `).join('') : `<p class="tz-empty-note">No matches.</p>`;
+  }
+  cheatsheetSearch?.addEventListener('input', renderCheatsheet);
+  cheatsheetList?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-cheat]');
+    if (!btn) return;
+    navigator.clipboard?.writeText(btn.dataset.copyCheat).catch(() => {});
+    showToast('Copied!');
+  });
+  renderCheatsheet();
+
+  /* ============ Symbol browser ============ */
+  const SYMBOLS = [
+    ...['→','←','↑','↓','↔','↕','⇒','⇐','⇑','⇓','⇔','↗','↘','↙','↖','➜','➤','⤴','⤵'].map(ch => ({ ch, name:'arrow', cat:'arrows' })),
+    ...['★','☆','✦','✧','✩','✪','✯','✰','⭐'].map(ch => ({ ch, name:'star', cat:'stars' })),
+    ...['─','━','│','┃','═','║','╌','┄','┅','•','·','‣','▪','▫'].map(ch => ({ ch, name:'line', cat:'lines' })),
+    ...['「','」','『','』','【','】','〔','〕','⟨','⟩','❨','❩','❮','❯','‹','›','«','»'].map(ch => ({ ch, name:'bracket', cat:'brackets' })),
+    ...['±','×','÷','≠','≈','≤','≥','∞','√','∑','∏','∆','∫','π','∈','∉','⊂','⊃','∅'].map(ch => ({ ch, name:'math', cat:'math' })),
+    ...['✦','❖','☾','☽','❀','✿','❁','✾','✽','❋','☼','⚡','♪','♫','☯','♥','♡'].map(ch => ({ ch, name:'decorative', cat:'decorative' })),
+  ];
+  const symbolSearchInput = document.getElementById('symbol-search-input');
+  const symbolGrid = document.getElementById('symbol-grid');
+  const symbolFilterRow = document.getElementById('symbol-filter-row');
+  let symbolCat = 'all';
+  function renderSymbolGrid(){
+    if (!symbolGrid) return;
+    const q = (symbolSearchInput?.value || '').trim().toLowerCase();
+    const list = SYMBOLS.filter(s => (symbolCat === 'all' || s.cat === symbolCat) && (!q || s.name.includes(q) || s.cat.includes(q) || s.ch === q));
+    symbolGrid.innerHTML = list.length ? list.map(s => `
+      <button type="button" class="symbol-chip" data-copy-symbol="${escapeHtml(s.ch)}" title="${escapeHtml(s.name)}">
+        <span class="sc-glyph">${escapeHtml(s.ch)}</span>
+        <span class="sc-name">${escapeHtml(s.name)}</span>
+      </button>
+    `).join('') : `<p class="tz-empty-note">No matching symbols.</p>`;
+  }
+  symbolFilterRow?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-symbol-cat]');
+    if (!btn) return;
+    symbolFilterRow.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    symbolCat = btn.dataset.symbolCat;
+    renderSymbolGrid();
+  });
+  symbolSearchInput?.addEventListener('input', renderSymbolGrid);
+  symbolGrid?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-symbol]');
+    if (!btn) return;
+    navigator.clipboard?.writeText(btn.dataset.copySymbol).catch(() => {});
+    showToast('Copied!');
+  });
+
+  /* ============ Divider & border generator ============ */
+  const DIVIDERS = [
+    '──────────────────────',
+    '━━━━━━━━━━━━━━━━━━━━━━',
+    '══════════════════════',
+    '• • • • • • • • • • • •',
+    '· · · · · · · · · · · ·',
+    '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬',
+    '☆ ─────────────────── ☆',
+    '✦ ═══════════════════ ✦',
+    '~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~',
+  ];
+  const dividerList = document.getElementById('divider-list');
+  const borderTextInput = document.getElementById('border-text-input');
+  const borderOutput = document.getElementById('border-output');
+  function renderDividerList(){
+    if (!dividerList) return;
+    dividerList.innerHTML = DIVIDERS.map(d => `
+      <div class="divider-row">
+        <span class="divider-preview">${escapeHtml(d)}</span>
+        <button type="button" class="copy-btn small" data-copy-divider="${escapeHtml(d)}">Copy</button>
+      </div>
+    `).join('');
+  }
+  dividerList?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-divider]');
+    if (!btn) return;
+    navigator.clipboard?.writeText(btn.dataset.copyDivider).catch(() => {});
+    showToast('Copied!');
+  });
+  function buildBorder(text){
+    const lines = (text || '').split('\n');
+    const width = Math.max(...lines.map(l => [...l].length), 1);
+    const top = '┌' + '─'.repeat(width + 2) + '┐';
+    const bottom = '└' + '─'.repeat(width + 2) + '┘';
+    const middle = lines.map(l => '│ ' + l + ' '.repeat(width - [...l].length) + ' │');
+    return [top, ...middle, bottom].join('\n');
+  }
+  function renderBorder(){
+    if (!borderOutput) return;
+    borderOutput.textContent = buildBorder(borderTextInput.value);
+  }
+  borderTextInput?.addEventListener('input', renderBorder);
+  document.getElementById('copy-border')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(borderOutput.textContent).catch(() => {});
+    showToast('Copied!');
+  });
+  renderBorder();
+
+  /* ============ Invisible characters ============ */
+  const INVISIBLE_CHARS = [
+    { name:'Zero Width Space', ch:'\u200B', code:'U+200B', desc:'Invisible and takes no width. The most common way to send a "blank" message or break up text.' },
+    { name:'Word Joiner', ch:'\u2060', code:'U+2060', desc:'Invisible, and also tells the renderer not to break a line at that point.' },
+    { name:'Zero Width Non-Joiner', ch:'\u200C', code:'U+200C', desc:'Invisible. Mainly used to stop characters from visually joining in scripts that ligature.' },
+    { name:'Zero Width Joiner', ch:'\u200D', code:'U+200D', desc:'Invisible on its own. Used to combine emoji into a single combined glyph.' },
+    { name:'Braille Pattern Blank', ch:'\u2800', code:'U+2800', desc:'A real, printable Braille character that happens to render blank — used for blank Discord names since true zero-width characters are rejected there.' },
+    { name:'Hangul Filler', ch:'\u3164', code:'U+3164', desc:'A Korean filler character that also renders blank. Another common trick for blank names.' },
+  ];
+  const invisibleList = document.getElementById('invisible-list');
+  function renderInvisibleList(){
+    if (!invisibleList) return;
+    invisibleList.innerHTML = INVISIBLE_CHARS.map(c => `
+      <div class="invisible-row">
+        <div class="invisible-head">
+          <span class="invisible-name">${escapeHtml(c.name)}</span>
+          <span class="invisible-code">${escapeHtml(c.code)}</span>
+        </div>
+        <p class="invisible-desc">${escapeHtml(c.desc)}</p>
+        <button type="button" class="copy-btn small" data-copy-invisible="${encodeURIComponent(c.ch)}">Copy</button>
+      </div>
+    `).join('');
+  }
+  invisibleList?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-invisible]');
+    if (!btn) return;
+    navigator.clipboard?.writeText(decodeURIComponent(btn.dataset.copyInvisible)).catch(() => {});
+    showToast('Copied!');
+  });
+  renderInvisibleList();
+
+  /* ============ Case converter ============ */
+  const CASE_CONVERTERS = [
+    { label:'lowercase', fn: s => s.toLowerCase() },
+    { label:'UPPERCASE', fn: s => s.toUpperCase() },
+    { label:'Title Case', fn: s => s.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase()) },
+    { label:'Sentence case', fn: s => s.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g, c => c.toUpperCase()) },
+    { label:'aLtErNaTiNg CaSe', fn: s => [...s].map((c, i) => i % 2 === 0 ? c.toLowerCase() : c.toUpperCase()).join('') },
+    { label:'InVERSE case', fn: s => [...s].map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('') },
+  ];
+  const caseInput = document.getElementById('case-input');
+  const caseConvertGrid = document.getElementById('case-convert-grid');
+  function renderCaseConvert(){
+    if (!caseConvertGrid) return;
+    const src = caseInput.value;
+    caseConvertGrid.innerHTML = CASE_CONVERTERS.map((c, idx) => `
+      <div class="case-convert-row">
+        <span class="case-convert-label">${escapeHtml(c.label)}</span>
+        <span class="case-convert-value">${escapeHtml(c.fn(src))}</span>
+        <button type="button" class="copy-btn small" data-copy-case="${idx}">Copy</button>
+      </div>
+    `).join('');
+  }
+  caseInput?.addEventListener('input', renderCaseConvert);
+  caseConvertGrid?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-case]');
+    if (!btn) return;
+    const converter = CASE_CONVERTERS[Number(btn.dataset.copyCase)];
+    navigator.clipboard?.writeText(converter.fn(caseInput.value)).catch(() => {});
+    showToast('Copied!');
+  });
+  renderCaseConvert();
 
   /* ============ Init ============ */
   liveInput.value = state.text;

@@ -27,6 +27,7 @@
     <nav class="main-nav" aria-label="Primary">
       <a href="#styles">Styles</a>
       <a href="#discord-tools">Discord</a>
+      <a href="#text-tools">Text Tools</a>
       <a href="#colors">Colors</a>
       <a href="#presets">Presets</a>
     </nav>
@@ -49,6 +50,7 @@
   <div class="mobile-menu" id="mobile-menu">
     <a href="#styles">Styles</a>
     <a href="#discord-tools">Discord</a>
+    <a href="#text-tools">Text Tools</a>
     <a href="#colors">Colors</a>
     <a href="#presets">Presets</a>
     <a href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
@@ -317,6 +319,18 @@
           </div>
           <button class="btn-outline" id="copy-embed-json" type="button">Copy JSON</button>
         </div>
+
+        <div class="panel span-2" data-keywords="webhook bot preview username avatar">
+          <h4 class="panel-title small">Webhook message builder</h4>
+          <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent anywhere — uses the embed above if you've built one.</p>
+          <div class="embed-form">
+            <input type="text" id="webhook-username-input" class="text-input" placeholder="Webhook name (optional)" autocomplete="off">
+            <input type="text" id="webhook-avatar-input" class="text-input" placeholder="Avatar image URL (optional)" autocomplete="off">
+            <textarea id="webhook-content-input" class="text-input textarea" rows="2" placeholder="Message content"></textarea>
+          </div>
+          <p class="panel-sub embed-preview-label">Preview</p>
+          <div class="message-preview-box" id="webhook-preview-box"></div>
+        </div>
       </div>
     </div>
 
@@ -407,11 +421,27 @@
           <button class="btn-outline small" id="copy-cleaner" type="button">Copy</button>
         </div>
 
-        <div class="panel" data-keywords="render html live preview">
+        <div class="panel" data-keywords="render html live preview headings lists links">
           <h4 class="panel-title small">Markdown preview</h4>
-          <p class="panel-sub">See how Discord Markdown actually renders before you send it.</p>
-          <textarea id="md-preview-input" class="text-input textarea" rows="3" placeholder="**bold**, *italic*, ||spoiler||, `code`...">**bold**, *italic*, __underline__, ~~strike~~, `code`, ||spoiler||</textarea>
+          <p class="panel-sub">See how Discord Markdown actually renders before you send it. Discord-inspired, not a pixel clone.</p>
+          <textarea id="md-preview-input" class="text-input textarea" rows="4" placeholder="**bold**, *italic*, ||spoiler||, `code`, # heading, - list, [link](url)...">## A quick example
+**bold**, *italic*, __underline__, ~~strike~~, `code`
+
+- a list item
+- another one
+
+> a quoted line
+
+[Luka's Utils](https://example.com)</textarea>
           <div class="md-preview-box" id="md-preview-output"></div>
+          <button class="btn-outline small" id="copy-md-raw" type="button">Copy raw Markdown</button>
+        </div>
+
+        <div class="panel" data-keywords="syntax reference guide help cheatsheet">
+          <h4 class="panel-title small">Markdown cheat sheet</h4>
+          <p class="panel-sub">Every syntax Discord supports, with a live example and a copy button.</p>
+          <input type="text" id="cheatsheet-search" class="text-input" placeholder="Search syntax (e.g. spoiler, heading)" autocomplete="off">
+          <div class="cheatsheet-list" id="cheatsheet-list"></div>
         </div>
 
         <div class="panel" data-keywords="ping tag user role channel">
@@ -491,6 +521,59 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEXT TOOLS -->
+  <section class="text-tools wide" id="text-tools">
+    <div class="section-head">
+      <h2 class="section-title">Text Tools</h2>
+    </div>
+    <p class="section-note">General text utilities that aren't Discord-specific, but come in handy anyway. All local, nothing leaves your browser.</p>
+
+    <div class="tool-grid">
+      <div class="panel span-2" data-keywords="arrows stars lines brackets math decorative glyphs">
+        <h4 class="panel-title small">Symbol browser</h4>
+        <p class="panel-sub">Search or filter by category, tap a symbol to copy it.</p>
+        <div class="filter-row" id="symbol-filter-row">
+          <button class="filter-pill active" data-symbol-cat="all" type="button">All</button>
+          <button class="filter-pill" data-symbol-cat="arrows" type="button">Arrows</button>
+          <button class="filter-pill" data-symbol-cat="stars" type="button">Stars</button>
+          <button class="filter-pill" data-symbol-cat="lines" type="button">Lines</button>
+          <button class="filter-pill" data-symbol-cat="brackets" type="button">Brackets</button>
+          <button class="filter-pill" data-symbol-cat="math" type="button">Math</button>
+          <button class="filter-pill" data-symbol-cat="decorative" type="button">Decorative</button>
+        </div>
+        <input type="text" id="symbol-search-input" class="text-input" placeholder="Search symbols (e.g. arrow, heart)" autocomplete="off">
+        <div class="symbol-grid" id="symbol-grid"></div>
+      </div>
+
+      <div class="panel" data-keywords="line separator hr rule box">
+        <h4 class="panel-title small">Divider &amp; border generator</h4>
+        <p class="panel-sub">Pick a divider style, or wrap your own text in a border.</p>
+        <div class="divider-list" id="divider-list"></div>
+        <div class="border-form">
+          <input type="text" id="border-text-input" class="text-input" placeholder="Text to put in a border" autocomplete="off" value="Luka's Utils">
+          <div class="output-box mono-output">
+            <span class="output-label">Bordered</span>
+            <pre class="output-text" id="border-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-border" type="button">Copy</button>
+        </div>
+      </div>
+
+      <div class="panel" data-keywords="zero width space blank hidden character">
+        <h4 class="panel-title small">Invisible characters</h4>
+        <p class="panel-sub">Characters that render blank, with what each is actually for.</p>
+        <div class="invisible-list" id="invisible-list"></div>
+      </div>
+
+      <div class="panel" data-keywords="uppercase lowercase title sentence alternating transform">
+        <h4 class="panel-title small">Case converter</h4>
+        <p class="panel-sub">Paste text, pick a case, copy the result.</p>
+        <textarea id="case-input" class="text-input textarea" rows="3" placeholder="Paste or type text">Make your message memorable</textarea>
+        <div class="case-convert-grid" id="case-convert-grid"></div>
       </div>
     </div>
   </section>

@@ -55,9 +55,28 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v8.9</span>
+      <span class="version-tag">Discord &amp; text tools expansion</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li><strong>Markdown preview</strong> now supports headings, bullet/numbered lists, and links (masked and auto-linked), plus a "Copy raw Markdown" button. Rebuilt as a single shared renderer used by both the preview tool and the Message/Webhook previews, so they can't drift out of sync with each other again</li>
+      <li><strong>Markdown cheat sheet</strong> — searchable syntax reference with a live rendered example and copy button for each entry</li>
+      <li><strong>Webhook message builder</strong> — set a username, avatar, and content, see a live local preview (reuses your embed from the Embed Builder if you've made one). Nothing is ever sent anywhere</li>
+      <li><strong>4 new Unicode styles</strong>: Superscript, Subscript, Bold Fraktur, Sans Bold Italic — derived from and cross-checked against the same Unicode block structure already powering the existing styles</li>
+      <li>New <strong>Text Tools</strong> section: Symbol Browser (searchable, 6 categories), Divider &amp; Border Generator, Invisible Characters (with an honest explanation of what each one actually does), and a Case Converter</li>
+      <li>Mention formatter now explains what each mention type actually does when pinged</li>
+      <li>Message length tool now shows word count alongside character/line counts</li>
+      <li>Deliberately did not duplicate a "Character Counter" tool — folded its purpose into the existing Message Length tool instead</li>
+      <li>Superscript/Subscript intentionally leave unmapped characters unchanged rather than guess — several letters genuinely have no official Unicode superscript/subscript form</li>
+      <li>Invisible Characters list deliberately excludes bidi-override characters (the ones used for filename/text spoofing) — only the benign "renders blank" ones are included</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v8.8</span>
       <span class="version-tag">Styles grid width correction</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>v8.7 claimed the grid could reach a 4th column on wide screens — checked the actual math and it was short by 8 pixels, so it silently stayed at 3 columns no matter how wide the window got</li>

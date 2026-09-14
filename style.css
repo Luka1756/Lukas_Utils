@@ -239,7 +239,7 @@ input, textarea, pre, code,
 }
 
 /* ============ section chrome ============ */
-.styles-section, .discord-tools, .color-lab, .presets-section, .shortcuts-section, .reference-section{
+.styles-section, .discord-tools, .text-tools, .color-lab, .presets-section, .shortcuts-section, .reference-section{
   max-width: var(--max-w); margin: 40px auto 0; padding: 0 20px;
 }
 .wide{ max-width: var(--max-w-wide); }
@@ -790,3 +790,67 @@ input, textarea, pre, code,
 .ts-highlight-item .ts-highlight-label{ font-family: var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color: var(--text-dimmer); display:block; margin-bottom:4px; }
 .ts-highlight-item .ts-highlight-value{ font-size:14px; color: var(--text); }
 .ts-grid-label{ margin: 4px 0 8px; }
+
+/* ============ markdown preview: headings/lists/links ============ */
+.md-preview-box p{ margin:0 0 6px; }
+.md-preview-box p:last-child{ margin-bottom:0; }
+.md-preview-box ul, .md-preview-box ol{ margin:2px 0 8px 20px; padding:0; }
+.md-preview-box li{ margin-bottom:2px; }
+.md-preview-box .md-h1{ font-size:1.3em; font-weight:700; margin:2px 0 4px; }
+.md-preview-box .md-h2{ font-size:1.15em; font-weight:700; margin:2px 0 4px; }
+.md-preview-box .md-h3{ font-size:1.05em; font-weight:700; color: var(--text-dim); margin:2px 0 4px; }
+.md-preview-box a{ color: var(--accent); text-decoration: underline; }
+
+/* ============ markdown cheat sheet ============ */
+.cheatsheet-list{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.cheatsheet-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  border:1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; background: var(--bg);
+}
+.cheatsheet-main{ display:flex; flex-direction:column; gap:2px; min-width:0; flex:1 1 160px; }
+.cheatsheet-label{ font-size:12.5px; font-weight:600; color: var(--text); }
+.cheatsheet-syntax{ font-family: var(--mono); font-size:11.5px; color: var(--text-dimmer); }
+.cheatsheet-preview{ font-size:13px; color: var(--text-dim); flex-shrink:0; }
+.cheatsheet-row .copy-btn.small{ margin-top:0; flex-shrink:0; }
+
+/* ============ symbol browser ============ */
+.symbol-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap:6px; margin-top:10px;
+  max-height: 320px; overflow-y:auto; padding-right:2px;
+}
+.symbol-chip{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  border:1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg);
+  padding: 8px 4px; cursor:pointer; color: var(--text); transition: border-color .15s ease, background-color .15s ease;
+}
+.symbol-chip:hover{ border-color: var(--accent); background: var(--bg-card-hover); }
+.symbol-chip .sc-glyph{ font-size:18px; line-height:1; }
+.symbol-chip .sc-name{ font-size:9px; color: var(--text-dimmer); text-align:center; overflow-wrap:anywhere; }
+
+/* ============ divider / border generator ============ */
+.divider-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.divider-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  border:1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 11px; background: var(--bg);
+}
+.divider-preview{ font-family: var(--mono); font-size:13px; color: var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
+.border-form .text-input{ margin-bottom:10px; }
+
+/* ============ invisible characters ============ */
+.invisible-list{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.invisible-row{
+  border:1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; background: var(--bg);
+}
+.invisible-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:3px; }
+.invisible-name{ font-size:13px; font-weight:600; }
+.invisible-code{ font-family: var(--mono); font-size:11px; color: var(--text-dimmer); }
+.invisible-desc{ font-size:12px; color: var(--text-dim); margin:0; }
+
+/* ============ case converter ============ */
+.case-convert-grid{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.case-convert-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  border:1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 11px; background: var(--bg);
+}
+.case-convert-label{ font-size:12px; color: var(--text-dimmer); flex-shrink:0; }
+.case-convert-value{ font-size:13px; color: var(--text); flex:1; min-width:0; overflow-wrap:anywhere; }
