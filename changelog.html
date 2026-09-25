@@ -55,9 +55,24 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.0</span>
+      <span class="version-tag">General-purpose utilities</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Rather than building duplicate tools, enhanced 4 that already existed: JSON formatter now has a Format/Minify toggle, Base64 got a Clear button, UUID generator can now produce up to 50 at once with a copy-all button, and Unix timestamp converter now includes ready-to-copy Discord tags</li>
+      <li>Added <strong>URL encoder/decoder</strong></li>
+      <li>Added <strong>Hash generator</strong> — SHA-1, SHA-256, SHA-512 via the browser's built-in Web Crypto API, nothing leaves the browser</li>
+      <li>Added <strong>Text diff</strong> — line-by-line comparison using a proper longest-common-subsequence algorithm, not a naive line-matcher, with a sensible size cap so it can't hang on huge input</li>
+      <li>Verified the SHA-256 implementation against an independently-computed known test vector, not just that it produced *a* hash</li>
+      <li>All 4 enhanced tools and both fully new tools ran through the full regression suite alongside every existing tool — nothing broke</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v8.9</span>
       <span class="version-tag">Discord &amp; text tools expansion</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li><strong>Markdown preview</strong> now supports headings, bullet/numbered lists, and links (masked and auto-linked), plus a "Copy raw Markdown" button. Rebuilt as a single shared renderer used by both the preview tool and the Message/Webhook previews, so they can't drift out of sync with each other again</li>

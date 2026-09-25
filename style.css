@@ -854,3 +854,26 @@ input, textarea, pre, code,
 }
 .case-convert-label{ font-size:12px; color: var(--text-dimmer); flex-shrink:0; }
 .case-convert-value{ font-size:13px; color: var(--text); flex:1; min-width:0; overflow-wrap:anywhere; }
+
+/* ============ general utilities batch 2 ============ */
+.btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.uuid-count-row{ display:flex; gap:8px; margin-bottom:10px; }
+.uuid-count-row input[type="number"]{ width:80px; flex-shrink:0; margin-bottom:0; }
+.uuid-count-row button{ flex-shrink:0; }
+.tool-output .uuid-line{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--border-soft); }
+.tool-output .uuid-line:last-child{ border-bottom:none; }
+
+.diff-inputs{ display:grid; grid-template-columns: 1fr; gap:10px; margin-bottom:12px; }
+@media (min-width: 640px){ .diff-inputs{ grid-template-columns: 1fr 1fr; } }
+.diff-output{
+  border:1px solid var(--border); background: var(--bg); border-radius: var(--radius-sm);
+  padding: 10px 12px; font-family: var(--mono); font-size:12.5px; line-height:1.6;
+  max-height: 320px; overflow-y:auto; overflow-wrap:anywhere;
+}
+.diff-line{ padding:1px 6px; border-radius:3px; white-space:pre-wrap; }
+.diff-line.diff-added{ background: color-mix(in srgb, #34d399 16%, transparent); color:#6ee7b7; }
+.diff-line.diff-removed{ background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--danger) 50%, transparent); }
+.diff-line.diff-same{ color: var(--text-dim); }
+.diff-empty-line{ display:block; min-height: 1.6em; }
+.diff-summary{ font-family: var(--sans); font-size:11.5px; color: var(--text-dimmer); margin-bottom:8px; }

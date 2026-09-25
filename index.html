@@ -470,9 +470,13 @@
     <div class="tool-group" id="group-developer">
       <h3 class="group-title">Developer</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="validate pretty print">
+        <div class="panel" data-keywords="validate pretty print minify">
           <h4 class="panel-title small">JSON formatter</h4>
-          <p class="panel-sub">Paste JSON to validate and pretty-print it.</p>
+          <p class="panel-sub">Paste JSON to validate, pretty-print, or minify it.</p>
+          <div class="case-group" id="json-fmt-mode-toggle">
+            <button type="button" class="case-btn active" data-json-mode="format">Format</button>
+            <button type="button" class="case-btn" data-json-mode="minify">Minify</button>
+          </div>
           <textarea id="json-fmt-input" class="text-input textarea" rows="4" placeholder="Paste JSON"></textarea>
           <div class="output-box">
             <span class="output-label">Result</span>
@@ -493,21 +497,69 @@
             <span class="output-label">Result</span>
             <div class="output-text" id="base64-output"></div>
           </div>
-          <button class="btn-outline small" id="copy-base64" type="button">Copy</button>
+          <div class="btn-row">
+            <button class="btn-outline small" id="copy-base64" type="button">Copy</button>
+            <button class="btn-outline small" id="clear-base64" type="button">Clear</button>
+          </div>
         </div>
 
-        <div class="panel" data-keywords="guid random unique id">
+        <div class="panel" data-keywords="percent encode component query string">
+          <h4 class="panel-title small">URL encoder / decoder</h4>
+          <p class="panel-sub">Percent-encode or decode a string, query value, or full URL.</p>
+          <div class="case-group" id="url-mode-toggle">
+            <button type="button" class="case-btn active" data-url-mode="encode">Encode</button>
+            <button type="button" class="case-btn" data-url-mode="decode">Decode</button>
+          </div>
+          <textarea id="url-encode-input" class="text-input textarea" rows="3" placeholder="Text or URL"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <div class="output-text" id="url-encode-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-url-encode" type="button">Copy</button>
+        </div>
+
+        <div class="panel" data-keywords="guid random unique id multiple bulk">
           <h4 class="panel-title small">UUID generator</h4>
-          <p class="panel-sub">Generates a random v4 UUID.</p>
+          <p class="panel-sub">Generates random v4 UUIDs.</p>
+          <div class="uuid-count-row">
+            <input type="number" id="uuid-count-input" class="text-input" value="1" min="1" max="50">
+            <button class="btn-outline small" id="generate-uuid" type="button">Generate</button>
+          </div>
           <div class="tool-output" id="uuid-output"></div>
-          <button class="btn-outline small" id="generate-uuid" type="button">Generate new</button>
+          <button class="btn-outline small" id="copy-all-uuid" type="button" hidden>Copy all</button>
         </div>
 
-        <div class="panel" data-keywords="epoch convert date">
+        <div class="panel" data-keywords="epoch convert date discord tag">
           <h4 class="panel-title small">Unix timestamp</h4>
-          <p class="panel-sub">Paste a unix timestamp (seconds or ms) or a date, get the other one back.</p>
+          <p class="panel-sub">Paste a unix timestamp (seconds or ms) or a date, get the other one back — plus ready-to-use Discord tags.</p>
           <input type="text" id="unix-input" class="text-input" placeholder="1717000000 or 2024-05-29T12:00" autocomplete="off">
           <div class="tool-output" id="unix-output"></div>
+        </div>
+
+        <div class="panel" data-keywords="sha256 sha1 sha512 checksum fingerprint">
+          <h4 class="panel-title small">Hash generator</h4>
+          <p class="panel-sub">Computes a cryptographic hash locally — your text never leaves the browser.</p>
+          <div class="case-group" id="hash-algo-toggle">
+            <button type="button" class="case-btn" data-hash-algo="SHA-1">SHA-1</button>
+            <button type="button" class="case-btn active" data-hash-algo="SHA-256">SHA-256</button>
+            <button type="button" class="case-btn" data-hash-algo="SHA-512">SHA-512</button>
+          </div>
+          <textarea id="hash-input" class="text-input textarea" rows="3" placeholder="Text to hash"></textarea>
+          <div class="output-box">
+            <span class="output-label">Hash</span>
+            <div class="output-text" id="hash-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-hash" type="button">Copy</button>
+        </div>
+
+        <div class="panel span-2" data-keywords="compare changes added removed lines">
+          <h4 class="panel-title small">Text diff</h4>
+          <p class="panel-sub">Compares line by line. Green is added, red is removed.</p>
+          <div class="diff-inputs">
+            <textarea id="diff-input-a" class="text-input textarea" rows="5" placeholder="Original text"></textarea>
+            <textarea id="diff-input-b" class="text-input textarea" rows="5" placeholder="Changed text"></textarea>
+          </div>
+          <div class="diff-output" id="diff-output"></div>
         </div>
 
         <div class="panel span-2" data-keywords="bot post json content">

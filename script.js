@@ -1587,16 +1587,27 @@
   // JSON formatter
   const jsonFmtInput = document.getElementById('json-fmt-input');
   const jsonFmtOutput = document.getElementById('json-fmt-output');
+  const jsonFmtModeToggle = document.getElementById('json-fmt-mode-toggle');
+  let jsonFmtMode = 'format';
   function renderJsonFmt(){
     const raw = jsonFmtInput.value.trim();
     if (!raw) { jsonFmtOutput.textContent = ''; return; }
     try {
-      jsonFmtOutput.textContent = JSON.stringify(JSON.parse(raw), null, 2);
+      const parsed = JSON.parse(raw);
+      jsonFmtOutput.textContent = jsonFmtMode === 'minify' ? JSON.stringify(parsed) : JSON.stringify(parsed, null, 2);
     } catch (err) {
       jsonFmtOutput.textContent = `Invalid JSON: ${err.message}`;
     }
   }
   jsonFmtInput?.addEventListener('input', renderJsonFmt);
+  jsonFmtModeToggle?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-json-mode]');
+    if (!btn) return;
+    jsonFmtModeToggle.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    jsonFmtMode = btn.dataset.jsonMode;
+    renderJsonFmt();
+  });
   document.getElementById('copy-json-fmt')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(jsonFmtOutput.textContent).catch(() => {});
     showToast('Copied!');
@@ -1634,21 +1645,71 @@
     navigator.clipboard?.writeText(base64Output.textContent).catch(() => {});
     showToast('Copied!');
   });
+  document.getElementById('clear-base64')?.addEventListener('click', () => {
+    base64Input.value = '';
+    renderBase64();
+    base64Input.focus();
+  });
+
+  // URL encoder / decoder
+  const urlEncodeInput = document.getElementById('url-encode-input');
+  const urlEncodeOutput = document.getElementById('url-encode-output');
+  const urlModeToggle = document.getElementById('url-mode-toggle');
+  let urlMode = 'encode';
+  function renderUrlEncode(){
+    const raw = urlEncodeInput.value;
+    if (!raw) { urlEncodeOutput.textContent = ''; return; }
+    try {
+      urlEncodeOutput.textContent = urlMode === 'encode' ? encodeURIComponent(raw) : decodeURIComponent(raw);
+    } catch {
+      urlEncodeOutput.textContent = "That doesn't look like validly encoded text.";
+    }
+  }
+  urlEncodeInput?.addEventListener('input', renderUrlEncode);
+  urlModeToggle?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-url-mode]');
+    if (!btn) return;
+    urlModeToggle.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    urlMode = btn.dataset.urlMode;
+    urlEncodeInput.placeholder = urlMode === 'encode' ? 'Text or URL' : 'Percent-encoded text';
+    renderUrlEncode();
+  });
+  document.getElementById('copy-url-encode')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(urlEncodeOutput.textContent).catch(() => {});
+    showToast('Copied!');
+  });
 
   // UUID generator
   const uuidOutput = document.getElementById('uuid-output');
-  function renderUuid(){
-    const id = (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  const uuidCountInput = document.getElementById('uuid-count-input');
+  const copyAllUuidBtn = document.getElementById('copy-all-uuid');
+  function makeUuid(){
+    return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
       return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    }));
-    uuidOutput.innerHTML = `<div class="row"><span>UUID</span><span>${id}</span></div><button type="button" class="copy-link" data-copy-url="${id}">Copy</button>`;
+    });
+  }
+  function renderUuid(){
+    const count = Math.min(50, Math.max(1, Number(uuidCountInput?.value) || 1));
+    const ids = Array.from({ length: count }, makeUuid);
+    uuidOutput.innerHTML = ids.map(id => `
+      <div class="uuid-line"><span>${id}</span><button type="button" class="copy-link" data-copy-url="${id}">Copy</button></div>
+    `).join('');
+    if (copyAllUuidBtn) {
+      copyAllUuidBtn.hidden = count < 2;
+      copyAllUuidBtn.dataset.allUuids = ids.join('\n');
+    }
   }
   document.getElementById('generate-uuid')?.addEventListener('click', renderUuid);
   uuidOutput?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
     navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    showToast('Copied!');
+  });
+  copyAllUuidBtn?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(copyAllUuidBtn.dataset.allUuids || '').catch(() => {});
     showToast('Copied!');
   });
   renderUuid();
@@ -1664,13 +1725,105 @@
     else if (/^\d{13}$/.test(raw)) date = new Date(Number(raw));
     else date = new Date(raw);
     if (isNaN(date?.getTime())) { unixOutput.innerHTML = `<span class="err">Couldn't parse that as a timestamp or date.</span>`; return; }
+    const unixSec = Math.floor(date.getTime() / 1000);
     unixOutput.innerHTML = `
-      <div class="row"><span>Unix (s)</span><span>${Math.floor(date.getTime() / 1000)}</span></div>
+      <div class="row"><span>Unix (s)</span><span>${unixSec}</span></div>
       <div class="row"><span>Unix (ms)</span><span>${date.getTime()}</span></div>
       <div class="row"><span>UTC</span><span>${date.toUTCString()}</span></div>
-      <div class="row"><span>Local</span><span>${date.toLocaleString()}</span></div>`;
+      <div class="row"><span>Local</span><span>${date.toLocaleString()}</span></div>
+      <div class="row"><span>Discord date/time</span><span>&lt;t:${unixSec}:f&gt;</span></div>
+      <div class="row"><span>Discord relative</span><span>&lt;t:${unixSec}:R&gt;</span></div>
+      <button type="button" class="copy-link" data-copy-url="<t:${unixSec}:f>">Copy Discord tag</button>`;
   }
   unixInput?.addEventListener('input', renderUnix);
+  unixOutput?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-copy-url]');
+    if (!btn) return;
+    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    showToast('Copied!');
+  });
+
+  // Hash generator (Web Crypto, fully local — nothing sent anywhere)
+  const hashInput = document.getElementById('hash-input');
+  const hashOutput = document.getElementById('hash-output');
+  const hashAlgoToggle = document.getElementById('hash-algo-toggle');
+  let hashAlgo = 'SHA-256';
+  async function renderHash(){
+    if (!hashInput.value) { hashOutput.textContent = ''; return; }
+    if (!window.crypto?.subtle) { hashOutput.textContent = 'Hashing needs a secure (HTTPS) connection — not available here.'; return; }
+    try {
+      const data = new TextEncoder().encode(hashInput.value);
+      const buffer = await crypto.subtle.digest(hashAlgo, data);
+      const hex = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      hashOutput.textContent = hex;
+    } catch {
+      hashOutput.textContent = 'Could not compute a hash for that input.';
+    }
+  }
+  hashInput?.addEventListener('input', renderHash);
+  hashAlgoToggle?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-hash-algo]');
+    if (!btn) return;
+    hashAlgoToggle.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    hashAlgo = btn.dataset.hashAlgo;
+    renderHash();
+  });
+  document.getElementById('copy-hash')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(hashOutput.textContent).catch(() => {});
+    showToast('Copied!');
+  });
+
+  // Text diff (line-based, longest-common-subsequence)
+  const diffInputA = document.getElementById('diff-input-a');
+  const diffInputB = document.getElementById('diff-input-b');
+  const diffOutputEl = document.getElementById('diff-output');
+  const DIFF_LINE_CAP = 2000;
+  function diffLines(a, b){
+    const linesA = a.split('\n');
+    const linesB = b.split('\n');
+    const n = linesA.length, m = linesB.length;
+    const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) {
+      for (let j = m - 1; j >= 0; j--) {
+        dp[i][j] = linesA[i] === linesB[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+    const result = [];
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (linesA[i] === linesB[j]) { result.push({ type:'same', text:linesA[i] }); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) { result.push({ type:'removed', text:linesA[i] }); i++; }
+      else { result.push({ type:'added', text:linesB[j] }); j++; }
+    }
+    while (i < n) { result.push({ type:'removed', text:linesA[i] }); i++; }
+    while (j < m) { result.push({ type:'added', text:linesB[j] }); j++; }
+    return result;
+  }
+  function renderDiff(){
+    if (!diffOutputEl) return;
+    const a = diffInputA.value, b = diffInputB.value;
+    if (!a && !b) { diffOutputEl.innerHTML = `<p class="tz-empty-note">Paste text in both boxes to compare.</p>`; return; }
+    const linesA = a.split('\n').length, linesB = b.split('\n').length;
+    if (linesA > DIFF_LINE_CAP || linesB > DIFF_LINE_CAP) {
+      diffOutputEl.innerHTML = `<p class="tz-empty-note">That's too much text for a line-by-line comparison here (${DIFF_LINE_CAP}-line limit per side).</p>`;
+      return;
+    }
+    const rows = diffLines(a, b);
+    const added = rows.filter(r => r.type === 'added').length;
+    const removed = rows.filter(r => r.type === 'removed').length;
+    const summary = `<div class="diff-summary">+${added} added, -${removed} removed</div>`;
+    const body = rows.map(r => {
+      const cls = r.type === 'added' ? 'diff-added' : r.type === 'removed' ? 'diff-removed' : 'diff-same';
+      const prefix = r.type === 'added' ? '+ ' : r.type === 'removed' ? '- ' : '  ';
+      const text = escapeHtml(prefix + r.text);
+      return r.text === '' ? `<span class="diff-line ${cls} diff-empty-line">${text}</span>` : `<span class="diff-line ${cls}">${text}</span>`;
+    }).join('\n');
+    diffOutputEl.innerHTML = summary + body;
+  }
+  diffInputA?.addEventListener('input', renderDiff);
+  diffInputB?.addEventListener('input', renderDiff);
+  renderDiff();
 
   // Webhook payload builder
   function renderWebhookPayload(){
