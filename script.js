@@ -1280,94 +1280,185 @@
   /* ============ Embed Builder ============ */
   const embedInputs = {
     author: document.getElementById('embed-author-input'),
+    authorUrl: document.getElementById('embed-author-url-input'),
+    authorIcon: document.getElementById('embed-author-icon-input'),
     title: document.getElementById('embed-title-input'),
+    url: document.getElementById('embed-url-input'),
     description: document.getElementById('embed-description-input'),
     colorSwatch: document.getElementById('embed-color-swatch'),
     colorHex: document.getElementById('embed-color-hex'),
     thumbnail: document.getElementById('embed-thumbnail-input'),
     image: document.getElementById('embed-image-input'),
     footer: document.getElementById('embed-footer-input'),
+    footerIcon: document.getElementById('embed-footer-icon-input'),
     timestampToggle: document.getElementById('embed-timestamp-toggle'),
   };
+  const embedMessageContent = document.getElementById('embed-message-content');
   const embedFieldsList = document.getElementById('embed-fields-list');
   const embedPreviewEl = document.getElementById('embed-preview');
+  const embedContentPreviewEl = document.getElementById('embed-content-preview');
+  const embedPreviewTimeEl = document.getElementById('embed-preview-time');
+  const embedWarningsEl = document.getElementById('embed-warnings');
   const embedJsonOutput = document.getElementById('embed-json-output');
   const messagePreviewBox = document.getElementById('message-preview-box');
   const webhookPayloadOutput = document.getElementById('webhook-payload-output');
   let embedFields = [];
   let embedFieldIdSeq = 0;
 
-  function addEmbedFieldRow(name = '', value = ''){
+  const EMBED_LIMITS = {
+    title: 256, description: 4096, fieldName: 256, fieldValue: 1024,
+    footer: 2048, author: 256, maxFields: 25, totalChars: 6000,
+  };
+
+  function addEmbedFieldRow(name = '', value = '', inline = false){
     const id = ++embedFieldIdSeq;
-    embedFields.push({ id, name, value });
+    embedFields.push({ id, name, value, inline });
     renderEmbedFields();
   }
   function renderEmbedFields(){
     if (!embedFieldsList) return;
-    embedFieldsList.innerHTML = embedFields.map(f => `
+    embedFieldsList.innerHTML = embedFields.map((f, idx) => `
       <div class="embed-field-row" data-field-id="${f.id}">
-        <input type="text" class="text-input field-name" placeholder="Field name" value="${escapeHtml(f.name)}" data-field-part="name">
-        <input type="text" class="text-input field-value" placeholder="Field value" value="${escapeHtml(f.value)}" data-field-part="value">
-        <button type="button" class="embed-field-remove" data-remove-field="${f.id}" aria-label="Remove field">×</button>
+        <div class="field-inputs">
+          <input type="text" class="text-input field-name" placeholder="Field name" value="${escapeHtml(f.name)}" data-field-part="name" maxlength="256">
+          <input type="text" class="text-input field-value" placeholder="Field value" value="${escapeHtml(f.value)}" data-field-part="value" maxlength="1024">
+        </div>
+        <div class="field-controls">
+          <label class="field-inline-toggle"><input type="checkbox" data-field-part="inline" ${f.inline ? 'checked' : ''}> Inline</label>
+          <button type="button" class="field-move" data-move-field="up" ${idx === 0 ? 'disabled' : ''} aria-label="Move field up">▲</button>
+          <button type="button" class="field-move" data-move-field="down" ${idx === embedFields.length - 1 ? 'disabled' : ''} aria-label="Move field down">▼</button>
+          <button type="button" class="embed-field-remove" data-remove-field="${f.id}" aria-label="Remove field">×</button>
+        </div>
       </div>
     `).join('');
   }
   embedFieldsList?.addEventListener('input', (e) => {
     const row = e.target.closest('[data-field-id]');
-    if (!row) return;
+    if (!row || !e.target.dataset.fieldPart || e.target.type === 'checkbox') return;
     const field = embedFields.find(f => f.id === Number(row.dataset.fieldId));
     if (!field) return;
     field[e.target.dataset.fieldPart] = e.target.value;
     renderEmbedOutput();
   });
-  embedFieldsList?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-remove-field]');
-    if (!btn) return;
-    embedFields = embedFields.filter(f => f.id !== Number(btn.dataset.removeField));
-    renderEmbedFields();
+  embedFieldsList?.addEventListener('change', (e) => {
+    if (e.target.type !== 'checkbox') return;
+    const row = e.target.closest('[data-field-id]');
+    if (!row) return;
+    const field = embedFields.find(f => f.id === Number(row.dataset.fieldId));
+    if (!field) return;
+    field.inline = e.target.checked;
     renderEmbedOutput();
+  });
+  embedFieldsList?.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('[data-remove-field]');
+    if (removeBtn) {
+      embedFields = embedFields.filter(f => f.id !== Number(removeBtn.dataset.removeField));
+      renderEmbedFields();
+      renderEmbedOutput();
+      return;
+    }
+    const moveBtn = e.target.closest('[data-move-field]');
+    if (moveBtn) {
+      const row = moveBtn.closest('[data-field-id]');
+      const idx = embedFields.findIndex(f => f.id === Number(row.dataset.fieldId));
+      const swapWith = moveBtn.dataset.moveField === 'up' ? idx - 1 : idx + 1;
+      if (swapWith < 0 || swapWith >= embedFields.length) return;
+      [embedFields[idx], embedFields[swapWith]] = [embedFields[swapWith], embedFields[idx]];
+      renderEmbedFields();
+      renderEmbedOutput();
+    }
   });
   document.getElementById('embed-add-field')?.addEventListener('click', () => addEmbedFieldRow());
 
   function currentEmbedObject(){
     const embed = {};
-    if (embedInputs.author.value.trim()) embed.author = { name: embedInputs.author.value.trim() };
+    if (embedInputs.author.value.trim()) {
+      embed.author = { name: embedInputs.author.value.trim() };
+      if (embedInputs.authorUrl.value.trim()) embed.author.url = embedInputs.authorUrl.value.trim();
+      if (embedInputs.authorIcon.value.trim()) embed.author.icon_url = embedInputs.authorIcon.value.trim();
+    }
     if (embedInputs.title.value.trim()) embed.title = embedInputs.title.value.trim();
+    if (embedInputs.url.value.trim()) embed.url = embedInputs.url.value.trim();
     if (embedInputs.description.value.trim()) embed.description = embedInputs.description.value.trim();
     if (/^#[0-9a-fA-F]{6}$/.test(embedInputs.colorHex.value.trim())) embed.color = parseInt(embedInputs.colorHex.value.trim().slice(1), 16);
     if (embedInputs.thumbnail.value.trim()) embed.thumbnail = { url: embedInputs.thumbnail.value.trim() };
     if (embedInputs.image.value.trim()) embed.image = { url: embedInputs.image.value.trim() };
-    if (embedInputs.footer.value.trim()) embed.footer = { text: embedInputs.footer.value.trim() };
+    if (embedInputs.footer.value.trim()) {
+      embed.footer = { text: embedInputs.footer.value.trim() };
+      if (embedInputs.footerIcon.value.trim()) embed.footer.icon_url = embedInputs.footerIcon.value.trim();
+    }
     if (embedInputs.timestampToggle.checked) embed.timestamp = new Date().toISOString();
-    const fields = embedFields.filter(f => f.name.trim() || f.value.trim()).map(f => ({ name: f.name || '\u200b', value: f.value || '\u200b' }));
+    const fields = embedFields.filter(f => f.name.trim() || f.value.trim()).map(f => {
+      const field = { name: f.name || '\u200b', value: f.value || '\u200b' };
+      if (f.inline) field.inline = true;
+      return field;
+    });
     if (fields.length) embed.fields = fields;
     return embed;
   }
+
+  function validateEmbed(embed){
+    const warnings = [];
+    if (embed.title && embed.title.length > EMBED_LIMITS.title) warnings.push(`Title is ${embed.title.length}/${EMBED_LIMITS.title} characters.`);
+    if (embed.description && embed.description.length > EMBED_LIMITS.description) warnings.push(`Description is ${embed.description.length}/${EMBED_LIMITS.description} characters.`);
+    if (embed.footer?.text && embed.footer.text.length > EMBED_LIMITS.footer) warnings.push(`Footer text is ${embed.footer.text.length}/${EMBED_LIMITS.footer} characters.`);
+    if (embed.author?.name && embed.author.name.length > EMBED_LIMITS.author) warnings.push(`Author name is ${embed.author.name.length}/${EMBED_LIMITS.author} characters.`);
+    if (embed.fields?.length > EMBED_LIMITS.maxFields) warnings.push(`${embed.fields.length}/${EMBED_LIMITS.maxFields} fields — Discord will reject extras.`);
+    (embed.fields || []).forEach((f, i) => {
+      if (f.name.length > EMBED_LIMITS.fieldName) warnings.push(`Field ${i + 1} name is ${f.name.length}/${EMBED_LIMITS.fieldName} characters.`);
+      if (f.value.length > EMBED_LIMITS.fieldValue) warnings.push(`Field ${i + 1} value is ${f.value.length}/${EMBED_LIMITS.fieldValue} characters.`);
+    });
+    const total = (embed.title?.length || 0) + (embed.description?.length || 0) + (embed.footer?.text?.length || 0)
+      + (embed.author?.name?.length || 0) + (embed.fields || []).reduce((sum, f) => sum + f.name.length + f.value.length, 0);
+    if (total > EMBED_LIMITS.totalChars) warnings.push(`Combined embed text is ${total}/${EMBED_LIMITS.totalChars} characters — Discord's overall limit.`);
+    return warnings;
+  }
+
   function renderEmbedOutput(){
     if (!embedPreviewEl) return;
     const embed = currentEmbedObject();
     embedJsonOutput.textContent = JSON.stringify(embed, null, 2);
 
+    const warnings = validateEmbed(embed);
+    if (embedWarningsEl) {
+      embedWarningsEl.hidden = warnings.length === 0;
+      if (warnings.length) embedWarningsEl.innerHTML = `<ul>${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>`;
+    }
+
     const color = /^#[0-9a-fA-F]{6}$/.test(embedInputs.colorHex.value.trim()) ? embedInputs.colorHex.value.trim() : 'var(--accent)';
     embedPreviewEl.style.borderLeftColor = color;
     let html = '';
-    if (embed.author) html += `<div class="ep-author">${escapeHtml(embed.author.name)}</div>`;
+    if (embed.author) {
+      const icon = embed.author.icon_url ? `<img class="ep-author-icon" src="${escapeHtml(embed.author.icon_url)}" alt="" onerror="this.style.display='none'">` : '';
+      const nameHtml = embed.author.url ? `<a href="${escapeHtml(embed.author.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.author.name)}</a>` : escapeHtml(embed.author.name);
+      html += `<div class="ep-author">${icon}${nameHtml}</div>`;
+    }
     if (embed.thumbnail) html += `<img class="ep-thumb" src="${escapeHtml(embed.thumbnail.url)}" alt="" onerror="this.style.display='none'">`;
-    if (embed.title) html += `<div class="ep-title">${escapeHtml(embed.title)}</div>`;
+    if (embed.title) {
+      const titleHtml = embed.url ? `<a href="${escapeHtml(embed.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.title)}</a>` : escapeHtml(embed.title);
+      html += `<div class="ep-title">${titleHtml}</div>`;
+    }
     if (embed.description) html += `<div class="ep-desc">${escapeHtml(embed.description)}</div>`;
     if (embed.fields?.length) {
-      html += `<div class="ep-fields">${embed.fields.map(f => `<div><div class="ep-field-name">${escapeHtml(f.name)}</div><div class="ep-field-value">${escapeHtml(f.value)}</div></div>`).join('')}</div>`;
+      const allInline = embed.fields.every(f => f.inline);
+      html += `<div class="ep-fields ${allInline ? '' : 'ep-fields-stack'}">${embed.fields.map(f => `<div class="ep-field"><div class="ep-field-name">${escapeHtml(f.name)}</div><div class="ep-field-value">${escapeHtml(f.value)}</div></div>`).join('')}</div>`;
     }
     if (embed.image) html += `<img class="ep-image" src="${escapeHtml(embed.image.url)}" alt="" onerror="this.style.display='none'">`;
     if (embed.footer || embed.timestamp) {
+      const icon = embed.footer?.icon_url ? `<img class="ep-footer-icon" src="${escapeHtml(embed.footer.icon_url)}" alt="" onerror="this.style.display='none'">` : '';
       const parts = [embed.footer?.text, embed.timestamp ? new Date(embed.timestamp).toLocaleString() : null].filter(Boolean);
-      html += `<div class="ep-footer">${escapeHtml(parts.join(' · '))}</div>`;
+      html += `<div class="ep-footer">${icon}${escapeHtml(parts.join(' · '))}</div>`;
     }
     embedPreviewEl.innerHTML = html;
+
+    if (embedContentPreviewEl) embedContentPreviewEl.innerHTML = embedMessageContent.value ? renderDiscordMarkdown(embedMessageContent.value) : '';
+    if (embedPreviewTimeEl) embedPreviewTimeEl.textContent = 'Today at ' + new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+
     renderMessagePreview();
     renderWebhookPayload();
   }
   Object.values(embedInputs).forEach(el => el?.addEventListener('input', renderEmbedOutput));
+  embedMessageContent?.addEventListener('input', renderEmbedOutput);
   embedInputs.colorSwatch?.addEventListener('input', () => { embedInputs.colorHex.value = embedInputs.colorSwatch.value; renderEmbedOutput(); });
   embedInputs.colorHex?.addEventListener('input', () => {
     if (/^#[0-9a-fA-F]{6}$/.test(embedInputs.colorHex.value.trim())) embedInputs.colorSwatch.value = embedInputs.colorHex.value.trim();
@@ -1375,6 +1466,32 @@
   document.getElementById('copy-embed-json')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(embedJsonOutput.textContent).catch(() => {});
     showToast('Copied!');
+  });
+  document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', () => {
+    const embed = currentEmbedObject();
+    const payload = {};
+    if (embedMessageContent.value.trim()) payload.content = embedMessageContent.value;
+    if (Object.keys(embed).length) payload.embeds = [embed];
+    navigator.clipboard?.writeText(JSON.stringify(payload, null, 2)).catch(() => {});
+    showToast('Copied!');
+  });
+  function clearEmbedBuilder(){
+    Object.values(embedInputs).forEach(el => {
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = false;
+      else if (el.id !== 'embed-color-hex' && el.id !== 'embed-color-swatch') el.value = '';
+    });
+    embedMessageContent.value = '';
+    embedFields = [];
+    renderEmbedFields();
+    renderEmbedOutput();
+  }
+  document.getElementById('clear-embed')?.addEventListener('click', clearEmbedBuilder);
+  document.getElementById('reset-embed')?.addEventListener('click', () => {
+    clearEmbedBuilder();
+    embedInputs.colorHex.value = '#22D3EE';
+    embedInputs.colorSwatch.value = '#22D3EE';
+    renderEmbedOutput();
   });
   if (embedInputs.colorHex) embedInputs.colorHex.value = '#22D3EE';
   if (embedInputs.colorSwatch) embedInputs.colorSwatch.value = '#22D3EE';

@@ -55,9 +55,26 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.1</span>
+      <span class="version-tag">Embed Builder, rebuilt as a visual editor</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Two-panel layout: edit on the left, live Discord-style message preview on the right (stacks vertically on mobile)</li>
+      <li>Added fields that were missing: title URL, author URL/icon, footer icon, and a dedicated message-content box above the embed</li>
+      <li>Fields can now be reordered, and each one has an inline toggle</li>
+      <li>Added live warnings when you're over Discord's actual limits (title, description, field, footer, author length, field count, 6000-character total) — only shown when something's actually wrong, silent otherwise</li>
+      <li>JSON is no longer front and center — it's behind a "&lt;/&gt; View JSON" toggle, with Copy JSON and a separate Copy Webhook Payload action</li>
+      <li>Added Clear and Reset</li>
+      <li>Reuses the same underlying embed object every other tool already reads from (Message Preview, Webhook Message Builder, the Developer category's Webhook Payload tool) — nothing was duplicated or forked</li>
+      <li>Hit a real dead end verifying the copy actions — Node 22 ships its own built-in <code>navigator</code> global that silently blocked my test mock, so clipboard tests looked broken when they weren't. Traced it to the actual cause instead of assuming the feature was broken, then confirmed everything copies correctly</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.0</span>
       <span class="version-tag">General-purpose utilities</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Rather than building duplicate tools, enhanced 4 that already existed: JSON formatter now has a Format/Minify toggle, Base64 got a Clear button, UUID generator can now produce up to 50 at once with a copy-all button, and Unix timestamp converter now includes ready-to-copy Discord tags</li>

@@ -287,37 +287,76 @@
     <div class="tool-group" id="group-embeds">
       <h3 class="group-title">Embeds</h3>
       <div class="tool-grid">
-        <div class="panel span-2" id="tool-embed" data-keywords="json fields preview bot">
+        <div class="panel span-2" id="tool-embed" data-keywords="json fields preview bot webhook">
           <h4 class="panel-title small">Embed builder</h4>
-          <p class="panel-sub">Fill in what you need, copy the JSON, paste it into your bot or webhook payload.</p>
-          <div class="embed-form">
-            <input type="text" id="embed-author-input" class="text-input" placeholder="Author name (optional)" autocomplete="off">
-            <input type="text" id="embed-title-input" class="text-input" placeholder="Title" autocomplete="off">
-            <textarea id="embed-description-input" class="text-input textarea" rows="3" placeholder="Description"></textarea>
-            <div class="color-input-row">
-              <input type="color" id="embed-color-swatch">
-              <input type="text" id="embed-color-hex" spellcheck="false" placeholder="#22D3EE">
+          <p class="panel-sub">Edit an embed and see exactly what it'll look like in Discord.</p>
+
+          <label class="embed-section-label" for="embed-message-content">Message content <span class="optional-tag">optional</span></label>
+          <textarea id="embed-message-content" class="text-input textarea" rows="2" placeholder="Text that would appear above the embed"></textarea>
+
+          <div class="embed-builder-grid">
+            <div class="embed-editor-col">
+              <div class="embed-form">
+                <p class="embed-section-label">Basic</p>
+                <input type="text" id="embed-title-input" class="text-input" placeholder="Title" autocomplete="off" maxlength="256">
+                <textarea id="embed-description-input" class="text-input textarea" rows="3" placeholder="Description" maxlength="4096"></textarea>
+                <input type="text" id="embed-url-input" class="text-input" placeholder="Title link URL (optional)" autocomplete="off">
+                <div class="color-input-row">
+                  <input type="color" id="embed-color-swatch">
+                  <input type="text" id="embed-color-hex" spellcheck="false" placeholder="#22D3EE">
+                </div>
+                <label class="checkbox-row"><input type="checkbox" id="embed-timestamp-toggle"> Include current timestamp</label>
+
+                <p class="embed-section-label">Author</p>
+                <input type="text" id="embed-author-input" class="text-input" placeholder="Author name" autocomplete="off" maxlength="256">
+                <input type="text" id="embed-author-url-input" class="text-input" placeholder="Author link URL (optional)" autocomplete="off">
+                <input type="text" id="embed-author-icon-input" class="text-input" placeholder="Author icon URL (optional)" autocomplete="off">
+
+                <p class="embed-section-label">Images</p>
+                <input type="text" id="embed-thumbnail-input" class="text-input" placeholder="Thumbnail image URL" autocomplete="off">
+                <input type="text" id="embed-image-input" class="text-input" placeholder="Large image URL" autocomplete="off">
+
+                <div class="embed-fields-head">
+                  <span class="embed-section-label no-margin">Fields</span>
+                  <button type="button" class="btn-outline small" id="embed-add-field">+ Add field</button>
+                </div>
+                <div class="embed-fields-list" id="embed-fields-list"></div>
+
+                <p class="embed-section-label">Footer</p>
+                <input type="text" id="embed-footer-input" class="text-input" placeholder="Footer text" autocomplete="off" maxlength="2048">
+                <input type="text" id="embed-footer-icon-input" class="text-input" placeholder="Footer icon URL (optional)" autocomplete="off">
+              </div>
+
+              <div class="embed-warnings" id="embed-warnings" hidden></div>
+
+              <div class="embed-actions">
+                <button class="btn-solid" id="copy-embed-json" type="button">Copy JSON</button>
+                <button class="btn-outline" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
+                <button class="btn-outline" id="clear-embed" type="button">Clear</button>
+                <button class="btn-outline" id="reset-embed" type="button">Reset</button>
+              </div>
+
+              <details class="reference-details embed-json-details">
+                <summary>&lt;/&gt; View JSON</summary>
+                <div class="output-box">
+                  <span class="output-label">Embed JSON</span>
+                  <pre class="output-text" id="embed-json-output"></pre>
+                </div>
+              </details>
             </div>
-            <input type="text" id="embed-thumbnail-input" class="text-input" placeholder="Thumbnail image URL (optional)" autocomplete="off">
-            <input type="text" id="embed-image-input" class="text-input" placeholder="Large image URL (optional)" autocomplete="off">
-            <input type="text" id="embed-footer-input" class="text-input" placeholder="Footer text (optional)" autocomplete="off">
-            <label class="checkbox-row"><input type="checkbox" id="embed-timestamp-toggle"> Include current timestamp</label>
 
-            <div class="embed-fields-head">
-              <span class="panel-sub no-margin">Fields</span>
-              <button type="button" class="btn-outline small" id="embed-add-field">+ Add field</button>
+            <div class="embed-preview-col">
+              <p class="embed-section-label">Preview</p>
+              <div class="embed-live-message">
+                <div class="mp-avatar">E</div>
+                <div class="mp-body">
+                  <div class="mp-head"><span class="mp-username">Embed Preview</span><span class="wh-tag">BOT</span><span class="mp-time" id="embed-preview-time"></span></div>
+                  <div class="mp-content" id="embed-content-preview"></div>
+                  <div class="embed-preview" id="embed-preview"></div>
+                </div>
+              </div>
             </div>
-            <div class="embed-fields-list" id="embed-fields-list"></div>
           </div>
-
-          <p class="panel-sub embed-preview-label">Preview</p>
-          <div class="embed-preview" id="embed-preview"></div>
-
-          <div class="output-box">
-            <span class="output-label">Embed JSON</span>
-            <pre class="output-text" id="embed-json-output"></pre>
-          </div>
-          <button class="btn-outline" id="copy-embed-json" type="button">Copy JSON</button>
         </div>
 
         <div class="panel span-2" data-keywords="webhook bot preview username avatar">
