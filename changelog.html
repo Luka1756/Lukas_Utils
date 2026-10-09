@@ -55,9 +55,25 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.2</span>
+      <span class="version-tag">Embed Builder: send to Discord</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Added a webhook URL field and a Send to Discord button to the Embed Builder, using the same embed object as the preview and JSON</li>
+      <li>The URL is checked before sending (https, Discord host, valid webhook path), and the embed is checked against Discord's limits and image/link URLs first</li>
+      <li>The status message only says "Sent" when Discord actually accepts the request. Rejections, unknown or deleted webhooks, rate limits, timeouts and network failures each get their own message</li>
+      <li>The webhook URL is a password-style field, is never saved to localStorage, and is never logged</li>
+      <li>Layout is now Send / Clear / Reset, with Copy JSON and Copy Webhook Payload moved inside "&lt;/&gt; View JSON"</li>
+      <li>The site now makes two user-initiated calls to Discord: the invite lookup and this Send button. Nothing else leaves your browser</li>
+      <li>Tested request building, validation and every error path against a mocked Discord response. I could not post to a real webhook from my environment, so a real-channel send is worth a quick check on your end</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.1</span>
       <span class="version-tag">Embed Builder, rebuilt as a visual editor</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Two-panel layout: edit on the left, live Discord-style message preview on the right (stacks vertically on mobile)</li>

@@ -929,3 +929,12 @@ input, textarea, pre, code,
 .diff-line.diff-same{ color: var(--text-dim); }
 .diff-empty-line{ display:block; min-height: 1.6em; }
 .diff-summary{ font-family: var(--sans); font-size:11.5px; color: var(--text-dimmer); margin-bottom:8px; }
+
+/* v9.2 — send to Discord */
+.webhook-privacy-note{ font-size:11px; color: var(--text-dimmer); margin: -6px 0 14px; }
+.send-status{ border-radius: var(--radius-sm); padding: 8px 12px; margin: 10px 0 14px; font-size:12.5px; line-height:1.5; }
+.send-status.status-ok{ border:1px solid color-mix(in srgb, #34d399 45%, var(--border)); background: color-mix(in srgb, #34d399 10%, transparent); color:#6ee7b7; }
+.send-status.status-err{ border:1px solid color-mix(in srgb, var(--danger) 45%, var(--border)); background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+.send-status.status-pending{ border:1px solid var(--border); background: var(--bg); color: var(--text-dimmer); }
+.embed-dev-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+#send-to-discord:disabled{ opacity:.6; cursor:default; }

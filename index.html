@@ -137,7 +137,7 @@
     <div class="section-head">
       <h2 class="section-title">Discord Tools</h2>
     </div>
-    <p class="section-note">Stuff that comes up when running a server or building a bot. Everything here runs locally in your browser, except the invite lookup, which is flagged below since it's the one that talks to Discord's API.</p>
+    <p class="section-note">Stuff that comes up when running a server or building a bot. Everything here runs locally in your browser, except two things that only contact Discord when you click them: the invite lookup and the Embed Builder's Send to Discord button.</p>
 
     <div class="popular-row">
       <span class="popular-label">Popular</span>
@@ -329,18 +329,25 @@
 
               <div class="embed-warnings" id="embed-warnings" hidden></div>
 
+              <p class="embed-section-label">Send</p>
+              <input type="password" id="embed-webhook-url" class="text-input" placeholder="Discord webhook URL" autocomplete="off" spellcheck="false">
+              <p class="webhook-privacy-note">Never saved, never logged — only used the moment you click Send.</p>
               <div class="embed-actions">
-                <button class="btn-solid" id="copy-embed-json" type="button">Copy JSON</button>
-                <button class="btn-outline" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
+                <button class="btn-solid" id="send-to-discord" type="button">Send to Discord</button>
                 <button class="btn-outline" id="clear-embed" type="button">Clear</button>
                 <button class="btn-outline" id="reset-embed" type="button">Reset</button>
               </div>
+              <div class="send-status" id="send-status" role="status" aria-live="polite" hidden></div>
 
               <details class="reference-details embed-json-details">
                 <summary>&lt;/&gt; View JSON</summary>
                 <div class="output-box">
                   <span class="output-label">Embed JSON</span>
                   <pre class="output-text" id="embed-json-output"></pre>
+                </div>
+                <div class="embed-dev-actions">
+                  <button class="btn-outline small" id="copy-embed-json" type="button">Copy JSON</button>
+                  <button class="btn-outline small" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
                 </div>
               </details>
             </div>
@@ -361,7 +368,7 @@
 
         <div class="panel span-2" data-keywords="webhook bot preview username avatar">
           <h4 class="panel-title small">Webhook message builder</h4>
-          <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent anywhere — uses the embed above if you've built one.</p>
+          <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent from this tool (sending lives in the Embed Builder) — uses the embed above if you've built one.</p>
           <div class="embed-form">
             <input type="text" id="webhook-username-input" class="text-input" placeholder="Webhook name (optional)" autocomplete="off">
             <input type="text" id="webhook-avatar-input" class="text-input" placeholder="Avatar image URL (optional)" autocomplete="off">

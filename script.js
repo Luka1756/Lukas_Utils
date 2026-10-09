@@ -1299,6 +1299,10 @@
   const embedContentPreviewEl = document.getElementById('embed-content-preview');
   const embedPreviewTimeEl = document.getElementById('embed-preview-time');
   const embedWarningsEl = document.getElementById('embed-warnings');
+  const sendStatusEl = document.getElementById('send-status');
+  const sendBtn = document.getElementById('send-to-discord');
+  const webhookUrlInput = document.getElementById('embed-webhook-url');
+  let embedSending = false;
   const embedJsonOutput = document.getElementById('embed-json-output');
   const messagePreviewBox = document.getElementById('message-preview-box');
   const webhookPayloadOutput = document.getElementById('webhook-payload-output');
@@ -1416,6 +1420,7 @@
 
   function renderEmbedOutput(){
     if (!embedPreviewEl) return;
+    if (!embedSending && sendStatusEl) sendStatusEl.hidden = true;
     const embed = currentEmbedObject();
     embedJsonOutput.textContent = JSON.stringify(embed, null, 2);
 
@@ -1467,14 +1472,111 @@
     navigator.clipboard?.writeText(embedJsonOutput.textContent).catch(() => {});
     showToast('Copied!');
   });
-  document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', () => {
+  // Single place the webhook payload is assembled — used by both Copy Webhook Payload and Send.
+  // A color-only embed counts as empty (Discord rejects it), so it's left out.
+  function buildEmbedWebhookPayload(){
     const embed = currentEmbedObject();
+    const hasEmbed = Object.keys(embed).some(k => k !== 'color');
+    const hasContent = embedMessageContent.value.trim().length > 0;
     const payload = {};
-    if (embedMessageContent.value.trim()) payload.content = embedMessageContent.value;
-    if (Object.keys(embed).length) payload.embeds = [embed];
-    navigator.clipboard?.writeText(JSON.stringify(payload, null, 2)).catch(() => {});
+    if (hasContent) payload.content = embedMessageContent.value;
+    if (hasEmbed) payload.embeds = [embed];
+    return { payload, embed, hasEmbed, hasContent };
+  }
+  document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(JSON.stringify(buildEmbedWebhookPayload().payload, null, 2)).catch(() => {});
     showToast('Copied!');
   });
+
+  /* ---- Send to Discord (the webhook URL is never stored, logged, or kept outside this handler) ---- */
+  const DISCORD_WEBHOOK_HOSTS = ['discord.com', 'canary.discord.com', 'ptb.discord.com', 'discordapp.com'];
+  function parseWebhookUrl(raw){
+    let u;
+    try { u = new URL(raw.trim()); } catch { return null; }
+    if (u.protocol !== 'https:' || !DISCORD_WEBHOOK_HOSTS.includes(u.hostname)) return null;
+    if (!/^\/api\/(v\d+\/)?webhooks\/\d{15,22}\/[A-Za-z0-9_-]{20,}\/?$/.test(u.pathname)) return null;
+    // ?wait=true makes Discord answer 200 once the message actually exists, so success is real
+    return u.origin + u.pathname.replace(/\/$/, '') + '?wait=true';
+  }
+  function invalidEmbedUrls(embed){
+    const checks = [
+      ['Title link', embed.url], ['Author link', embed.author?.url], ['Author icon', embed.author?.icon_url],
+      ['Thumbnail', embed.thumbnail?.url], ['Image', embed.image?.url], ['Footer icon', embed.footer?.icon_url],
+    ];
+    return checks.filter(([, v]) => v && !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(v)).map(([name]) => name);
+  }
+  function setSendStatus(kind, msg){
+    sendStatusEl.className = 'send-status status-' + kind;
+    sendStatusEl.textContent = msg;
+    sendStatusEl.hidden = false;
+  }
+  function firstDiscordFieldError(node, path = []){
+    if (!node || typeof node !== 'object') return null;
+    if (Array.isArray(node._errors) && node._errors.length) return { path, message: node._errors[0].message };
+    for (const key of Object.keys(node)) {
+      if (key === '_errors') continue;
+      const found = firstDiscordFieldError(node[key], [...path, key]);
+      if (found) return found;
+    }
+    return null;
+  }
+  async function describeDiscordError(res){
+    let body = null;
+    try { body = await res.json(); } catch {}
+    if (res.status === 429) {
+      const secs = Math.ceil(Number(body?.retry_after) || 0);
+      return secs ? `Discord is rate limiting this webhook — try again in about ${secs}s.` : 'Discord is rate limiting this webhook — wait a moment and try again.';
+    }
+    if (res.status === 401 || res.status === 404) return "Discord doesn't recognize that webhook — it may have been deleted, or the URL is incomplete.";
+    if (res.status === 400) {
+      const detail = firstDiscordFieldError(body?.errors);
+      if (detail) return `Discord rejected the message — ${detail.path.join('.') || 'payload'}: ${detail.message}`;
+      return `Discord rejected the message${body?.message ? ' — ' + body.message : '.'}`;
+    }
+    if (res.status >= 500) return `Discord had a server problem (${res.status}). Try again shortly.`;
+    return `Discord returned an unexpected response (${res.status}).`;
+  }
+  async function sendEmbedToDiscord(){
+    if (embedSending) return;
+    if (!webhookUrlInput.value.trim()) { setSendStatus('err', 'Paste a Discord webhook URL first.'); return; }
+    const target = parseWebhookUrl(webhookUrlInput.value);
+    if (!target) { setSendStatus('err', "That doesn't look like a Discord webhook URL. It should look like https://discord.com/api/webhooks/…"); return; }
+
+    const { payload, embed, hasEmbed, hasContent } = buildEmbedWebhookPayload();
+    if (!hasEmbed && !hasContent) { setSendStatus('err', 'Nothing to send yet — add message content or some embed content.'); return; }
+    if (hasContent && [...payload.content].length > 2000) { setSendStatus('err', `Message content is ${[...payload.content].length}/2000 characters.`); return; }
+    if (hasEmbed) {
+      const problems = validateEmbed(embed);
+      if (problems.length) { setSendStatus('err', `Over Discord's limits — ${problems[0]}${problems.length > 1 ? ` (+${problems.length - 1} more)` : ''}`); return; }
+      const badUrls = invalidEmbedUrls(embed);
+      if (badUrls.length) { setSendStatus('err', `${badUrls.join(', ')}: Discord needs a full http(s) URL.`); return; }
+    }
+
+    embedSending = true;
+    const idleLabel = sendBtn.textContent;
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
+    setSendStatus('pending', 'Sending…');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      const res = await fetch(target, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload), signal: controller.signal,
+      });
+      if (res.ok) setSendStatus('ok', 'Sent — Discord accepted the message.');
+      else setSendStatus('err', await describeDiscordError(res));
+    } catch (err) {
+      if (err && err.name === 'AbortError') setSendStatus('err', "Discord didn't answer in time, so delivery isn't confirmed. Check the channel before retrying.");
+      else setSendStatus('err', "Couldn't reach Discord. Check your connection — an extension or network filter may also be blocking the request.");
+    } finally {
+      clearTimeout(timer);
+      embedSending = false;
+      sendBtn.disabled = false;
+      sendBtn.textContent = idleLabel;
+    }
+  }
+  sendBtn?.addEventListener('click', sendEmbedToDiscord);
   function clearEmbedBuilder(){
     Object.values(embedInputs).forEach(el => {
       if (!el) return;
