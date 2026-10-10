@@ -942,3 +942,6 @@ input, textarea, pre, code,
 /* v9.3 — send options */
 .embed-send-options{ margin: 0 0 14px; }
 .embed-send-options .text-input{ margin-top:8px; }
+
+/* SEO phase 1 — visible page heading */
+.intro-title{ font-size:20px; font-weight:600; letter-spacing:-.01em; color: var(--text); margin:0 0 8px; line-height:1.3; }
