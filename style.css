@@ -938,3 +938,7 @@ input, textarea, pre, code,
 .send-status.status-pending{ border:1px solid var(--border); background: var(--bg); color: var(--text-dimmer); }
 .embed-dev-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 #send-to-discord:disabled{ opacity:.6; cursor:default; }
+
+/* v9.3 — send options */
+.embed-send-options{ margin: 0 0 14px; }
+.embed-send-options .text-input{ margin-top:8px; }

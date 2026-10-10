@@ -55,9 +55,23 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.3</span>
+      <span class="version-tag">Embed Builder: send options</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Added an optional "Send options" section under the webhook URL: bot name, bot avatar URL and thread ID</li>
+      <li>Bot name and avatar are sent with the message, and also included in Copy Webhook Payload</li>
+      <li>A thread ID makes the message post inside that thread. The webhook still has to belong to the thread's parent channel</li>
+      <li>Checked before sending: names containing "discord" or "clyde" (which Discord rejects), avatar URL format, and thread ID format</li>
+      <li>The webhook's channel is still decided by the webhook URL itself. Discord does not allow choosing a channel without a bot</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.2</span>
       <span class="version-tag">Embed Builder: send to Discord</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Added a webhook URL field and a Send to Discord button to the Embed Builder, using the same embed object as the preview and JSON</li>

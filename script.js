@@ -1481,7 +1481,11 @@
     const payload = {};
     if (hasContent) payload.content = embedMessageContent.value;
     if (hasEmbed) payload.embeds = [embed];
-    return { payload, embed, hasEmbed, hasContent };
+    const senderName = (document.getElementById('embed-sender-name')?.value || '').trim();
+    const senderAvatar = (document.getElementById('embed-sender-avatar')?.value || '').trim();
+    if (senderName) payload.username = senderName;
+    if (senderAvatar) payload.avatar_url = senderAvatar;
+    return { payload, embed, hasEmbed, hasContent, senderName, senderAvatar };
   }
   document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(JSON.stringify(buildEmbedWebhookPayload().payload, null, 2)).catch(() => {});
@@ -1490,13 +1494,13 @@
 
   /* ---- Send to Discord (the webhook URL is never stored, logged, or kept outside this handler) ---- */
   const DISCORD_WEBHOOK_HOSTS = ['discord.com', 'canary.discord.com', 'ptb.discord.com', 'discordapp.com'];
-  function parseWebhookUrl(raw){
+  function parseWebhookUrl(raw, threadId){
     let u;
     try { u = new URL(raw.trim()); } catch { return null; }
     if (u.protocol !== 'https:' || !DISCORD_WEBHOOK_HOSTS.includes(u.hostname)) return null;
     if (!/^\/api\/(v\d+\/)?webhooks\/\d{15,22}\/[A-Za-z0-9_-]{20,}\/?$/.test(u.pathname)) return null;
     // ?wait=true makes Discord answer 200 once the message actually exists, so success is real
-    return u.origin + u.pathname.replace(/\/$/, '') + '?wait=true';
+    return u.origin + u.pathname.replace(/\/$/, '') + '?wait=true' + (threadId ? '&thread_id=' + threadId : '');
   }
   function invalidEmbedUrls(embed){
     const checks = [
@@ -1539,10 +1543,14 @@
   async function sendEmbedToDiscord(){
     if (embedSending) return;
     if (!webhookUrlInput.value.trim()) { setSendStatus('err', 'Paste a Discord webhook URL first.'); return; }
-    const target = parseWebhookUrl(webhookUrlInput.value);
+    const threadId = (document.getElementById('embed-thread-id')?.value || '').trim();
+    if (threadId && !/^\d{15,22}$/.test(threadId)) { setSendStatus('err', 'Thread ID should be the numeric ID of the thread (15–22 digits).'); return; }
+    const target = parseWebhookUrl(webhookUrlInput.value, threadId);
     if (!target) { setSendStatus('err', "That doesn't look like a Discord webhook URL. It should look like https://discord.com/api/webhooks/…"); return; }
 
-    const { payload, embed, hasEmbed, hasContent } = buildEmbedWebhookPayload();
+    const { payload, embed, hasEmbed, hasContent, senderName, senderAvatar } = buildEmbedWebhookPayload();
+    if (senderName && /clyde|discord/i.test(senderName)) { setSendStatus('err', 'Discord does not allow "discord" or "clyde" in a webhook name.'); return; }
+    if (senderAvatar && !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(senderAvatar)) { setSendStatus('err', 'Bot avatar: Discord needs a full http(s) URL.'); return; }
     if (!hasEmbed && !hasContent) { setSendStatus('err', 'Nothing to send yet — add message content or some embed content.'); return; }
     if (hasContent && [...payload.content].length > 2000) { setSendStatus('err', `Message content is ${[...payload.content].length}/2000 characters.`); return; }
     if (hasEmbed) {

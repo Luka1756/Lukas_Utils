@@ -332,6 +332,12 @@
               <p class="embed-section-label">Send</p>
               <input type="password" id="embed-webhook-url" class="text-input" placeholder="Discord webhook URL" autocomplete="off" spellcheck="false">
               <p class="webhook-privacy-note">Never saved, never logged — only used the moment you click Send.</p>
+              <details class="reference-details embed-send-options">
+                <summary>Send options</summary>
+                <input type="text" id="embed-sender-name" class="text-input" placeholder="Bot name (optional)" autocomplete="off" maxlength="80">
+                <input type="text" id="embed-sender-avatar" class="text-input" placeholder="Bot avatar URL (optional)" autocomplete="off" spellcheck="false">
+                <input type="text" id="embed-thread-id" class="text-input" placeholder="Thread ID (optional, to post inside a thread)" autocomplete="off" inputmode="numeric" spellcheck="false">
+              </details>
               <div class="embed-actions">
                 <button class="btn-solid" id="send-to-discord" type="button">Send to Discord</button>
                 <button class="btn-outline" id="clear-embed" type="button">Clear</button>
