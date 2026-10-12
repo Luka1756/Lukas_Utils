@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Snowflake Decoder — Find When an ID Was Created</title>
+<meta name="description" content="Decode a Discord snowflake ID to see when a user, server, channel, or message was created. Paste any ID and read the date instantly.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/discord-snowflake-decoder">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Discord Snowflake Decoder — Find When an ID Was Created">
+<meta property="og:description" content="Decode a Discord snowflake ID to see when a user, server, channel, or message was created. Paste any ID and read the date instantly.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/discord-snowflake-decoder">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discord Snowflake Decoder — Find When an ID Was Created">
+<meta name="twitter:description" content="Decode a Discord snowflake ID to see when a user, server, channel, or message was created. Paste any ID and read the date instantly.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "Discord Snowflake Decoder", "url": "https://lukas-utils.vercel.app/discord-snowflake-decoder", "description": "Decode a Discord snowflake ID to see when a user, server, channel, or message was created. Paste any ID and read the date instantly.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.vercel.app/"}}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.vercel.app/"}, {"@type": "ListItem", "position": 2, "name": "Discord Snowflake Decoder", "item": "https://lukas-utils.vercel.app/discord-snowflake-decoder"}]}
+</script>
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="./" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="./#discord-tools">All Discord tools</a>
+      <a href="./#styles">Styles</a>
+      <a href="./#text-tools">Text Tools</a>
+    </nav>
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="tool-page">
+  <nav class="tool-breadcrumb" aria-label="Breadcrumb"><a href="./">Luka's Utils</a> <span aria-hidden="true">/</span> <a href="./#discord-tools">Discord tools</a> <span aria-hidden="true">/</span> <span aria-current="page">Snowflake decoder</span></nav>
+  <h1 class="section-title tool-page-title">Discord Snowflake Decoder</h1>
+  <p class="tool-page-intro">Every user, server, channel, and message on Discord has a snowflake ID, and that ID contains the exact moment it was created. Paste one in to read the date and time.</p>
+
+  <section class="discord-tools tool-page-tool" aria-label="Discord Snowflake Decoder">
+    <div class="tool-grid single">
+        <div class="panel" id="tool-snowflake" data-keywords="id creation date decode">
+          <h2 class="panel-title small tool-panel-title">Snowflake decoder</h2>
+          <p class="panel-sub">Works for any Discord ID — user, server, channel, or message. Paste it to see when it was created.</p>
+          <input type="text" id="snowflake-input" class="text-input" placeholder="e.g. 175928847299117063" inputmode="numeric" autocomplete="off">
+          <div class="tool-output" id="snowflake-output"></div>
+        </div>
+    </div>
+  </section>
+
+  <section class="tool-page-info">
+    <h2>How to use it</h2>
+    <ol><li>Turn on Developer Mode in Discord: User Settings, then Advanced.</li><li>Right-click a user, server, channel, or message and choose Copy ID.</li><li>Paste the ID into the decoder to see its creation time.</li></ol>
+
+    <h2>Examples</h2>
+    <table class="tool-example-table"><tbody><tr><td><code>175928847299117063</code></td><td>Decodes to 30 April 2016, 11:18:25 UTC</td></tr></tbody></table>
+    <p class="tool-page-note">The creation time is stored in the top bits of the ID, counted in milliseconds from the start of 2015 (the Discord epoch).</p>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item"><h3>What is a snowflake?</h3><p>A 64-bit number Discord uses as a unique ID. It combines a timestamp with internal worker, process, and sequence values.</p></div><div class="faq-item"><h3>Can it tell me who owns an account?</h3><p>No. It only reveals when the ID was generated, which for an account is when it was created.</p></div><div class="faq-item"><h3>Does it work for messages and channels too?</h3><p>Yes. Users, servers, channels, roles, and messages all use the same snowflake format.</p></div><div class="faq-item"><h3>Why do I get an error?</h3><p>The value must be a plain number with no spaces or letters. Copy the ID again with Developer Mode on.</p></div>
+
+    <h2>Related tools</h2>
+    <ul class="tool-related"><li><a href="discord-timestamp-generator">Timestamp generator</a> — turn a decoded date into a Discord timestamp tag</li><li><a href="discord-permissions-calculator">Permissions calculator</a> — work with another kind of Discord number</li>
+      <li><a href="./#discord-tools">All Discord tools</a> on the Luka's Utils home page</li></ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="./">Home →</a>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="tool-page-shim.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

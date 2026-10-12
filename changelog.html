@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Changelog — Luka's Utils</title>
 <meta name="description" content="Version history for Luka's Utils: new Discord tools, Embed Builder updates, fixes and improvements, version by version.">
-<link rel="canonical" href="https://lukas-utils.vercel.app/changelog.html">
+<link rel="canonical" href="https://lukas-utils.vercel.app/changelog">
 <meta name="theme-color" content="#0c0d0d">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Luka's Utils">
 <meta property="og:title" content="Changelog — Luka's Utils">
 <meta property="og:description" content="Version history for Luka's Utils: new Discord tools, Embed Builder updates, fixes and improvements, version by version.">
-<meta property="og:url" content="https://lukas-utils.vercel.app/changelog.html">
+<meta property="og:url" content="https://lukas-utils.vercel.app/changelog">
 <meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -70,9 +70,24 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.5</span>
+      <span class="version-tag">Standalone tool pages</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Six tools now have their own pages: Timestamp Generator, Embed Builder, Snowflake Decoder, Permissions Calculator, Markdown Preview and Role Color Converter</li>
+      <li>Each page has the working tool at the top, with short instructions, examples, an FAQ and links to related tools</li>
+      <li>The pages reuse the same tool code as the main page, so behaviour is identical, including copy buttons, previews, validation and sending from the Embed Builder</li>
+      <li>Every tool is still available on the home page, which now links to the standalone pages</li>
+      <li>Added the new pages to the sitemap, each with its own title, description and canonical address</li>
+      <li>Tested each page directly in a browser, on desktop and mobile widths, with the tool actually used. Addresses are clean (no .html), set up through a small Vercel config file</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.4</span>
       <span class="version-tag">SEO foundations</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Every page now has its own title and description, and a canonical address pointing to the main site</li>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Timestamp Generator — Copy &lt;t:&gt; Timestamp Codes</title>
+<meta name="description" content="Generate Discord timestamp codes that show in every reader&#x27;s own timezone. Pick a date and time, choose a style, and copy the &lt;t:&gt; tag.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/discord-timestamp-generator">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Discord Timestamp Generator — Copy &lt;t:&gt; Timestamp Codes">
+<meta property="og:description" content="Generate Discord timestamp codes that show in every reader&#x27;s own timezone. Pick a date and time, choose a style, and copy the &lt;t:&gt; tag.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/discord-timestamp-generator">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discord Timestamp Generator — Copy &lt;t:&gt; Timestamp Codes">
+<meta name="twitter:description" content="Generate Discord timestamp codes that show in every reader&#x27;s own timezone. Pick a date and time, choose a style, and copy the &lt;t:&gt; tag.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "Discord Timestamp Generator", "url": "https://lukas-utils.vercel.app/discord-timestamp-generator", "description": "Generate Discord timestamp codes that show in every reader's own timezone. Pick a date and time, choose a style, and copy the <t:> tag.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.vercel.app/"}}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.vercel.app/"}, {"@type": "ListItem", "position": 2, "name": "Discord Timestamp Generator", "item": "https://lukas-utils.vercel.app/discord-timestamp-generator"}]}
+</script>
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="./" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="./#discord-tools">All Discord tools</a>
+      <a href="./#styles">Styles</a>
+      <a href="./#text-tools">Text Tools</a>
+    </nav>
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="tool-page">
+  <nav class="tool-breadcrumb" aria-label="Breadcrumb"><a href="./">Luka's Utils</a> <span aria-hidden="true">/</span> <a href="./#discord-tools">Discord tools</a> <span aria-hidden="true">/</span> <span aria-current="page">Timestamp generator</span></nav>
+  <h1 class="section-title tool-page-title">Discord Timestamp Generator</h1>
+  <p class="tool-page-intro">Build a Discord timestamp tag for any date and time. Discord displays it in each reader&#x27;s own timezone, so an event time never has to be converted by hand. Useful for event announcements, giveaways, and deadlines.</p>
+
+  <section class="discord-tools tool-page-tool" aria-label="Discord Timestamp Generator">
+    <div class="tool-grid single">
+        <div class="panel" id="tool-timestamp" data-keywords="clock unix epoch relative discord tag">
+          <h2 class="panel-title small tool-panel-title">Timestamp builder</h2>
+          <p class="panel-sub">Pick a date and time, get every Discord <code>&lt;t:…&gt;</code> tag with a live preview of how it'll actually read.</p>
+
+          <div class="ts-preset-row" id="ts-preset-row">
+            <button type="button" class="btn-outline small" data-ts-preset="now">Now</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1h">In 1 hour</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1d">Tomorrow</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1w">Next week</button>
+          </div>
+
+          <input type="datetime-local" id="timestamp-input" class="text-input">
+
+          <div class="ts-controls-row">
+            <div class="case-group" id="ts-tz-toggle" role="group" aria-label="Timezone mode">
+              <button type="button" class="case-btn active" data-tz-mode="local">Local</button>
+              <button type="button" class="case-btn" data-tz-mode="utc">UTC</button>
+            </div>
+            <div class="case-group" id="ts-hour-toggle" role="group" aria-label="Hour format">
+              <button type="button" class="case-btn active" data-hour-mode="12">12h</button>
+              <button type="button" class="case-btn" data-hour-mode="24">24h</button>
+            </div>
+          </div>
+
+          <div class="ts-tz-compare">
+            <p class="panel-sub no-margin ts-tz-label">Compare timezones</p>
+            <div class="tz-search-wrap">
+              <div class="tz-search-row">
+                <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="text" id="tz-search-input" placeholder="Add a city or timezone" autocomplete="off">
+              </div>
+              <div class="tz-search-results" id="tz-search-results" hidden></div>
+            </div>
+            <div class="tz-rows" id="tz-rows"></div>
+          </div>
+
+          <div class="ts-highlight-row" id="ts-highlight-row"></div>
+
+          <p class="panel-sub no-margin ts-grid-label">Every format, with what it actually means</p>
+          <div class="timestamp-grid" id="timestamp-grid"></div>
+        </div>
+    </div>
+  </section>
+
+  <section class="tool-page-info">
+    <h2>How to use it</h2>
+    <ol><li>Pick the date and time, and choose whether you mean your local time or UTC.</li><li>Choose a display style, for example short time, long date, or relative (&quot;in 3 hours&quot;).</li><li>Copy the generated tag and paste it into a Discord message or embed.</li></ol>
+
+    <h2>Examples</h2>
+    <table class="tool-example-table"><tbody><tr><td><code>&lt;t:1760000000:F&gt;</code></td><td>Long date and time, shown in the reader&#x27;s timezone</td></tr><tr><td><code>&lt;t:1760000000:R&gt;</code></td><td>Relative time, such as &quot;in 2 days&quot; or &quot;3 hours ago&quot;</td></tr><tr><td><code>&lt;t:1760000000:t&gt;</code></td><td>Short time only</td></tr></tbody></table>
+    <p class="tool-page-note">1760000000 is a Unix timestamp. It corresponds to 9 October 2025, 08:53:20 UTC.</p>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item"><h3>Why does the time look different for other people?</h3><p>That is the point of the format. Discord converts the timestamp to each reader&#x27;s own timezone and locale, so everyone sees the correct local time.</p></div><div class="faq-item"><h3>What do the style letters mean?</h3><p>t is short time, T is long time, d is short date, D is long date, f is short date and time, F is long date and time, and R is relative time.</p></div><div class="faq-item"><h3>Does the relative style update by itself?</h3><p>Yes. Discord refreshes relative timestamps while the message is on screen, so &quot;in 5 minutes&quot; counts down.</p></div><div class="faq-item"><h3>Where can I use timestamp tags?</h3><p>In normal messages, and in embed descriptions and field values. Paste the tag exactly as generated, including the angle brackets.</p></div>
+
+    <h2>Related tools</h2>
+    <ul class="tool-related"><li><a href="discord-snowflake-decoder">Snowflake decoder</a> — read the creation time stored inside any Discord ID</li><li><a href="discord-embed-builder">Embed builder</a> — put a timestamp inside an embed description</li>
+      <li><a href="./#discord-tools">All Discord tools</a> on the Luka's Utils home page</li></ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="./">Home →</a>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="tool-page-shim.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

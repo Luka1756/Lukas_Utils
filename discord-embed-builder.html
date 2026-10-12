@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Embed Builder — Live Preview and Webhook Sending</title>
+<meta name="description" content="Design a Discord embed with a live preview, copy the JSON or webhook payload, and optionally send it through your own webhook. Free, runs in your browser.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/discord-embed-builder">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Discord Embed Builder — Live Preview and Webhook Sending">
+<meta property="og:description" content="Design a Discord embed with a live preview, copy the JSON or webhook payload, and optionally send it through your own webhook. Free, runs in your browser.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/discord-embed-builder">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discord Embed Builder — Live Preview and Webhook Sending">
+<meta name="twitter:description" content="Design a Discord embed with a live preview, copy the JSON or webhook payload, and optionally send it through your own webhook. Free, runs in your browser.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "Discord Embed Builder", "url": "https://lukas-utils.vercel.app/discord-embed-builder", "description": "Design a Discord embed with a live preview, copy the JSON or webhook payload, and optionally send it through your own webhook. Free, runs in your browser.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.vercel.app/"}}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.vercel.app/"}, {"@type": "ListItem", "position": 2, "name": "Discord Embed Builder", "item": "https://lukas-utils.vercel.app/discord-embed-builder"}]}
+</script>
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="./" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="./#discord-tools">All Discord tools</a>
+      <a href="./#styles">Styles</a>
+      <a href="./#text-tools">Text Tools</a>
+    </nav>
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="tool-page">
+  <nav class="tool-breadcrumb" aria-label="Breadcrumb"><a href="./">Luka's Utils</a> <span aria-hidden="true">/</span> <a href="./#discord-tools">Discord tools</a> <span aria-hidden="true">/</span> <span aria-current="page">Embed builder</span></nav>
+  <h1 class="section-title tool-page-title">Discord Embed Builder</h1>
+  <p class="tool-page-intro">Edit a Discord embed and see how it will look as you type. Add a title, description, fields, images, and a footer, then copy the JSON or send it straight to a channel with a webhook URL.</p>
+
+  <section class="discord-tools tool-page-tool" aria-label="Discord Embed Builder">
+    <div class="tool-grid single">
+        <div class="panel" id="tool-embed" data-keywords="json fields preview bot webhook">
+          <h2 class="panel-title small tool-panel-title">Embed builder</h2>
+          <p class="panel-sub">Edit an embed and see exactly what it'll look like in Discord.</p>
+
+          <label class="embed-section-label" for="embed-message-content">Message content <span class="optional-tag">optional</span></label>
+          <textarea id="embed-message-content" class="text-input textarea" rows="2" placeholder="Text that would appear above the embed"></textarea>
+
+          <div class="embed-builder-grid">
+            <div class="embed-editor-col">
+              <div class="embed-form">
+                <p class="embed-section-label">Basic</p>
+                <input type="text" id="embed-title-input" class="text-input" placeholder="Title" autocomplete="off" maxlength="256">
+                <textarea id="embed-description-input" class="text-input textarea" rows="3" placeholder="Description" maxlength="4096"></textarea>
+                <input type="text" id="embed-url-input" class="text-input" placeholder="Title link URL (optional)" autocomplete="off">
+                <div class="color-input-row">
+                  <input type="color" id="embed-color-swatch">
+                  <input type="text" id="embed-color-hex" spellcheck="false" placeholder="#22D3EE">
+                </div>
+                <label class="checkbox-row"><input type="checkbox" id="embed-timestamp-toggle"> Include current timestamp</label>
+
+                <p class="embed-section-label">Author</p>
+                <input type="text" id="embed-author-input" class="text-input" placeholder="Author name" autocomplete="off" maxlength="256">
+                <input type="text" id="embed-author-url-input" class="text-input" placeholder="Author link URL (optional)" autocomplete="off">
+                <input type="text" id="embed-author-icon-input" class="text-input" placeholder="Author icon URL (optional)" autocomplete="off">
+
+                <p class="embed-section-label">Images</p>
+                <input type="text" id="embed-thumbnail-input" class="text-input" placeholder="Thumbnail image URL" autocomplete="off">
+                <input type="text" id="embed-image-input" class="text-input" placeholder="Large image URL" autocomplete="off">
+
+                <div class="embed-fields-head">
+                  <span class="embed-section-label no-margin">Fields</span>
+                  <button type="button" class="btn-outline small" id="embed-add-field">+ Add field</button>
+                </div>
+                <div class="embed-fields-list" id="embed-fields-list"></div>
+
+                <p class="embed-section-label">Footer</p>
+                <input type="text" id="embed-footer-input" class="text-input" placeholder="Footer text" autocomplete="off" maxlength="2048">
+                <input type="text" id="embed-footer-icon-input" class="text-input" placeholder="Footer icon URL (optional)" autocomplete="off">
+              </div>
+
+              <div class="embed-warnings" id="embed-warnings" hidden></div>
+
+              <p class="embed-section-label">Send</p>
+              <input type="password" id="embed-webhook-url" class="text-input" placeholder="Discord webhook URL" autocomplete="off" spellcheck="false">
+              <p class="webhook-privacy-note">Never saved, never logged — only used the moment you click Send.</p>
+              <details class="reference-details embed-send-options">
+                <summary>Send options</summary>
+                <input type="text" id="embed-sender-name" class="text-input" placeholder="Bot name (optional)" autocomplete="off" maxlength="80">
+                <input type="text" id="embed-sender-avatar" class="text-input" placeholder="Bot avatar URL (optional)" autocomplete="off" spellcheck="false">
+                <input type="text" id="embed-thread-id" class="text-input" placeholder="Thread ID (optional, to post inside a thread)" autocomplete="off" inputmode="numeric" spellcheck="false">
+              </details>
+              <div class="embed-actions">
+                <button class="btn-solid" id="send-to-discord" type="button">Send to Discord</button>
+                <button class="btn-outline" id="clear-embed" type="button">Clear</button>
+                <button class="btn-outline" id="reset-embed" type="button">Reset</button>
+              </div>
+              <div class="send-status" id="send-status" role="status" aria-live="polite" hidden></div>
+
+              <details class="reference-details embed-json-details">
+                <summary>&lt;/&gt; View JSON</summary>
+                <div class="output-box">
+                  <span class="output-label">Embed JSON</span>
+                  <pre class="output-text" id="embed-json-output"></pre>
+                </div>
+                <div class="embed-dev-actions">
+                  <button class="btn-outline small" id="copy-embed-json" type="button">Copy JSON</button>
+                  <button class="btn-outline small" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
+                </div>
+              </details>
+            </div>
+
+            <div class="embed-preview-col">
+              <p class="embed-section-label">Preview</p>
+              <div class="embed-live-message">
+                <div class="mp-avatar">E</div>
+                <div class="mp-body">
+                  <div class="mp-head"><span class="mp-username">Embed Preview</span><span class="wh-tag">BOT</span><span class="mp-time" id="embed-preview-time"></span></div>
+                  <div class="mp-content" id="embed-content-preview"></div>
+                  <div class="embed-preview" id="embed-preview"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </section>
+
+  <section class="tool-page-info">
+    <h2>How to use it</h2>
+    <ol><li>Fill in the embed on the left and watch the preview on the right update.</li><li>Add fields, set a colour, and check the warnings if you go over one of Discord&#x27;s limits.</li><li>Copy the JSON or the webhook payload from View JSON, or paste a webhook URL and press Send to Discord.</li></ol>
+
+    <h2>Examples</h2>
+    <table class="tool-example-table"><tbody><tr><td><code>title: &quot;Server rules&quot;</code></td><td>A title shown in bold at the top of the embed</td></tr><tr><td><code>color: 2282478</code></td><td>Embed colour as a decimal number; the colour picker handles this for you</td></tr><tr><td><code>fields: [{ name, value, inline }]</code></td><td>Up to 25 fields, optionally shown side by side</td></tr></tbody></table>
+    <p class="tool-page-note">The builder checks the common limits: title 256 characters, description 4096, field value 1024, 25 fields, and 6000 characters across the whole embed.</p>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item"><h3>Is my webhook URL saved?</h3><p>No. It is a password-style field, it is not stored in the browser, and it is not logged. It is only used at the moment you press Send.</p></div><div class="faq-item"><h3>Which channel does the message go to?</h3><p>The channel the webhook was created for. To post somewhere else, create a webhook in that channel and use its URL.</p></div><div class="faq-item"><h3>What is the difference between Copy JSON and Copy Webhook Payload?</h3><p>Copy JSON gives the embed object itself. The webhook payload wraps it with your message content so it can be sent to a webhook directly.</p></div><div class="faq-item"><h3>Does the preview match Discord exactly?</h3><p>It is a close approximation made for checking layout and content. Discord&#x27;s own rendering can differ slightly.</p></div>
+
+    <h2>Related tools</h2>
+    <ul class="tool-related"><li><a href="discord-markdown-preview">Markdown preview</a> — check bold, links, and lists before they go into an embed description</li><li><a href="discord-role-color-converter">Role color converter</a> — turn a hex colour into the decimal value an embed expects</li><li><a href="discord-timestamp-generator">Timestamp generator</a> — add a localised time to an embed</li>
+      <li><a href="./#discord-tools">All Discord tools</a> on the Luka's Utils home page</li></ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="./">Home →</a>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="tool-page-shim.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

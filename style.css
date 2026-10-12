@@ -945,3 +945,31 @@ input, textarea, pre, code,
 
 /* SEO phase 1 — visible page heading */
 .intro-title{ font-size:20px; font-weight:600; letter-spacing:-.01em; color: var(--text); margin:0 0 8px; line-height:1.3; }
+
+/* SEO phase 2 — standalone tool pages */
+.tool-page{ max-width: var(--max-w-wide); margin: 0 auto; padding: 28px 20px 70px; }
+.tool-breadcrumb{ font-size:12.5px; color: var(--text-dimmer); margin-bottom: 14px; }
+.tool-breadcrumb a{ color: var(--text-dim); text-decoration:none; }
+.tool-breadcrumb a:hover{ color: var(--accent); }
+.tool-page-title{ margin: 0 0 8px; }
+.tool-page-intro{ color: var(--text-dim); font-size:14.5px; line-height:1.65; max-width: 66ch; margin: 0 0 22px; }
+.tool-page .discord-tools{ padding: 0; margin: 0 0 34px; max-width: none; }
+.tool-grid.single{ grid-template-columns: 1fr; }
+.tool-page-info{ max-width: 70ch; }
+.tool-page-info h2{ font-size:17px; font-weight:700; margin: 30px 0 10px; }
+.tool-page-info ol{ margin:0; padding-left: 20px; color: var(--text-dim); font-size:14px; line-height:1.75; }
+.tool-example-table{ width:100%; border-collapse: collapse; font-size:13.5px; }
+.tool-example-table td{ padding: 8px 10px; border-bottom:1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+.tool-example-table td:first-child{ white-space: nowrap; }
+.tool-example-table code{ font-family: var(--mono); font-size:12.5px; color: var(--accent); overflow-wrap:anywhere; white-space: normal; }
+@media (max-width:560px){ .tool-example-table td:first-child{ white-space: normal; } }
+.tool-page-note{ color: var(--text-dimmer); font-size:12.5px; margin: 10px 0 0; line-height:1.6; }
+.faq-item{ margin: 0 0 14px; }
+.faq-item h3{ font-size:14px; font-weight:600; margin: 0 0 3px; }
+.faq-item p{ margin:0; color: var(--text-dim); font-size:13.5px; line-height:1.65; }
+.tool-related{ margin:0; padding-left: 20px; color: var(--text-dim); font-size:14px; line-height:1.8; }
+.tool-related a{ color: var(--accent); text-decoration:none; }
+.tool-related a:hover{ text-decoration: underline; }
+.tool-page-links{ font-size:13px; color: var(--text-dimmer); margin: -8px 0 18px; line-height:1.9; }
+.tool-page-links a{ color: var(--accent); text-decoration:none; margin-right: 12px; white-space: nowrap; }
+.tool-page-links a:hover{ text-decoration: underline; }

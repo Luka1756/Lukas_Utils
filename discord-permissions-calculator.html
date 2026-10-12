@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Permissions Calculator — Permission Integer Generator</title>
+<meta name="description" content="Tick Discord permissions and get the permissions integer for a bot invite link, or paste a number to see which permissions it grants.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/discord-permissions-calculator">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Discord Permissions Calculator — Permission Integer Generator">
+<meta property="og:description" content="Tick Discord permissions and get the permissions integer for a bot invite link, or paste a number to see which permissions it grants.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/discord-permissions-calculator">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discord Permissions Calculator — Permission Integer Generator">
+<meta name="twitter:description" content="Tick Discord permissions and get the permissions integer for a bot invite link, or paste a number to see which permissions it grants.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "Discord Permissions Calculator", "url": "https://lukas-utils.vercel.app/discord-permissions-calculator", "description": "Tick Discord permissions and get the permissions integer for a bot invite link, or paste a number to see which permissions it grants.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.vercel.app/"}}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.vercel.app/"}, {"@type": "ListItem", "position": 2, "name": "Discord Permissions Calculator", "item": "https://lukas-utils.vercel.app/discord-permissions-calculator"}]}
+</script>
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="./" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="./#discord-tools">All Discord tools</a>
+      <a href="./#styles">Styles</a>
+      <a href="./#text-tools">Text Tools</a>
+    </nav>
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="tool-page">
+  <nav class="tool-breadcrumb" aria-label="Breadcrumb"><a href="./">Luka's Utils</a> <span aria-hidden="true">/</span> <a href="./#discord-tools">Discord tools</a> <span aria-hidden="true">/</span> <span aria-current="page">Permissions calculator</span></nav>
+  <h1 class="section-title tool-page-title">Discord Permissions Calculator</h1>
+  <p class="tool-page-intro">Discord stores permissions as one number. Select the permissions you need to get that number, or paste a number you already have to see exactly what it allows. It is handy when building a bot invite link.</p>
+
+  <section class="discord-tools tool-page-tool" aria-label="Discord Permissions Calculator">
+    <div class="tool-grid single">
+        <div class="panel" id="tool-permissions" data-keywords="perms bitfield integer bot role">
+          <h2 class="panel-title small tool-panel-title">Permissions calculator</h2>
+          <p class="panel-sub">Check boxes to get a permission integer, or paste one to see what it grants. Covers Discord's standard permission set.</p>
+          <div class="perm-integer-row">
+            <input type="text" id="perm-integer-input" class="text-input" placeholder="Permission integer" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="perm-grid" id="perm-grid"></div>
+        </div>
+    </div>
+  </section>
+
+  <section class="tool-page-info">
+    <h2>How to use it</h2>
+    <ol><li>Tick the permissions your bot or role needs.</li><li>Copy the resulting permissions integer.</li><li>Use it as the permissions value in a bot invite link, or paste an existing number to decode it.</li></ol>
+
+    <h2>Examples</h2>
+    <table class="tool-example-table"><tbody><tr><td><code>8</code></td><td>Administrator, which grants every permission</td></tr><tr><td><code>3072</code></td><td>View Channel (1024) plus Send Messages (2048)</td></tr></tbody></table>
+    <p class="tool-page-note">Each permission is one bit, and the integer is the sum of the bits you select.</p>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item"><h3>Where does the number go?</h3><p>In the permissions parameter of a bot&#x27;s OAuth2 invite link, so the bot joins with exactly those permissions.</p></div><div class="faq-item"><h3>Should I just give a bot Administrator?</h3><p>It is the simplest option, but it also grants everything. Giving a bot only the permissions it uses is safer.</p></div><div class="faq-item"><h3>Can I decode a number someone gave me?</h3><p>Yes. Paste it in and the matching permissions are ticked.</p></div><div class="faq-item"><h3>Do channel overrides change the result?</h3><p>Channel permission overrides apply on top of role permissions in Discord. This tool only builds and reads the base permissions number.</p></div>
+
+    <h2>Related tools</h2>
+    <ul class="tool-related"><li><a href="discord-snowflake-decoder">Snowflake decoder</a> — look up the creation date of a role, user, or server ID</li><li><a href="discord-embed-builder">Embed builder</a> — announce a bot invite with a formatted embed</li>
+      <li><a href="./#discord-tools">All Discord tools</a> on the Luka's Utils home page</li></ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="./">Home →</a>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="tool-page-shim.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

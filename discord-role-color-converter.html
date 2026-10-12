@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Role Color Converter — HEX to RGB and Decimal</title>
+<meta name="description" content="Convert a HEX colour to RGB and the decimal number Discord embeds and bot role settings use. Pick a colour and copy any format.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/discord-role-color-converter">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Discord Role Color Converter — HEX to RGB and Decimal">
+<meta property="og:description" content="Convert a HEX colour to RGB and the decimal number Discord embeds and bot role settings use. Pick a colour and copy any format.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/discord-role-color-converter">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discord Role Color Converter — HEX to RGB and Decimal">
+<meta name="twitter:description" content="Convert a HEX colour to RGB and the decimal number Discord embeds and bot role settings use. Pick a colour and copy any format.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "Discord Role Color Converter", "url": "https://lukas-utils.vercel.app/discord-role-color-converter", "description": "Convert a HEX colour to RGB and the decimal number Discord embeds and bot role settings use. Pick a colour and copy any format.", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any (web browser)", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.vercel.app/"}}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.vercel.app/"}, {"@type": "ListItem", "position": 2, "name": "Discord Role Color Converter", "item": "https://lukas-utils.vercel.app/discord-role-color-converter"}]}
+</script>
+<script>
+  // Match whichever theme the person picked on the main site, before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="./" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="./#discord-tools">All Discord tools</a>
+      <a href="./#styles">Styles</a>
+      <a href="./#text-tools">Text Tools</a>
+    </nav>
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="tool-page">
+  <nav class="tool-breadcrumb" aria-label="Breadcrumb"><a href="./">Luka's Utils</a> <span aria-hidden="true">/</span> <a href="./#discord-tools">Discord tools</a> <span aria-hidden="true">/</span> <span aria-current="page">Role color converter</span></nav>
+  <h1 class="section-title tool-page-title">Discord Role Color Converter</h1>
+  <p class="tool-page-intro">Discord&#x27;s colour picker shows hex codes, but embeds and many bot settings expect a decimal number. Pick a colour here to get its HEX, RGB, and decimal values and copy the one you need.</p>
+
+  <section class="discord-tools tool-page-tool" aria-label="Discord Role Color Converter">
+    <div class="tool-grid single">
+        <div class="panel" data-keywords="hex rgb decimal role">
+          <h2 class="panel-title small tool-panel-title">Role color converter</h2>
+          <p class="panel-sub">The decimal value is what you'd paste into a bot's role color field.</p>
+          <div class="color-input-row">
+            <input type="color" id="role-color-swatch">
+            <input type="text" id="role-color-hex" spellcheck="false">
+          </div>
+          <div class="role-preview-row" id="role-color-preview"></div>
+          <div class="tool-output" id="role-color-output"></div>
+        </div>
+    </div>
+  </section>
+
+  <section class="tool-page-info">
+    <h2>How to use it</h2>
+    <ol><li>Pick a colour with the swatch or type a hex code.</li><li>Read the HEX, RGB, and decimal values.</li><li>Copy the decimal value for an embed or bot role colour field.</li></ol>
+
+    <h2>Examples</h2>
+    <table class="tool-example-table"><tbody><tr><td><code>#5865F2</code></td><td>HEX for Discord&#x27;s blurple</td></tr><tr><td><code>rgb(88, 101, 242)</code></td><td>The same colour as RGB</td></tr><tr><td><code>5793266</code></td><td>The same colour as a decimal number</td></tr></tbody></table>
+    <p class="tool-page-note">The decimal value is the hex number read as a normal integer, so #5865F2 becomes 5793266.</p>
+
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item"><h3>Why does a bot ask for a number instead of a hex code?</h3><p>Many Discord API fields store colours as a single integer. Converting the hex code gives you that integer.</p></div><div class="faq-item"><h3>Is the # required?</h3><p>No. Hex codes work with or without the leading # sign.</p></div><div class="faq-item"><h3>Can I use the result in the embed builder?</h3><p>Yes. The embed builder has its own colour picker, and this tool is for when you need the raw decimal value elsewhere.</p></div>
+
+    <h2>Related tools</h2>
+    <ul class="tool-related"><li><a href="discord-embed-builder">Embed builder</a> — apply the colour to an embed</li><li><a href="discord-markdown-preview">Markdown preview</a> — preview text formatting</li>
+      <li><a href="./#discord-tools">All Discord tools</a> on the Luka's Utils home page</li></ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="./">Home →</a>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="tool-page-shim.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
