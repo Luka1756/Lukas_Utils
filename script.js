@@ -1244,6 +1244,7 @@
   const allToolGroups = document.querySelectorAll('.discord-tools .tool-group');
   function filterTools(){
     const q = toolSearchInput.value.trim().toLowerCase();
+    if (q && discordSection.classList.contains('tool-focus')) showAllTools(false);
     let anyVisible = false;
     allToolGroups.forEach(group => {
       let groupHasVisible = false;
@@ -1259,23 +1260,105 @@
       if (groupHasVisible) anyVisible = true;
     });
     toolSearchEmpty.hidden = anyVisible || !q;
+    syncToolNavFilter();
   }
   toolSearchInput?.addEventListener('input', filterTools);
 
-  /* ============ Discord Tools group nav (scroll-spy) ============ */
-  const groupNavPills = document.querySelectorAll('.group-nav-pill');
-  const toolGroups = document.querySelectorAll('.tool-group');
-  if (groupNavPills.length && toolGroups.length && 'IntersectionObserver' in window) {
-    const setActiveGroup = (id) => {
-      groupNavPills.forEach(p => p.classList.toggle('active', p.dataset.group === id));
-    };
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) setActiveGroup(entry.target.id);
-      });
-    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
-    toolGroups.forEach(g => observer.observe(g));
+  /* ============ Discord Tools sidebar navigation ============ */
+  // The sidebar lists every Discord tool. Picking one focuses that panel in the workspace;
+  // the other panels are only hidden (not removed), so whatever you typed in them is kept.
+  const discordSection = document.getElementById('discord-tools');
+  const toolNav = document.getElementById('tool-nav');
+  const toolNavToggle = document.getElementById('tool-nav-toggle');
+  const toolNavCurrent = document.getElementById('tool-nav-current');
+  const toolNavLinks = [...document.querySelectorAll('#tool-nav a[data-tool]')];
+  const toolPanels = [...document.querySelectorAll('.discord-tools .tool-grid > .panel')];
+  const toolPanelById = (id) => toolPanels.find(p => p.id === id);
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setToolNavOpen(open){
+    toolNav?.classList.toggle('open', open);
+    toolNavToggle?.setAttribute('aria-expanded', String(open));
   }
+  function markToolNav(id){
+    toolNavLinks.forEach(a => {
+      const on = (a.dataset.tool || '') === id;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+      if (on && toolNavCurrent) toolNavCurrent.textContent = a.textContent.trim();
+    });
+  }
+  function scrollToWorkspace(){
+    const row = document.querySelector('.tool-search-row');
+    row?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+  function showTool(id, scroll){
+    const panel = toolPanelById(id);
+    if (!panel) return false;
+    discordSection.classList.add('tool-focus');
+    toolPanels.forEach(p => p.classList.toggle('is-active-tool', p === panel));
+    document.querySelectorAll('.discord-tools .tool-group').forEach(g => g.classList.toggle('no-active', !g.contains(panel)));
+    markToolNav(id);
+    if (scroll) {
+      scrollToWorkspace();
+      panel.setAttribute('tabindex', '-1');
+      panel.focus({ preventScroll: true });
+    }
+    return true;
+  }
+  function showAllTools(scroll){
+    discordSection.classList.remove('tool-focus');
+    toolPanels.forEach(p => p.classList.remove('is-active-tool'));
+    document.querySelectorAll('.discord-tools .tool-group').forEach(g => g.classList.remove('no-active'));
+    markToolNav('');
+    if (scroll) scrollToWorkspace();
+  }
+  // Searching works across every tool, so it always leaves single-tool view first.
+  function syncToolNavFilter(){
+    toolNavLinks.forEach(a => {
+      if (!a.dataset.tool) return;
+      const p = toolPanelById(a.dataset.tool);
+      a.parentElement.hidden = !!p && p.style.display === 'none';
+    });
+    document.querySelectorAll('#tool-nav .tool-nav-group').forEach(g => {
+      g.hidden = ![...g.querySelectorAll('li')].some(li => !li.hidden);
+    });
+  }
+  toolNav?.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-tool]');
+    if (!a) return;
+    e.preventDefault();
+    const id = a.dataset.tool;
+    if (toolSearchInput?.value) { toolSearchInput.value = ''; filterTools(); }
+    if (id) {
+      history.pushState(null, '', '#' + id);
+      showTool(id, true);
+    } else {
+      history.pushState(null, '', '#discord-tools');
+      showAllTools(true);
+    }
+    setToolNavOpen(false);
+  });
+  toolNavToggle?.addEventListener('click', () => setToolNavOpen(!toolNav.classList.contains('open')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && toolNav?.classList.contains('open')) { setToolNavOpen(false); toolNavToggle?.focus(); } });
+  // Enter in the tool search opens the first match.
+  toolSearchInput?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const first = toolPanels.find(p => p.style.display !== 'none');
+    if (!first || !toolSearchInput.value.trim()) return;
+    e.preventDefault();
+    toolSearchInput.value = ''; filterTools();
+    history.pushState(null, '', '#' + first.id);
+    showTool(first.id, true);
+  });
+  // Links like #tool-timestamp (Popular chips, bookmarks, back/forward) land on the right tool.
+  function applyToolHash(scroll){
+    const id = location.hash.slice(1);
+    if (toolPanelById(id)) showTool(id, scroll);
+    else if (id === 'discord-tools') showAllTools(false);
+  }
+  window.addEventListener('hashchange', () => applyToolHash(true));
+  if (toolPanelById(location.hash.slice(1))) setTimeout(() => applyToolHash(true), 60);
 
   /* ============ Embed Builder ============ */
   const embedInputs = {

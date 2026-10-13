@@ -168,18 +168,66 @@
     </div>
 
     <div class="section-layout">
-      <nav class="section-sidebar group-nav-sidebar" aria-label="Discord tool groups">
-        <p class="sidebar-label">Categories</p>
-        <div class="group-nav" id="group-nav">
-          <a class="filter-pill group-nav-pill" href="#group-time" data-group="group-time">Time</a>
-          <a class="filter-pill group-nav-pill" href="#group-ids" data-group="group-ids">IDs</a>
-          <a class="filter-pill group-nav-pill" href="#group-permissions" data-group="group-permissions">Permissions</a>
-          <a class="filter-pill group-nav-pill" href="#group-colors" data-group="group-colors">Colors</a>
-          <a class="filter-pill group-nav-pill" href="#group-embeds" data-group="group-embeds">Embeds</a>
-          <a class="filter-pill group-nav-pill" href="#group-emojis" data-group="group-emojis">Emojis</a>
-          <a class="filter-pill group-nav-pill" href="#group-invites" data-group="group-invites">Invites</a>
-          <a class="filter-pill group-nav-pill" href="#group-text" data-group="group-text">Text</a>
-          <a class="filter-pill group-nav-pill" href="#group-developer" data-group="group-developer">Developer</a>
+      <nav class="section-sidebar group-nav-sidebar tool-nav" id="tool-nav" aria-label="Discord tools">
+        <button class="tool-nav-toggle" id="tool-nav-toggle" type="button" aria-expanded="false" aria-controls="tool-nav-list">
+          <span class="tool-nav-toggle-label">Tools</span>
+          <span class="tool-nav-current" id="tool-nav-current">All tools</span>
+          <svg class="tool-nav-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="tool-nav-list" id="tool-nav-list">
+          <a class="tool-nav-all active" href="#discord-tools" data-tool="" aria-current="true">All tools</a>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Time</span></p>
+            <ul>
+              <li><a href="#tool-timestamp" data-tool="tool-timestamp">Timestamp builder</a></li>
+              <li><a href="#tool-unix" data-tool="tool-unix">Unix timestamp</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 6.5h14v9H12l-4 3v-3H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Discord tools</span></p>
+            <ul>
+              <li><a href="#tool-snowflake" data-tool="tool-snowflake">Snowflake decoder</a></li>
+              <li><a href="#tool-permissions" data-tool="tool-permissions">Permissions calculator</a></li>
+              <li><a href="#tool-role-color" data-tool="tool-role-color">Role color converter</a></li>
+              <li><a href="#tool-cdn" data-tool="tool-cdn">CDN image URL</a></li>
+              <li><a href="#tool-emoji" data-tool="tool-emoji">Emoji tag</a></li>
+              <li><a href="#tool-invite-formatter" data-tool="tool-invite-formatter">Invite formatter</a></li>
+              <li><a href="#tool-invite-lookup" data-tool="tool-invite-lookup">Invite lookup</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 9.5h16" stroke="currentColor" stroke-width="1.7"/></svg><span>Embeds &amp; webhooks</span></p>
+            <ul>
+              <li><a href="#tool-embed" data-tool="tool-embed">Embed builder</a></li>
+              <li><a href="#tool-webhook-builder" data-tool="tool-webhook-builder">Webhook message builder</a></li>
+              <li><a href="#tool-message-preview" data-tool="tool-message-preview">Message preview</a></li>
+              <li><a href="#tool-webhook-payload" data-tool="tool-webhook-payload">Webhook payload</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 6h14M12 6v13M9 19h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Formatting</span></p>
+            <ul>
+              <li><a href="#tool-markdown-preview" data-tool="tool-markdown-preview">Markdown preview</a></li>
+              <li><a href="#tool-markdown-formats" data-tool="tool-markdown-formats">Markdown formats</a></li>
+              <li><a href="#tool-cheatsheet" data-tool="tool-cheatsheet">Markdown cheat sheet</a></li>
+              <li><a href="#tool-mention" data-tool="tool-mention">Mention formatter</a></li>
+              <li><a href="#templates" data-tool="templates">Templates</a></li>
+              <li><a href="#tool-ansi" data-tool="tool-ansi">ANSI colors</a></li>
+              <li><a href="#tool-message-length" data-tool="tool-message-length">Message length</a></li>
+              <li><a href="#tool-text-cleaner" data-tool="tool-text-cleaner">Text cleaner</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Developer tools</span></p>
+            <ul>
+              <li><a href="#tool-json" data-tool="tool-json">JSON formatter</a></li>
+              <li><a href="#tool-base64" data-tool="tool-base64">Base64</a></li>
+              <li><a href="#tool-url" data-tool="tool-url">URL encoder / decoder</a></li>
+              <li><a href="#tool-uuid" data-tool="tool-uuid">UUID generator</a></li>
+              <li><a href="#tool-hash" data-tool="tool-hash">Hash generator</a></li>
+              <li><a href="#tool-diff" data-tool="tool-diff">Text diff</a></li>
+            </ul>
+          </div>
         </div>
       </nav>
 
@@ -249,7 +297,7 @@
           <div class="tool-output" id="snowflake-output"></div>
         </div>
 
-        <div class="panel" data-keywords="avatar icon banner link url">
+        <div id="tool-cdn" class="panel" data-keywords="avatar icon banner link url">
           <h4 class="panel-title small">CDN image URL</h4>
           <p class="panel-sub">Builds a Discord CDN link from an ID, and a hash if you have one.</p>
           <div class="cdn-form" id="cdn-form">
@@ -290,7 +338,7 @@
     <div class="tool-group" id="group-colors">
       <h3 class="group-title">Colors</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="hex rgb decimal role">
+        <div id="tool-role-color" class="panel" data-keywords="hex rgb decimal role">
           <h4 class="panel-title small">Role color converter</h4>
           <p class="panel-sub">The decimal value is what you'd paste into a bot's role color field.</p>
           <div class="color-input-row">
@@ -392,7 +440,7 @@
           </div>
         </div>
 
-        <div class="panel span-2" data-keywords="webhook bot preview username avatar">
+        <div id="tool-webhook-builder" class="panel span-2" data-keywords="webhook bot preview username avatar">
           <h4 class="panel-title small">Webhook message builder</h4>
           <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent from this tool (sending lives in the Embed Builder) — uses the embed above if you've built one.</p>
           <div class="embed-form">
@@ -410,7 +458,7 @@
     <div class="tool-group" id="group-emojis">
       <h3 class="group-title">Emojis</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="custom emoji format cdn">
+        <div id="tool-emoji" class="panel" data-keywords="custom emoji format cdn">
           <h4 class="panel-title small">Emoji tag</h4>
           <p class="panel-sub">Paste a custom emoji tag to inspect it, or type name:id to build one.</p>
           <input type="text" id="emoji-tag-input" class="text-input" placeholder="&lt;:name:123456789012345678&gt; or name:id" autocomplete="off">
@@ -423,14 +471,14 @@
     <div class="tool-group" id="group-invites">
       <h3 class="group-title">Invites</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="server link code">
+        <div id="tool-invite-formatter" class="panel" data-keywords="server link code">
           <h4 class="panel-title small">Invite formatter</h4>
           <p class="panel-sub">Paste an invite code or link to get a clean, canonical <code>discord.gg</code> link.</p>
           <input type="text" id="invite-input" class="text-input" placeholder="Uh7k7pxRPk or discord.gg/Uh7k7pxRPk" autocomplete="off">
           <div class="tool-output" id="invite-output"></div>
         </div>
 
-        <div class="panel" data-keywords="server info api">
+        <div id="tool-invite-lookup" class="panel" data-keywords="server info api">
           <h4 class="panel-title small">Invite lookup</h4>
           <p class="panel-sub">Looks up publicly available server info for an invite. This is the one tool that contacts Discord's API — nothing happens until you tap the button.</p>
           <input type="text" id="invite-lookup-input" class="text-input" placeholder="Invite code or link" autocomplete="off">
@@ -444,7 +492,7 @@
     <div class="tool-group" id="group-text">
       <h3 class="group-title">Text</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="bold italic spoiler code format">
+        <div id="tool-markdown-formats" class="panel" data-keywords="bold italic spoiler code format">
           <h4 class="panel-title small">Markdown formats</h4>
           <p class="panel-sub">Pick a format — it applies to your text above automatically.</p>
           <div class="format-grid" id="format-grid"></div>
@@ -466,7 +514,7 @@
           </div>
         </div>
 
-        <div class="panel" data-keywords="terminal codeblock colorize">
+        <div id="tool-ansi" class="panel" data-keywords="terminal codeblock colorize">
           <h4 class="panel-title small">ANSI colors</h4>
           <p class="panel-sub">Color your text inside a Discord code block.</p>
           <div class="ansi-swatches" id="ansi-swatches"></div>
@@ -474,14 +522,14 @@
           <button class="btn-outline" id="copy-ansi" type="button">Copy ANSI code</button>
         </div>
 
-        <div class="panel" data-keywords="character count limit">
+        <div id="tool-message-length" class="panel" data-keywords="character count limit">
           <h4 class="panel-title small">Message length</h4>
           <p class="panel-sub">Checks your text against Discord's message and embed limits, with a line count too.</p>
           <textarea id="length-input" class="text-input textarea" rows="3" placeholder="Paste or type a message"></textarea>
           <div class="length-bars" id="length-bars"></div>
         </div>
 
-        <div class="panel" data-keywords="whitespace trim strip markdown">
+        <div id="tool-text-cleaner" class="panel" data-keywords="whitespace trim strip markdown">
           <h4 class="panel-title small">Text cleaner</h4>
           <p class="panel-sub">Strips Markdown, trims stray spaces, and collapses blank lines.</p>
           <textarea id="cleaner-input" class="text-input textarea" rows="3" placeholder="Paste messy text"></textarea>
@@ -493,7 +541,7 @@
           <button class="btn-outline small" id="copy-cleaner" type="button">Copy</button>
         </div>
 
-        <div class="panel" data-keywords="render html live preview headings lists links">
+        <div id="tool-markdown-preview" class="panel" data-keywords="render html live preview headings lists links">
           <h4 class="panel-title small">Markdown preview</h4>
           <p class="panel-sub">See how Discord Markdown actually renders before you send it. Discord-inspired, not a pixel clone.</p>
           <textarea id="md-preview-input" class="text-input textarea" rows="4" placeholder="**bold**, *italic*, ||spoiler||, `code`, # heading, - list, [link](url)...">## A quick example
@@ -509,14 +557,14 @@
           <button class="btn-outline small" id="copy-md-raw" type="button">Copy raw Markdown</button>
         </div>
 
-        <div class="panel" data-keywords="syntax reference guide help cheatsheet">
+        <div id="tool-cheatsheet" class="panel" data-keywords="syntax reference guide help cheatsheet">
           <h4 class="panel-title small">Markdown cheat sheet</h4>
           <p class="panel-sub">Every syntax Discord supports, with a live example and a copy button.</p>
           <input type="text" id="cheatsheet-search" class="text-input" placeholder="Search syntax (e.g. spoiler, heading)" autocomplete="off">
           <div class="cheatsheet-list" id="cheatsheet-list"></div>
         </div>
 
-        <div class="panel" data-keywords="ping tag user role channel">
+        <div id="tool-mention" class="panel" data-keywords="ping tag user role channel">
           <h4 class="panel-title small">Mention formatter</h4>
           <p class="panel-sub">Builds the raw text for a user, role, or channel mention.</p>
           <div class="mention-form">
@@ -530,7 +578,7 @@
           <div class="tool-output" id="mention-output"></div>
         </div>
 
-        <div class="panel span-2" data-keywords="chat bubble render">
+        <div id="tool-message-preview" class="panel span-2" data-keywords="chat bubble render">
           <h4 class="panel-title small">Message preview</h4>
           <p class="panel-sub">A rough approximation of how your text (from the box at the top of the page) would look as a message, with your embed below it if you've built one.</p>
           <div class="message-preview-box" id="message-preview-box"></div>
@@ -542,7 +590,7 @@
     <div class="tool-group" id="group-developer">
       <h3 class="group-title">Developer</h3>
       <div class="tool-grid">
-        <div class="panel" data-keywords="validate pretty print minify">
+        <div id="tool-json" class="panel" data-keywords="validate pretty print minify">
           <h4 class="panel-title small">JSON formatter</h4>
           <p class="panel-sub">Paste JSON to validate, pretty-print, or minify it.</p>
           <div class="case-group" id="json-fmt-mode-toggle">
@@ -557,7 +605,7 @@
           <button class="btn-outline small" id="copy-json-fmt" type="button">Copy</button>
         </div>
 
-        <div class="panel" data-keywords="encode decode">
+        <div id="tool-base64" class="panel" data-keywords="encode decode">
           <h4 class="panel-title small">Base64</h4>
           <p class="panel-sub">Encode or decode text — handles emoji and non-English text correctly.</p>
           <div class="case-group" id="base64-mode-toggle">
@@ -575,7 +623,7 @@
           </div>
         </div>
 
-        <div class="panel" data-keywords="percent encode component query string">
+        <div id="tool-url" class="panel" data-keywords="percent encode component query string">
           <h4 class="panel-title small">URL encoder / decoder</h4>
           <p class="panel-sub">Percent-encode or decode a string, query value, or full URL.</p>
           <div class="case-group" id="url-mode-toggle">
@@ -590,7 +638,7 @@
           <button class="btn-outline small" id="copy-url-encode" type="button">Copy</button>
         </div>
 
-        <div class="panel" data-keywords="guid random unique id multiple bulk">
+        <div id="tool-uuid" class="panel" data-keywords="guid random unique id multiple bulk">
           <h4 class="panel-title small">UUID generator</h4>
           <p class="panel-sub">Generates random v4 UUIDs.</p>
           <div class="uuid-count-row">
@@ -601,14 +649,14 @@
           <button class="btn-outline small" id="copy-all-uuid" type="button" hidden>Copy all</button>
         </div>
 
-        <div class="panel" data-keywords="epoch convert date discord tag">
+        <div id="tool-unix" class="panel" data-keywords="epoch convert date discord tag">
           <h4 class="panel-title small">Unix timestamp</h4>
           <p class="panel-sub">Paste a unix timestamp (seconds or ms) or a date, get the other one back — plus ready-to-use Discord tags.</p>
           <input type="text" id="unix-input" class="text-input" placeholder="1717000000 or 2024-05-29T12:00" autocomplete="off">
           <div class="tool-output" id="unix-output"></div>
         </div>
 
-        <div class="panel" data-keywords="sha256 sha1 sha512 checksum fingerprint">
+        <div id="tool-hash" class="panel" data-keywords="sha256 sha1 sha512 checksum fingerprint">
           <h4 class="panel-title small">Hash generator</h4>
           <p class="panel-sub">Computes a cryptographic hash locally — your text never leaves the browser.</p>
           <div class="case-group" id="hash-algo-toggle">
@@ -624,7 +672,7 @@
           <button class="btn-outline small" id="copy-hash" type="button">Copy</button>
         </div>
 
-        <div class="panel span-2" data-keywords="compare changes added removed lines">
+        <div id="tool-diff" class="panel span-2" data-keywords="compare changes added removed lines">
           <h4 class="panel-title small">Text diff</h4>
           <p class="panel-sub">Compares line by line. Green is added, red is removed.</p>
           <div class="diff-inputs">
@@ -634,7 +682,7 @@
           <div class="diff-output" id="diff-output"></div>
         </div>
 
-        <div class="panel span-2" data-keywords="bot post json content">
+        <div id="tool-webhook-payload" class="panel span-2" data-keywords="bot post json content">
           <h4 class="panel-title small">Webhook payload</h4>
           <p class="panel-sub">Combines your text (from the top of the page) and the embed you built above into a payload ready for a Discord webhook <code>POST</code>.</p>
           <div class="output-box">

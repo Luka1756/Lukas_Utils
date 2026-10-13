@@ -973,3 +973,49 @@ input, textarea, pre, code,
 .tool-page-links{ font-size:13px; color: var(--text-dimmer); margin: -8px 0 18px; line-height:1.9; }
 .tool-page-links a{ color: var(--accent); text-decoration:none; margin-right: 12px; white-space: nowrap; }
 .tool-page-links a:hover{ text-decoration: underline; }
+
+/* v9.6 — sidebar tool navigation */
+.tool-nav-toggle{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  background: var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); padding: 10px 12px; font: inherit; font-size:13.5px; cursor:pointer;
+}
+.tool-nav-toggle:hover{ border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.tool-nav-toggle-label{ font-family: var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color: var(--text-dimmer); }
+.tool-nav-current{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--accent); }
+.tool-nav-chevron{ flex-shrink:0; transition: transform .15s ease; color: var(--text-dim); }
+.tool-nav.open .tool-nav-chevron{ transform: rotate(180deg); }
+.tool-nav-list{ display:none; margin-top: 8px; }
+.tool-nav.open .tool-nav-list{ display:block; }
+.tool-nav-list ul{ list-style:none; margin:0; padding:0; }
+.tool-nav-list a{
+  display:block; padding: 7px 10px 7px 11px; border-left:2px solid transparent;
+  border-radius: var(--radius-sm); font-size:13px; line-height:1.35; color: var(--text-dim); text-decoration:none;
+}
+.tool-nav-list a:hover{ background: var(--bg-card-hover); color: var(--text); }
+.tool-nav-list a:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+.tool-nav-list a.active{
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-left-color: var(--accent); color: var(--accent);
+}
+.tool-nav-all{ font-weight:600; margin-bottom: 4px; }
+.tool-nav-heading{
+  display:flex; align-items:center; gap:7px; margin: 16px 0 4px; padding-left: 11px;
+  font-family: var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color: var(--text-dimmer);
+}
+.tool-nav-heading svg{ flex-shrink:0; }
+.tool-nav-group[hidden], .tool-nav-list li[hidden]{ display:none; }
+@media (min-width: 900px){
+  .tool-nav-toggle{ display:none; }
+  .tool-nav-list{ display:block; margin-top:0; }
+  .tool-nav{ max-height: calc(100vh - 96px); overflow-y:auto; padding-right:6px; scrollbar-width: thin; }
+}
+/* single-tool view: the chosen tool gets the whole workspace */
+.tool-focus .tool-grid{ grid-template-columns: 1fr; }
+.tool-focus .tool-grid .span-2{ grid-column: auto; }
+.tool-focus .tool-grid > .panel:not(.is-active-tool){ display:none; }
+.tool-focus .tool-group.no-active{ display:none; }
+.tool-focus .tool-group{ margin-top:0; }
+.tool-focus .group-title{ display:none; }
+.discord-tools .panel:focus{ outline:none; }
+.tool-search-row{ scroll-margin-top: var(--scroll-offset); }

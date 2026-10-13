@@ -70,9 +70,26 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.6</span>
+      <span class="version-tag">Sidebar tool navigation</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>The Discord Tools sidebar now lists every tool by name, grouped under Time, Discord tools, Embeds &amp; webhooks, Formatting and Developer tools, instead of only jumping between categories</li>
+      <li>Clicking a tool opens it on its own in the main area with the full width, so the Embed Builder and other larger tools have room to work. The current tool is highlighted, and "All tools" brings back the full overview</li>
+      <li>Switching tools only hides the others, so anything you typed in a tool is still there when you come back</li>
+      <li>Tools can be linked directly (for example <code>#tool-embed</code>), and the Popular chips, the browser's back button and bookmarks all open the right tool</li>
+      <li>Search now also filters the sidebar, and pressing Enter in the search box opens the first result</li>
+      <li>On phones the sidebar becomes a collapsible "Tools" menu that shows the current tool and closes after you pick one</li>
+      <li>The sidebar entries link to the existing tools. Nothing was duplicated or rewritten</li>
+      <li>Tested every sidebar entry in a browser, with the keyboard, and on desktop and phone widths. Not tested on real phones or in Safari</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.5</span>
       <span class="version-tag">Standalone tool pages</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Six tools now have their own pages: Timestamp Generator, Embed Builder, Snowflake Decoder, Permissions Calculator, Markdown Preview and Role Color Converter</li>
