@@ -70,9 +70,24 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.7</span>
+      <span class="version-tag">Example box, Case Converter and layout</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>The Example box now starts empty and shows "Example" only as placeholder text. The Case Converter uses the same text, so whatever you type, paste or delete there appears in the converter immediately, with every result updating live</li>
+      <li>Typing in the Case Converter's own box updates the Example box too, so there is only ever one copy of the text. Clearing it clears both, and the converter shows dashes instead of copying the placeholder</li>
+      <li>While the Example box is empty, the style previews and their Copy buttons still use the word "Example" so the grid is never blank</li>
+      <li>Markdown cheat sheet and Case Converter rows now share one aligned layout: name and syntax on the left, the preview in a fixed column, and every Copy button on the right. On narrow screens the preview moves under the name while Copy stays on the right</li>
+      <li>Added a button in the header to hide or show the floating Example box. Hiding only hides it, so its text, font size and case choice are kept, and it stays reachable from anywhere on the page. Your choice is remembered in your browser</li>
+      <li>Tested in a browser at desktop and phone widths, with the keyboard and with a touch viewport. Not tested on real phones</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.6</span>
       <span class="version-tag">Sidebar tool navigation</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>The Discord Tools sidebar now lists every tool by name, grouped under Time, Discord tools, Embeds &amp; webhooks, Formatting and Developer tools, instead of only jumping between categories</li>

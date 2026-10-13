@@ -210,7 +210,7 @@
 
   /* ============ State ============ */
   const state = {
-    text: 'Example',
+    text: '',
     caseMode: 'none',
     filter: 'all',
     query: '',
@@ -223,6 +223,10 @@
     if (state.caseMode === 'title') return str.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
     return str;
   }
+
+  // The Example box is empty by default and only shows "Example" as a placeholder. Style previews
+  // and copy buttons fall back to that word when it is empty; real text is never replaced by it.
+  const sampleText = () => state.text || 'Example';
 
   /* ============ DOM refs ============ */
   const grid = document.getElementById('card-grid');
@@ -243,7 +247,7 @@
   }
 
   function cardMarkup(style){
-    const input = applyCase(state.text);
+    const input = applyCase(sampleText());
     const output = TRANSFORMS[style.fn](input);
     const isFav = state.favorites.has(style.id);
     const kindLabel = style.kind === 'discord' ? 'discord' : style.kind === 'unicode' ? 'unicode' : style.kind === 'symbols' ? 'symbols' : 'decorative';
@@ -342,6 +346,7 @@
   liveInput.addEventListener('input', (e) => {
     state.text = e.target.value;
     charCurrent.textContent = state.text.length;
+    refreshCaseFromState();
     renderAll();
   });
   charCurrent.textContent = state.text.length;
@@ -350,6 +355,7 @@
     state.text = '';
     liveInput.value = '';
     charCurrent.textContent = '0';
+    refreshCaseFromState();
     liveInput.focus();
     renderAll();
   });
@@ -416,7 +422,7 @@
   function doCopy(id, btnEl){
     const style = STYLES.find(s => s.id === id);
     if (!style) return;
-    const output = TRANSFORMS[style.fn](applyCase(state.text));
+    const output = TRANSFORMS[style.fn](applyCase(sampleText()));
     navigator.clipboard?.writeText(output).catch(() => {});
     showToast('Copied!');
     if (btnEl) {
@@ -470,7 +476,7 @@
   function renderDiscordOutput(){
     if (!discordOutputEl) return;
     const fmt = DISCORD_FORMATS.find(f => f.id === discordLabState.formatId) || DISCORD_FORMATS[0];
-    discordOutputEl.textContent = TRANSFORMS[fmt.fn](applyCase(state.text));
+    discordOutputEl.textContent = TRANSFORMS[fmt.fn](applyCase(sampleText()));
   }
   formatGrid?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-format]');
@@ -501,7 +507,7 @@
   function renderTemplateOutput(){
     if (!templateOutputEl) return;
     const t = TEMPLATES.find(t => t.id === templateState.id) || TEMPLATES[0];
-    templateOutputEl.textContent = t.build(applyCase(state.text));
+    templateOutputEl.textContent = t.build(applyCase(sampleText()));
   }
   templateGrid?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-template]');
@@ -534,7 +540,7 @@
   }
   function ansiString(){
     const c = ANSI_COLORS.find(c => c.id === ansiState.id) || ANSI_COLORS[0];
-    return `\\u001b[${c.code}m${applyCase(state.text)}\\u001b[0m`;
+    return `\\u001b[${c.code}m${applyCase(sampleText())}\\u001b[0m`;
   }
   function renderAnsiOutput(){
     if (!ansiOutputEl) return;
@@ -636,7 +642,7 @@
     if (!colorPreviewBox) return;
     colorPreviewBox.style.background = colorState.bg;
     colorPreviewBox.style.color = colorState.fg;
-    colorPreviewBox.textContent = applyCase(state.text);
+    colorPreviewBox.textContent = applyCase(sampleText());
     const ratio = contrastRatio(colorState.fg, colorState.bg);
     contrastPill.textContent = ratio.toFixed(2) + ':1 contrast';
     contrastPill.classList.remove('low', 'mid');
@@ -691,7 +697,7 @@
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
-        if (typeof data.text === 'string') { state.text = data.text; liveInput.value = data.text; charCurrent.textContent = data.text.length; }
+        if (typeof data.text === 'string') { state.text = data.text; liveInput.value = data.text; charCurrent.textContent = data.text.length; refreshCaseFromState(); }
         if (Array.isArray(data.favorites)) { state.favorites = new Set(data.favorites); localStorage.setItem('lu_favorites', JSON.stringify(data.favorites)); }
         if (data.colors) {
           if (data.colors.foreground) colorState.fg = data.colors.foreground;
@@ -2328,24 +2334,54 @@
   const caseConvertGrid = document.getElementById('case-convert-grid');
   function renderCaseConvert(){
     if (!caseConvertGrid) return;
-    const src = caseInput.value;
+    const src = state.text;
     caseConvertGrid.innerHTML = CASE_CONVERTERS.map((c, idx) => `
       <div class="case-convert-row">
         <span class="case-convert-label">${escapeHtml(c.label)}</span>
-        <span class="case-convert-value">${escapeHtml(c.fn(src))}</span>
+        <span class="case-convert-value${src ? '' : ' is-empty'}">${src ? escapeHtml(c.fn(src)) : '—'}</span>
         <button type="button" class="copy-btn small" data-copy-case="${idx}">Copy</button>
       </div>
     `).join('');
   }
-  caseInput?.addEventListener('input', renderCaseConvert);
+  // One text state: the Example box (#live-input) is the source, and this textarea mirrors it.
+  // Editing here writes back to the same state, so the two can never disagree.
+  function refreshCaseFromState(){
+    if (caseInput && caseInput.value !== state.text) caseInput.value = state.text;
+    renderCaseConvert();
+  }
+  caseInput?.addEventListener('input', () => {
+    state.text = caseInput.value;
+    if (liveInput.value !== state.text) liveInput.value = state.text;
+    charCurrent.textContent = state.text.length;
+    renderCaseConvert();
+    renderAll();
+  });
   caseConvertGrid?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-copy-case]');
     if (!btn) return;
+    if (!state.text) { showToast('Type something first'); return; }
     const converter = CASE_CONVERTERS[Number(btn.dataset.copyCase)];
-    navigator.clipboard?.writeText(converter.fn(caseInput.value)).catch(() => {});
+    navigator.clipboard?.writeText(converter.fn(state.text)).catch(() => {});
     showToast('Copied!');
   });
-  renderCaseConvert();
+  refreshCaseFromState();
+
+  /* ============ Example box show/hide ============ */
+  // Hiding only hides the panel (display:none), so its text, font-size and case settings are kept
+  // and it keeps feeding the Case Converter. The button lives in the sticky header, so it is always reachable.
+  const exampleToggle = document.getElementById('example-toggle');
+  function setExampleHidden(hidden, persist){
+    document.documentElement.classList.toggle('example-hidden', hidden);
+    if (exampleToggle) {
+      const label = hidden ? 'Show example box' : 'Hide example box';
+      exampleToggle.setAttribute('aria-pressed', String(!hidden));
+      exampleToggle.setAttribute('aria-label', label);
+      exampleToggle.title = label;
+    }
+    if (persist) { try { localStorage.setItem('lu_example_hidden', hidden ? '1' : '0'); } catch (e) {} }
+  }
+  setExampleHidden(document.documentElement.classList.contains('example-hidden'), false);
+  exampleToggle?.addEventListener('click', () => setExampleHidden(!document.documentElement.classList.contains('example-hidden'), true));
 
   /* ============ Init ============ */
   liveInput.value = state.text;

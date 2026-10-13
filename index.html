@@ -24,6 +24,10 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"Luka's Utils","url":"https://lukas-utils.vercel.app/","description":"Free Discord formatting and text tools that run in the browser.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (web browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
 </script>
+<script>
+  // Restore the hidden/shown state of the Example box before first paint.
+  try { if (localStorage.getItem('lu_example_hidden') === '1') document.documentElement.classList.add('example-hidden'); } catch (e) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -52,6 +56,9 @@
 
     <div class="header-actions">
       <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn example-toggle" id="example-toggle" type="button" aria-pressed="true" aria-label="Hide example box" title="Hide example box">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h6M7 12h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="off-slash" d="M4 20L20 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
       </button>
@@ -91,7 +98,7 @@
         <span class="char-count"><span id="char-current">0</span> / <span id="char-max">1000</span></span>
       </div>
       <div class="input-row">
-        <input type="text" id="live-input" maxlength="1000" value="Example" autocomplete="off" spellcheck="false">
+        <input type="text" id="live-input" maxlength="1000" placeholder="Example" autocomplete="off" spellcheck="false">
         <button class="clear-btn" id="live-clear" type="button" aria-label="Clear text">
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </button>
@@ -743,8 +750,8 @@
 
       <div class="panel" data-keywords="uppercase lowercase title sentence alternating transform">
         <h4 class="panel-title small">Case converter</h4>
-        <p class="panel-sub">Paste text, pick a case, copy the result.</p>
-        <textarea id="case-input" class="text-input textarea" rows="3" placeholder="Paste or type text">Make your message memorable</textarea>
+        <p class="panel-sub">Uses the text from the Example box at the top. Type there (or here), then copy the result.</p>
+        <textarea id="case-input" class="text-input textarea" rows="3" maxlength="1000" placeholder="Example"></textarea>
         <div class="case-convert-grid" id="case-convert-grid"></div>
       </div>
     </div>
