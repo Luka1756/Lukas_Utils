@@ -51,7 +51,7 @@
       <a href="#discord-tools">Discord</a>
       <a href="#text-tools">Text Tools</a>
       <a href="#colors">Colors</a>
-      <a href="#presets">Presets</a>
+      <a href="#presets">Library</a>
     </nav>
 
     <div class="header-actions">
@@ -77,7 +77,7 @@
     <a href="#discord-tools">Discord</a>
     <a href="#text-tools">Text Tools</a>
     <a href="#colors">Colors</a>
-    <a href="#presets">Presets</a>
+    <a href="#presets">Library</a>
     <a href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
   </div>
 </header>
@@ -806,21 +806,28 @@
     </div>
   </section>
 
-  <!-- PRESETS -->
+  <!-- PRESETS & TEMPLATES LIBRARY -->
   <section class="presets-section wide" id="presets">
     <div class="section-head">
-      <h2 class="section-title">Presets</h2>
+      <h2 class="section-title">Presets &amp; Templates</h2>
+      <span class="section-count"><span id="lib-count">0</span> total</span>
     </div>
-    <p class="section-note">Save your current text, colors, and favorites as plain JSON. Copy it, download it, or load one back in later — it never leaves your device unless you send it somewhere.</p>
-    <div class="panel">
-      <pre class="json-box" id="json-output"></pre>
-      <div class="preset-actions">
-        <button class="btn-outline" id="copy-json" type="button">Copy JSON</button>
-        <button class="btn-outline" id="download-json" type="button">Download</button>
-        <button class="btn-outline" id="import-json-btn" type="button">Import JSON</button>
-        <input type="file" id="import-json-file" accept="application/json" hidden>
+    <p class="section-note">Presets change a tool's settings. Templates load content you can edit. Pick one here, or from the Presets and Templates buttons inside each tool. Your own items stay in this browser, and webhook URLs are never saved.</p>
+    <div class="panel lib-panel" id="lib-root"><noscript>The library needs JavaScript.</noscript></div>
+
+    <details class="reference-details snapshot-details">
+      <summary>Session snapshot — your text, colors and favorites as JSON</summary>
+      <div class="panel">
+        <p class="panel-sub">A quick copy of your Example text, colors and favorites. Copy it, download it, or load one back in later — it never leaves your device unless you send it somewhere.</p>
+        <pre class="json-box" id="json-output"></pre>
+        <div class="preset-actions">
+          <button class="btn-outline" id="copy-json" type="button">Copy JSON</button>
+          <button class="btn-outline" id="download-json" type="button">Download</button>
+          <button class="btn-outline" id="import-json-btn" type="button">Import JSON</button>
+          <input type="file" id="import-json-file" accept="application/json" hidden>
+        </div>
       </div>
-    </div>
+    </details>
   </section>
 
   <!-- SHORTCUTS -->
@@ -859,5 +866,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="script.js"></script>
+<script src="library.js"></script>
 </body>
 </html>

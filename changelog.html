@@ -70,9 +70,25 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.8</span>
+      <span class="version-tag">Presets &amp; Templates library</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Added a Presets &amp; Templates library (Library in the header). Presets change only the settings they define; templates load editable content. Search it, filter by type, built-in or your own, tool and category, and open a preview before applying anything</li>
+      <li>61 built-in options: 18 templates (7 embeds, 3 webhook messages, 8 Markdown messages such as announcements, rules and changelogs) and 43 presets (embed styles, permissions, role colors, Color Lab palettes, timestamps and text styles), each with a description, category and tags</li>
+      <li>Added a compact Presets and Templates picker inside the Embed Builder, Webhook Builder, Markdown Preview, Permissions Calculator, Role Color Converter, Timestamp Generator, Mention formatter, Color Lab and Text Styles. It shows only items that fit that tool by default, with an option to show the rest</li>
+      <li>Save your own presets and templates from the current state of a tool, then rename, edit, duplicate or delete them. They are stored in this browser and survive a refresh. If storage is blocked or full you get a clear message and the library stays usable for the session</li>
+      <li>Export your own items as a JSON backup and import one back. Imports are checked first and you see what will be added and what is skipped before anything is saved. Existing items are never overwritten: an ID clash or changed copy becomes a new item, and identical ones are skipped</li>
+      <li>Imported content is only ever treated as text. Webhook URLs and tokens are never saved or exported, and items containing them are rejected on import. Applying an item never sends a webhook or publishes anything</li>
+      <li>Tested in a headless browser at desktop and phone widths: saving, refreshing, editing, importing and exporting, invalid and hostile data, blocked storage, keyboard use, and the sidebar navigation, browser history and Embed Builder. Not tested on real phones, Safari or Firefox</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.7</span>
       <span class="version-tag">Example box, Case Converter and layout</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>The Example box now starts empty and shows "Example" only as placeholder text. The Case Converter uses the same text, so whatever you type, paste or delete there appears in the converter immediately, with every result updating live</li>

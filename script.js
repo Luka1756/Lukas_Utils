@@ -360,9 +360,11 @@
     renderAll();
   });
 
-  document.querySelectorAll('.case-btn').forEach(btn => {
+  // Scoped to the Example box's own AA/aa/Aa group. Unscoped, clicking any other toggle (UTC, 24h,
+  // Minify, a hash algorithm…) cleared this highlight and set the case mode to undefined.
+  document.querySelectorAll('.live-controls .case-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.live-controls .case-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.caseMode = btn.dataset.case;
       renderAll();
@@ -491,14 +493,14 @@
   });
 
   /* ============ Templates ============ */
-  const templateState = { id: 'announcement' };
+  const templateState = { id: 'announcement', custom: '' };
   const templateGrid = document.getElementById('template-grid');
   const templateOutputEl = document.getElementById('template-output');
 
   function renderTemplateGrid(){
     if (!templateGrid) return;
     templateGrid.innerHTML = TEMPLATES.map(t => `
-      <button type="button" class="template-card ${t.id === templateState.id ? 'active' : ''}" data-template="${t.id}">
+      <button type="button" class="template-card ${!templateState.custom && t.id === templateState.id ? 'active' : ''}" data-template="${t.id}">
         <div><h4>${t.name}</h4><p>${t.desc}</p></div>
         <svg viewBox="0 0 24 24" width="16" height="16"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V6a1 1 0 0 1 1-1h9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
       </button>
@@ -506,6 +508,7 @@
   }
   function renderTemplateOutput(){
     if (!templateOutputEl) return;
+    if (templateState.custom) { templateOutputEl.textContent = templateState.custom; return; }
     const t = TEMPLATES.find(t => t.id === templateState.id) || TEMPLATES[0];
     templateOutputEl.textContent = t.build(applyCase(sampleText()));
   }
@@ -513,6 +516,7 @@
     const btn = e.target.closest('[data-template]');
     if (!btn) return;
     templateState.id = btn.dataset.template;
+    templateState.custom = '';
     renderTemplateGrid();
     renderTemplateOutput();
   });
@@ -2382,6 +2386,91 @@
   }
   setExampleHidden(document.documentElement.classList.contains('example-hidden'), false);
   exampleToggle?.addEventListener('click', () => setExampleHidden(!document.documentElement.classList.contains('example-hidden'), true));
+
+  /* ============ Library bridge (v9.8) ============ */
+  // A small, explicit surface for library.js. It only reads and writes tool state through the
+  // same inputs and handlers a person would use, so presets and templates never bypass a tool.
+  const setVal = (el, v) => { if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } };
+  window.LuBridge = {
+    escapeHtml, renderDiscordMarkdown, showToast, applyCase, sampleText,
+    openTool(id){
+      if (toolPanelById(id)) {
+        if (toolSearchInput?.value) { toolSearchInput.value = ''; filterTools(); }
+        history.pushState(null, '', '#' + id);
+        showTool(id, true);
+      } else if (document.getElementById(id)) {
+        location.hash = '#' + id;
+      }
+    },
+    permissions: PERMISSIONS,
+    palettes: PALETTES.map(p => ({ id: p.id, name: p.name, fg: p.fg, bg: p.bg, canvas: p.canvas })),
+    styles: {
+      get(){ return { caseMode: state.caseMode, size: Number(sizeRange.value) }; },
+      set(o){
+        if (o.caseMode === 'none' || o.caseMode === 'lower' || o.caseMode === 'title') {
+          state.caseMode = o.caseMode;
+          document.querySelectorAll('.live-controls .case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === o.caseMode));
+        }
+        if (typeof o.size === 'number') setVal(sizeRange, String(o.size));
+        renderAll();
+      },
+    },
+    timestamp: {
+      get(){ return { tzMode: tsTzMode, hourMode: tsHourMode, zones: [...tzState.zones] }; },
+      isZone(tz){ try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; } },
+      set(o){
+        if (o.tzMode) tsTzToggle?.querySelector(`[data-tz-mode="${o.tzMode}"]`)?.click();
+        if (o.hourMode) tsHourToggle?.querySelector(`[data-hour-mode="${o.hourMode}"]`)?.click();
+        if (Array.isArray(o.zones)) { tzState.zones = [...o.zones]; saveZones(); renderTimestamps(); }
+      },
+    },
+    colors: {
+      get(){ return { fg: colorState.fg, bg: colorState.bg, canvas: colorState.canvas }; },
+      set(o){
+        const p = PALETTES.find(p => p.fg === o.fg && p.bg === o.bg && p.canvas === o.canvas);
+        colorState.fg = o.fg; colorState.bg = o.bg; colorState.canvas = o.canvas;
+        colorState.activePreset = p ? p.id : null;
+        syncColorInputs(); renderPaletteGrid(); renderColorLab(); renderJson();
+      },
+    },
+    embed: {
+      read(){
+        const v = k => embedInputs[k].value;
+        return {
+          content: embedMessageContent.value, author: v('author'), authorUrl: v('authorUrl'), authorIcon: v('authorIcon'),
+          title: v('title'), url: v('url'), description: v('description'), color: v('colorHex').trim(),
+          thumbnail: v('thumbnail'), image: v('image'), footer: v('footer'), footerIcon: v('footerIcon'),
+          timestamp: embedInputs.timestampToggle.checked,
+          fields: embedFields.map(f => ({ name: f.name, value: f.value, inline: !!f.inline })),
+          senderName: document.getElementById('embed-sender-name')?.value || '',
+          senderAvatar: document.getElementById('embed-sender-avatar')?.value || '',
+        };
+      },
+      // Only keys that are present are touched, so a preset can change just a colour or a footer.
+      write(o){
+        const set = (el, v) => { if (el && v !== undefined) el.value = v; };
+        set(embedMessageContent, o.content);
+        set(embedInputs.author, o.author); set(embedInputs.authorUrl, o.authorUrl); set(embedInputs.authorIcon, o.authorIcon);
+        set(embedInputs.title, o.title); set(embedInputs.url, o.url); set(embedInputs.description, o.description);
+        if (o.color !== undefined) { embedInputs.colorHex.value = o.color; if (/^#[0-9a-fA-F]{6}$/.test(o.color)) embedInputs.colorSwatch.value = o.color; }
+        set(embedInputs.thumbnail, o.thumbnail); set(embedInputs.image, o.image);
+        set(embedInputs.footer, o.footer); set(embedInputs.footerIcon, o.footerIcon);
+        if (o.timestamp !== undefined) embedInputs.timestampToggle.checked = !!o.timestamp;
+        set(document.getElementById('embed-sender-name'), o.senderName);
+        set(document.getElementById('embed-sender-avatar'), o.senderAvatar);
+        if (Array.isArray(o.fields)) {
+          embedFields = o.fields.map(f => ({ id: ++embedFieldIdSeq, name: f.name, value: f.value, inline: !!f.inline }));
+          renderEmbedFields();
+        }
+        renderEmbedOutput();
+        renderWebhookPreview();
+      },
+    },
+    templates: {
+      get(){ return templateState.custom || ''; },
+      set(text){ templateState.custom = text || ''; renderTemplateGrid(); renderTemplateOutput(); },
+    },
+  };
 
   /* ============ Init ============ */
   liveInput.value = state.text;
