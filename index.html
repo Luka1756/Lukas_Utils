@@ -1,23 +1,871 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0b0b0c" />
-    <meta
-      name="description"
-      content="Command Assembler turns a list of Minecraft Java commands into a single command that builds a command block machine."
-    />
-    <title>Command Assembler</title>
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./tokens.css" />
-    <link rel="stylesheet" href="./base.css" />
-    <link rel="stylesheet" href="./components.css" />
-  </head>
-  <body>
-    <div id="app"></div>
-    <noscript><p style="padding:16px">Command Assembler needs JavaScript to run.</p></noscript>
-    <script type="module" src="./main.js"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luka's Utils — Discord Formatting &amp; Text Tools</title>
+<meta name="description" content="Free Discord and text tools: embed builder, timestamp builder, markdown preview, Unicode text styles, color tools and more. Runs in your browser.">
+<link rel="canonical" href="https://lukas-utils.vercel.app/">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Luka's Utils — Discord Formatting &amp; Text Tools">
+<meta property="og:description" content="Free Discord and text tools: embed builder, timestamp builder, markdown preview, Unicode text styles, color tools and more. Runs in your browser.">
+<meta property="og:url" content="https://lukas-utils.vercel.app/">
+<meta property="og:image" content="https://lukas-utils.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Luka's Utils — Discord Formatting &amp; Text Tools">
+<meta name="twitter:description" content="Free Discord and text tools: embed builder, timestamp builder, markdown preview, Unicode text styles, color tools and more. Runs in your browser.">
+<meta name="twitter:image" content="https://lukas-utils.vercel.app/og-image.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Luka's Utils","url":"https://lukas-utils.vercel.app/","description":"Free Discord formatting and text tools that run in the browser.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (web browser)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script>
+  // Restore the hidden/shown state of the Example box before first paint.
+  try { if (localStorage.getItem('lu_example_hidden') === '1') document.documentElement.classList.add('example-hidden'); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="#top" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="#styles">Styles</a>
+      <a href="#discord-tools">Discord</a>
+      <a href="#text-tools">Text Tools</a>
+      <a href="#colors">Colors</a>
+      <a href="#presets">Library</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn example-toggle" id="example-toggle" type="button" aria-pressed="true" aria-label="Hide example box" title="Hide example box">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h6M7 12h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="off-slash" d="M4 20L20 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+      <button class="icon-btn fav-btn" id="fav-toggle" type="button" title="Show favorites">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 20s-6.7-4.2-9.3-8.4C1 8.6 2 5.4 5 4.4c2-.6 3.9.2 5 1.8 1.1-1.6 3-2.4 5-1.8 3 1 4 4.2 2.3 7.2C18.7 15.8 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span id="fav-count">0</span>
+      </button>
+      <button class="icon-btn" id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></g></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#styles">Styles</a>
+    <a href="#discord-tools">Discord</a>
+    <a href="#text-tools">Text Tools</a>
+    <a href="#colors">Colors</a>
+    <a href="#presets">Library</a>
+    <a href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- INTRO -->
+  <section class="intro" id="top">
+    <h1 class="intro-title">Discord formatting &amp; text tools</h1>
+    <p class="intro-text">Text styles, Discord formatting, and a couple of color tools I got tired of re-Googling. Everything below runs in your browser. Nothing you type is sent anywhere unless you click the invite lookup or Send to Discord.</p>
+  </section>
+
+  <!-- LIVE TEXT -->
+  <section class="live-text-wrap">
+    <div class="panel live-text-panel">
+      <div class="panel-head">
+        <span class="panel-label">Your text</span>
+        <span class="char-count"><span id="char-current">0</span> / <span id="char-max">1000</span></span>
+      </div>
+      <div class="input-row">
+        <input type="text" id="live-input" maxlength="1000" placeholder="Example" autocomplete="off" spellcheck="false">
+        <button class="clear-btn" id="live-clear" type="button" aria-label="Clear text">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="live-controls">
+        <div class="case-group" role="group" aria-label="Text case">
+          <button type="button" class="case-btn active" data-case="none">AA</button>
+          <button type="button" class="case-btn" data-case="lower">aa</button>
+          <button type="button" class="case-btn" data-case="title">Aa</button>
+        </div>
+        <div class="size-group">
+          <input type="range" id="size-range" min="14" max="34" value="22" aria-label="Preview size">
+          <span id="size-label">22px</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="live-text-hint">Type once, everything below updates — the styles grid, Discord formats, templates, all of it.</p>
+
+  <!-- STYLES -->
+  <section class="styles-section hub" id="styles">
+    <div class="section-head">
+      <h2 class="section-title">Styles</h2>
+      <span class="section-count"><span id="styles-total-count">0</span> total</span>
+    </div>
+    <p class="section-note">Filter by category or search, then tap a card to copy it. The tag on each one shows how it behaves in Discord.</p>
+
+    <div class="section-layout">
+      <aside class="section-sidebar">
+        <p class="sidebar-label">Categories</p>
+        <div class="filter-row" id="filter-row" role="tablist" aria-label="Style categories">
+          <button class="filter-pill active" data-filter="all" type="button">All</button>
+          <button class="filter-pill" data-filter="discord" type="button">Discord</button>
+          <button class="filter-pill" data-filter="unicode" type="button">Unicode</button>
+          <button class="filter-pill" data-filter="symbols" type="button">Symbols</button>
+          <button class="filter-pill" data-filter="decorative" type="button">Decorative</button>
+        </div>
+
+        <ul class="legend">
+          <li><span class="dot dot-discord"></span> Discord syntax — native markdown</li>
+          <li><span class="dot dot-unicode"></span> Text-safe — plain Unicode, pastes anywhere</li>
+          <li><span class="dot dot-varies"></span> Client varies — depends on font/device</li>
+        </ul>
+      </aside>
+
+      <div class="section-content">
+        <div class="search-row">
+          <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="text" id="search-input" placeholder="Search styles" autocomplete="off">
+          <span class="kbd">⌘K</span>
+        </div>
+
+        <p class="results-empty" id="results-empty" hidden>Nothing matches “<span id="empty-query"></span>.” Try a different word or clear the filters.</p>
+
+        <div class="card-grid" id="card-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISCORD TOOLS -->
+  <section class="discord-tools hub" id="discord-tools">
+    <div class="section-head">
+      <h2 class="section-title">Discord Tools</h2>
+    </div>
+    <p class="section-note">Stuff that comes up when running a server or building a bot. Everything here runs locally in your browser, except two things that only contact Discord when you click them: the invite lookup and the Embed Builder's Send to Discord button.</p>
+    <p class="tool-page-links">Open as a standalone page: <a href="discord-timestamp-generator">Discord Timestamp Generator</a> <a href="discord-embed-builder">Discord Embed Builder</a> <a href="discord-snowflake-decoder">Discord Snowflake Decoder</a> <a href="discord-permissions-calculator">Discord Permissions Calculator</a> <a href="discord-markdown-preview">Discord Markdown Preview</a> <a href="discord-role-color-converter">Discord Role Color Converter</a></p>
+
+    <div class="popular-row">
+      <span class="popular-label">Popular</span>
+      <a class="popular-chip" href="#tool-timestamp">🕒 Timestamp builder</a>
+      <a class="popular-chip" href="#tool-embed">📦 Embed builder</a>
+      <a class="popular-chip" href="#tool-permissions">🛡️ Permissions</a>
+      <a class="popular-chip" href="#tool-snowflake">🆔 Snowflake decoder</a>
+    </div>
+
+    <div class="section-layout">
+      <nav class="section-sidebar group-nav-sidebar tool-nav" id="tool-nav" aria-label="Discord tools">
+        <button class="tool-nav-toggle" id="tool-nav-toggle" type="button" aria-expanded="false" aria-controls="tool-nav-list">
+          <span class="tool-nav-toggle-label">Tools</span>
+          <span class="tool-nav-current" id="tool-nav-current">All tools</span>
+          <svg class="tool-nav-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="tool-nav-list" id="tool-nav-list">
+          <a class="tool-nav-all active" href="#discord-tools" data-tool="" aria-current="true">All tools</a>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Time</span></p>
+            <ul>
+              <li><a href="#tool-timestamp" data-tool="tool-timestamp">Timestamp builder</a></li>
+              <li><a href="#tool-unix" data-tool="tool-unix">Unix timestamp</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 6.5h14v9H12l-4 3v-3H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Discord tools</span></p>
+            <ul>
+              <li><a href="#tool-snowflake" data-tool="tool-snowflake">Snowflake decoder</a></li>
+              <li><a href="#tool-permissions" data-tool="tool-permissions">Permissions calculator</a></li>
+              <li><a href="#tool-role-color" data-tool="tool-role-color">Role color converter</a></li>
+              <li><a href="#tool-cdn" data-tool="tool-cdn">CDN image URL</a></li>
+              <li><a href="#tool-emoji" data-tool="tool-emoji">Emoji tag</a></li>
+              <li><a href="#tool-invite-formatter" data-tool="tool-invite-formatter">Invite formatter</a></li>
+              <li><a href="#tool-invite-lookup" data-tool="tool-invite-lookup">Invite lookup</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 9.5h16" stroke="currentColor" stroke-width="1.7"/></svg><span>Embeds &amp; webhooks</span></p>
+            <ul>
+              <li><a href="#tool-embed" data-tool="tool-embed">Embed builder</a></li>
+              <li><a href="#tool-webhook-builder" data-tool="tool-webhook-builder">Webhook message builder</a></li>
+              <li><a href="#tool-message-preview" data-tool="tool-message-preview">Message preview</a></li>
+              <li><a href="#tool-webhook-payload" data-tool="tool-webhook-payload">Webhook payload</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 6h14M12 6v13M9 19h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Formatting</span></p>
+            <ul>
+              <li><a href="#tool-markdown-preview" data-tool="tool-markdown-preview">Markdown preview</a></li>
+              <li><a href="#tool-markdown-formats" data-tool="tool-markdown-formats">Markdown formats</a></li>
+              <li><a href="#tool-cheatsheet" data-tool="tool-cheatsheet">Markdown cheat sheet</a></li>
+              <li><a href="#tool-mention" data-tool="tool-mention">Mention formatter</a></li>
+              <li><a href="#templates" data-tool="templates">Templates</a></li>
+              <li><a href="#tool-ansi" data-tool="tool-ansi">ANSI colors</a></li>
+              <li><a href="#tool-message-length" data-tool="tool-message-length">Message length</a></li>
+              <li><a href="#tool-text-cleaner" data-tool="tool-text-cleaner">Text cleaner</a></li>
+            </ul>
+          </div>
+          <div class="tool-nav-group">
+            <p class="tool-nav-heading"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Developer tools</span></p>
+            <ul>
+              <li><a href="#tool-json" data-tool="tool-json">JSON formatter</a></li>
+              <li><a href="#tool-base64" data-tool="tool-base64">Base64</a></li>
+              <li><a href="#tool-url" data-tool="tool-url">URL encoder / decoder</a></li>
+              <li><a href="#tool-uuid" data-tool="tool-uuid">UUID generator</a></li>
+              <li><a href="#tool-hash" data-tool="tool-hash">Hash generator</a></li>
+              <li><a href="#tool-diff" data-tool="tool-diff">Text diff</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="section-content">
+        <div class="tool-search-row">
+          <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="text" id="tool-search-input" placeholder="Find a Discord tool" autocomplete="off">
+        </div>
+        <p class="results-empty" id="tool-search-empty" hidden>Nothing matches that.</p>
+
+    <!-- TIME -->
+    <div class="tool-group" id="group-time">
+      <h3 class="group-title">Time</h3>
+      <div class="tool-grid">
+        <div class="panel span-2 featured-panel" id="tool-timestamp" data-keywords="clock unix epoch relative discord tag">
+          <h4 class="panel-title small">Timestamp builder</h4>
+          <p class="panel-sub">Pick a date and time, get every Discord <code>&lt;t:…&gt;</code> tag with a live preview of how it'll actually read.</p>
+
+          <div class="ts-preset-row" id="ts-preset-row">
+            <button type="button" class="btn-outline small" data-ts-preset="now">Now</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1h">In 1 hour</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1d">Tomorrow</button>
+            <button type="button" class="btn-outline small" data-ts-preset="1w">Next week</button>
+          </div>
+
+          <input type="datetime-local" id="timestamp-input" class="text-input">
+
+          <div class="ts-controls-row">
+            <div class="case-group" id="ts-tz-toggle" role="group" aria-label="Timezone mode">
+              <button type="button" class="case-btn active" data-tz-mode="local">Local</button>
+              <button type="button" class="case-btn" data-tz-mode="utc">UTC</button>
+            </div>
+            <div class="case-group" id="ts-hour-toggle" role="group" aria-label="Hour format">
+              <button type="button" class="case-btn active" data-hour-mode="12">12h</button>
+              <button type="button" class="case-btn" data-hour-mode="24">24h</button>
+            </div>
+          </div>
+
+          <div class="ts-tz-compare">
+            <p class="panel-sub no-margin ts-tz-label">Compare timezones</p>
+            <div class="tz-search-wrap">
+              <div class="tz-search-row">
+                <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="text" id="tz-search-input" placeholder="Add a city or timezone" autocomplete="off">
+              </div>
+              <div class="tz-search-results" id="tz-search-results" hidden></div>
+            </div>
+            <div class="tz-rows" id="tz-rows"></div>
+          </div>
+
+          <div class="ts-highlight-row" id="ts-highlight-row"></div>
+
+          <p class="panel-sub no-margin ts-grid-label">Every format, with what it actually means</p>
+          <div class="timestamp-grid" id="timestamp-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDS -->
+    <div class="tool-group" id="group-ids">
+      <h3 class="group-title">IDs</h3>
+      <div class="tool-grid">
+        <div class="panel" id="tool-snowflake" data-keywords="id creation date decode">
+          <h4 class="panel-title small">Snowflake decoder</h4>
+          <p class="panel-sub">Works for any Discord ID — user, server, channel, or message. Paste it to see when it was created.</p>
+          <input type="text" id="snowflake-input" class="text-input" placeholder="e.g. 175928847299117063" inputmode="numeric" autocomplete="off">
+          <div class="tool-output" id="snowflake-output"></div>
+        </div>
+
+        <div id="tool-cdn" class="panel" data-keywords="avatar icon banner link url">
+          <h4 class="panel-title small">CDN image URL</h4>
+          <p class="panel-sub">Builds a Discord CDN link from an ID, and a hash if you have one.</p>
+          <div class="cdn-form" id="cdn-form">
+            <input type="text" id="cdn-id-input" class="text-input" placeholder="User or server ID" inputmode="numeric" autocomplete="off">
+            <input type="text" id="cdn-hash-input" class="text-input" placeholder="Avatar / icon hash (optional)" autocomplete="off">
+            <div class="cdn-selects">
+              <select id="cdn-type-select" class="text-input select-input">
+                <option value="avatar">Avatar</option>
+                <option value="icon">Server icon</option>
+                <option value="banner">Banner</option>
+              </select>
+              <select id="cdn-size-select" class="text-input select-input">
+                <option>128</option><option>256</option><option selected>512</option><option>1024</option><option>2048</option>
+              </select>
+            </div>
+          </div>
+          <div class="tool-output" id="cdn-output"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERMISSIONS -->
+    <div class="tool-group" id="group-permissions">
+      <h3 class="group-title">Permissions</h3>
+      <div class="tool-grid">
+        <div class="panel span-2" id="tool-permissions" data-keywords="perms bitfield integer bot role">
+          <h4 class="panel-title small">Permissions calculator</h4>
+          <p class="panel-sub">Check boxes to get a permission integer, or paste one to see what it grants. Covers Discord's standard permission set.</p>
+          <div class="perm-integer-row">
+            <input type="text" id="perm-integer-input" class="text-input" placeholder="Permission integer" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="perm-grid" id="perm-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLORS -->
+    <div class="tool-group" id="group-colors">
+      <h3 class="group-title">Colors</h3>
+      <div class="tool-grid">
+        <div id="tool-role-color" class="panel" data-keywords="hex rgb decimal role">
+          <h4 class="panel-title small">Role color converter</h4>
+          <p class="panel-sub">The decimal value is what you'd paste into a bot's role color field.</p>
+          <div class="color-input-row">
+            <input type="color" id="role-color-swatch">
+            <input type="text" id="role-color-hex" spellcheck="false">
+          </div>
+          <div class="role-preview-row" id="role-color-preview"></div>
+          <div class="tool-output" id="role-color-output"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMBEDS -->
+    <div class="tool-group" id="group-embeds">
+      <h3 class="group-title">Embeds</h3>
+      <div class="tool-grid">
+        <div class="panel span-2" id="tool-embed" data-keywords="json fields preview bot webhook">
+          <h4 class="panel-title small">Embed builder</h4>
+          <p class="panel-sub">Edit an embed and see exactly what it'll look like in Discord.</p>
+
+          <label class="embed-section-label" for="embed-message-content">Message content <span class="optional-tag">optional</span></label>
+          <textarea id="embed-message-content" class="text-input textarea" rows="2" placeholder="Text that would appear above the embed"></textarea>
+
+          <div class="embed-builder-grid">
+            <div class="embed-editor-col">
+              <div class="embed-form">
+                <p class="embed-section-label">Basic</p>
+                <input type="text" id="embed-title-input" class="text-input" placeholder="Title" autocomplete="off" maxlength="256">
+                <textarea id="embed-description-input" class="text-input textarea" rows="3" placeholder="Description" maxlength="4096"></textarea>
+                <input type="text" id="embed-url-input" class="text-input" placeholder="Title link URL (optional)" autocomplete="off">
+                <div class="color-input-row">
+                  <input type="color" id="embed-color-swatch">
+                  <input type="text" id="embed-color-hex" spellcheck="false" placeholder="#22D3EE">
+                </div>
+                <label class="checkbox-row"><input type="checkbox" id="embed-timestamp-toggle"> Include current timestamp</label>
+
+                <p class="embed-section-label">Author</p>
+                <input type="text" id="embed-author-input" class="text-input" placeholder="Author name" autocomplete="off" maxlength="256">
+                <input type="text" id="embed-author-url-input" class="text-input" placeholder="Author link URL (optional)" autocomplete="off">
+                <input type="text" id="embed-author-icon-input" class="text-input" placeholder="Author icon URL (optional)" autocomplete="off">
+
+                <p class="embed-section-label">Images</p>
+                <input type="text" id="embed-thumbnail-input" class="text-input" placeholder="Thumbnail image URL" autocomplete="off">
+                <input type="text" id="embed-image-input" class="text-input" placeholder="Large image URL" autocomplete="off">
+
+                <div class="embed-fields-head">
+                  <span class="embed-section-label no-margin">Fields</span>
+                  <button type="button" class="btn-outline small" id="embed-add-field">+ Add field</button>
+                </div>
+                <div class="embed-fields-list" id="embed-fields-list"></div>
+
+                <p class="embed-section-label">Footer</p>
+                <input type="text" id="embed-footer-input" class="text-input" placeholder="Footer text" autocomplete="off" maxlength="2048">
+                <input type="text" id="embed-footer-icon-input" class="text-input" placeholder="Footer icon URL (optional)" autocomplete="off">
+              </div>
+
+              <div class="embed-warnings" id="embed-warnings" hidden></div>
+
+              <p class="embed-section-label">Send</p>
+              <input type="password" id="embed-webhook-url" class="text-input" placeholder="Discord webhook URL" autocomplete="off" spellcheck="false">
+              <p class="webhook-privacy-note">Never saved, never logged — only used the moment you click Send.</p>
+              <details class="reference-details embed-send-options">
+                <summary>Send options</summary>
+                <input type="text" id="embed-sender-name" class="text-input" placeholder="Bot name (optional)" autocomplete="off" maxlength="80">
+                <input type="text" id="embed-sender-avatar" class="text-input" placeholder="Bot avatar URL (optional)" autocomplete="off" spellcheck="false">
+                <input type="text" id="embed-thread-id" class="text-input" placeholder="Thread ID (optional, to post inside a thread)" autocomplete="off" inputmode="numeric" spellcheck="false">
+              </details>
+              <div class="embed-actions">
+                <button class="btn-solid" id="send-to-discord" type="button">Send to Discord</button>
+                <button class="btn-outline" id="clear-embed" type="button">Clear</button>
+                <button class="btn-outline" id="reset-embed" type="button">Reset</button>
+              </div>
+              <div class="send-status" id="send-status" role="status" aria-live="polite" hidden></div>
+
+              <details class="reference-details embed-json-details">
+                <summary>&lt;/&gt; View JSON</summary>
+                <div class="output-box">
+                  <span class="output-label">Embed JSON</span>
+                  <pre class="output-text" id="embed-json-output"></pre>
+                </div>
+                <div class="embed-dev-actions">
+                  <button class="btn-outline small" id="copy-embed-json" type="button">Copy JSON</button>
+                  <button class="btn-outline small" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
+                </div>
+              </details>
+            </div>
+
+            <div class="embed-preview-col">
+              <p class="embed-section-label">Preview</p>
+              <div class="embed-live-message">
+                <div class="mp-avatar">E</div>
+                <div class="mp-body">
+                  <div class="mp-head"><span class="mp-username">Embed Preview</span><span class="wh-tag">BOT</span><span class="mp-time" id="embed-preview-time"></span></div>
+                  <div class="mp-content" id="embed-content-preview"></div>
+                  <div class="embed-preview" id="embed-preview"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tool-webhook-builder" class="panel span-2" data-keywords="webhook bot preview username avatar">
+          <h4 class="panel-title small">Webhook message builder</h4>
+          <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent from this tool (sending lives in the Embed Builder) — uses the embed above if you've built one.</p>
+          <div class="embed-form">
+            <input type="text" id="webhook-username-input" class="text-input" placeholder="Webhook name (optional)" autocomplete="off">
+            <input type="text" id="webhook-avatar-input" class="text-input" placeholder="Avatar image URL (optional)" autocomplete="off">
+            <textarea id="webhook-content-input" class="text-input textarea" rows="2" placeholder="Message content"></textarea>
+          </div>
+          <p class="panel-sub embed-preview-label">Preview</p>
+          <div class="message-preview-box" id="webhook-preview-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMOJIS -->
+    <div class="tool-group" id="group-emojis">
+      <h3 class="group-title">Emojis</h3>
+      <div class="tool-grid">
+        <div id="tool-emoji" class="panel" data-keywords="custom emoji format cdn">
+          <h4 class="panel-title small">Emoji tag</h4>
+          <p class="panel-sub">Paste a custom emoji tag to inspect it, or type name:id to build one.</p>
+          <input type="text" id="emoji-tag-input" class="text-input" placeholder="&lt;:name:123456789012345678&gt; or name:id" autocomplete="off">
+          <div class="tool-output" id="emoji-tag-output"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVITES -->
+    <div class="tool-group" id="group-invites">
+      <h3 class="group-title">Invites</h3>
+      <div class="tool-grid">
+        <div id="tool-invite-formatter" class="panel" data-keywords="server link code">
+          <h4 class="panel-title small">Invite formatter</h4>
+          <p class="panel-sub">Paste an invite code or link to get a clean, canonical <code>discord.gg</code> link.</p>
+          <input type="text" id="invite-input" class="text-input" placeholder="Uh7k7pxRPk or discord.gg/Uh7k7pxRPk" autocomplete="off">
+          <div class="tool-output" id="invite-output"></div>
+        </div>
+
+        <div id="tool-invite-lookup" class="panel" data-keywords="server info api">
+          <h4 class="panel-title small">Invite lookup</h4>
+          <p class="panel-sub">Looks up publicly available server info for an invite. This is the one tool that contacts Discord's API — nothing happens until you tap the button.</p>
+          <input type="text" id="invite-lookup-input" class="text-input" placeholder="Invite code or link" autocomplete="off">
+          <button type="button" class="btn-outline small" id="invite-lookup-btn">Look up</button>
+          <div class="tool-output" id="invite-lookup-output"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEXT -->
+    <div class="tool-group" id="group-text">
+      <h3 class="group-title">Text</h3>
+      <div class="tool-grid">
+        <div id="tool-markdown-formats" class="panel" data-keywords="bold italic spoiler code format">
+          <h4 class="panel-title small">Markdown formats</h4>
+          <p class="panel-sub">Pick a format — it applies to your text above automatically.</p>
+          <div class="format-grid" id="format-grid"></div>
+          <div class="output-box">
+            <span class="output-label">Output</span>
+            <div class="output-text" id="discord-output"></div>
+          </div>
+          <button class="btn-solid btn-discord" id="copy-discord-format" type="button">Copy Discord format</button>
+        </div>
+
+        <div class="panel" id="templates" data-keywords="announcement rules preset message">
+          <h4 class="panel-title small">Templates</h4>
+          <p class="panel-sub">A few starting points — pick one and it drops your text in.</p>
+          <div class="template-grid" id="template-grid"></div>
+          <div class="selected-template-box">
+            <span class="output-label">Selected template</span>
+            <pre class="output-text" id="template-output"></pre>
+            <button class="btn-outline small" id="copy-template" type="button">Copy</button>
+          </div>
+        </div>
+
+        <div id="tool-ansi" class="panel" data-keywords="terminal codeblock colorize">
+          <h4 class="panel-title small">ANSI colors</h4>
+          <p class="panel-sub">Color your text inside a Discord code block.</p>
+          <div class="ansi-swatches" id="ansi-swatches"></div>
+          <div class="output-box mono-output" id="ansi-output"></div>
+          <button class="btn-outline" id="copy-ansi" type="button">Copy ANSI code</button>
+        </div>
+
+        <div id="tool-message-length" class="panel" data-keywords="character count limit">
+          <h4 class="panel-title small">Message length</h4>
+          <p class="panel-sub">Checks your text against Discord's message and embed limits, with a line count too.</p>
+          <textarea id="length-input" class="text-input textarea" rows="3" placeholder="Paste or type a message"></textarea>
+          <div class="length-bars" id="length-bars"></div>
+        </div>
+
+        <div id="tool-text-cleaner" class="panel" data-keywords="whitespace trim strip markdown">
+          <h4 class="panel-title small">Text cleaner</h4>
+          <p class="panel-sub">Strips Markdown, trims stray spaces, and collapses blank lines.</p>
+          <textarea id="cleaner-input" class="text-input textarea" rows="3" placeholder="Paste messy text"></textarea>
+          <label class="checkbox-row"><input type="checkbox" id="cleaner-strip-markdown" checked> Also strip Discord markdown (**bold**, *italic*, etc.)</label>
+          <div class="output-box">
+            <span class="output-label">Cleaned</span>
+            <div class="output-text" id="cleaner-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-cleaner" type="button">Copy</button>
+        </div>
+
+        <div id="tool-markdown-preview" class="panel" data-keywords="render html live preview headings lists links">
+          <h4 class="panel-title small">Markdown preview</h4>
+          <p class="panel-sub">See how Discord Markdown actually renders before you send it. Discord-inspired, not a pixel clone.</p>
+          <textarea id="md-preview-input" class="text-input textarea" rows="4" placeholder="**bold**, *italic*, ||spoiler||, `code`, # heading, - list, [link](url)...">## A quick example
+**bold**, *italic*, __underline__, ~~strike~~, `code`
+
+- a list item
+- another one
+
+> a quoted line
+
+[Luka's Utils](https://example.com)</textarea>
+          <div class="md-preview-box" id="md-preview-output"></div>
+          <button class="btn-outline small" id="copy-md-raw" type="button">Copy raw Markdown</button>
+        </div>
+
+        <div id="tool-cheatsheet" class="panel" data-keywords="syntax reference guide help cheatsheet">
+          <h4 class="panel-title small">Markdown cheat sheet</h4>
+          <p class="panel-sub">Every syntax Discord supports, with a live example and a copy button.</p>
+          <input type="text" id="cheatsheet-search" class="text-input" placeholder="Search syntax (e.g. spoiler, heading)" autocomplete="off">
+          <div class="cheatsheet-list" id="cheatsheet-list"></div>
+        </div>
+
+        <div id="tool-mention" class="panel" data-keywords="ping tag user role channel">
+          <h4 class="panel-title small">Mention formatter</h4>
+          <p class="panel-sub">Builds the raw text for a user, role, or channel mention.</p>
+          <div class="mention-form">
+            <select id="mention-type-select" class="text-input select-input">
+              <option value="user">User</option>
+              <option value="role">Role</option>
+              <option value="channel">Channel</option>
+            </select>
+            <input type="text" id="mention-id-input" class="text-input" placeholder="ID" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="tool-output" id="mention-output"></div>
+        </div>
+
+        <div id="tool-message-preview" class="panel span-2" data-keywords="chat bubble render">
+          <h4 class="panel-title small">Message preview</h4>
+          <p class="panel-sub">A rough approximation of how your text (from the box at the top of the page) would look as a message, with your embed below it if you've built one.</p>
+          <div class="message-preview-box" id="message-preview-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEVELOPER -->
+    <div class="tool-group" id="group-developer">
+      <h3 class="group-title">Developer</h3>
+      <div class="tool-grid">
+        <div id="tool-json" class="panel" data-keywords="validate pretty print minify">
+          <h4 class="panel-title small">JSON formatter</h4>
+          <p class="panel-sub">Paste JSON to validate, pretty-print, or minify it.</p>
+          <div class="case-group" id="json-fmt-mode-toggle">
+            <button type="button" class="case-btn active" data-json-mode="format">Format</button>
+            <button type="button" class="case-btn" data-json-mode="minify">Minify</button>
+          </div>
+          <textarea id="json-fmt-input" class="text-input textarea" rows="4" placeholder="Paste JSON"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <pre class="output-text" id="json-fmt-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-json-fmt" type="button">Copy</button>
+        </div>
+
+        <div id="tool-base64" class="panel" data-keywords="encode decode">
+          <h4 class="panel-title small">Base64</h4>
+          <p class="panel-sub">Encode or decode text — handles emoji and non-English text correctly.</p>
+          <div class="case-group" id="base64-mode-toggle">
+            <button type="button" class="case-btn active" data-b64-mode="encode">Encode</button>
+            <button type="button" class="case-btn" data-b64-mode="decode">Decode</button>
+          </div>
+          <textarea id="base64-input" class="text-input textarea" rows="3" placeholder="Text to encode"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <div class="output-text" id="base64-output"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-outline small" id="copy-base64" type="button">Copy</button>
+            <button class="btn-outline small" id="clear-base64" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div id="tool-url" class="panel" data-keywords="percent encode component query string">
+          <h4 class="panel-title small">URL encoder / decoder</h4>
+          <p class="panel-sub">Percent-encode or decode a string, query value, or full URL.</p>
+          <div class="case-group" id="url-mode-toggle">
+            <button type="button" class="case-btn active" data-url-mode="encode">Encode</button>
+            <button type="button" class="case-btn" data-url-mode="decode">Decode</button>
+          </div>
+          <textarea id="url-encode-input" class="text-input textarea" rows="3" placeholder="Text or URL"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <div class="output-text" id="url-encode-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-url-encode" type="button">Copy</button>
+        </div>
+
+        <div id="tool-uuid" class="panel" data-keywords="guid random unique id multiple bulk">
+          <h4 class="panel-title small">UUID generator</h4>
+          <p class="panel-sub">Generates random v4 UUIDs.</p>
+          <div class="uuid-count-row">
+            <input type="number" id="uuid-count-input" class="text-input" value="1" min="1" max="50">
+            <button class="btn-outline small" id="generate-uuid" type="button">Generate</button>
+          </div>
+          <div class="tool-output" id="uuid-output"></div>
+          <button class="btn-outline small" id="copy-all-uuid" type="button" hidden>Copy all</button>
+        </div>
+
+        <div id="tool-unix" class="panel" data-keywords="epoch convert date discord tag">
+          <h4 class="panel-title small">Unix timestamp</h4>
+          <p class="panel-sub">Paste a unix timestamp (seconds or ms) or a date, get the other one back — plus ready-to-use Discord tags.</p>
+          <input type="text" id="unix-input" class="text-input" placeholder="1717000000 or 2024-05-29T12:00" autocomplete="off">
+          <div class="tool-output" id="unix-output"></div>
+        </div>
+
+        <div id="tool-hash" class="panel" data-keywords="sha256 sha1 sha512 checksum fingerprint">
+          <h4 class="panel-title small">Hash generator</h4>
+          <p class="panel-sub">Computes a cryptographic hash locally — your text never leaves the browser.</p>
+          <div class="case-group" id="hash-algo-toggle">
+            <button type="button" class="case-btn" data-hash-algo="SHA-1">SHA-1</button>
+            <button type="button" class="case-btn active" data-hash-algo="SHA-256">SHA-256</button>
+            <button type="button" class="case-btn" data-hash-algo="SHA-512">SHA-512</button>
+          </div>
+          <textarea id="hash-input" class="text-input textarea" rows="3" placeholder="Text to hash"></textarea>
+          <div class="output-box">
+            <span class="output-label">Hash</span>
+            <div class="output-text" id="hash-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-hash" type="button">Copy</button>
+        </div>
+
+        <div id="tool-diff" class="panel span-2" data-keywords="compare changes added removed lines">
+          <h4 class="panel-title small">Text diff</h4>
+          <p class="panel-sub">Compares line by line. Green is added, red is removed.</p>
+          <div class="diff-inputs">
+            <textarea id="diff-input-a" class="text-input textarea" rows="5" placeholder="Original text"></textarea>
+            <textarea id="diff-input-b" class="text-input textarea" rows="5" placeholder="Changed text"></textarea>
+          </div>
+          <div class="diff-output" id="diff-output"></div>
+        </div>
+
+        <div id="tool-webhook-payload" class="panel span-2" data-keywords="bot post json content">
+          <h4 class="panel-title small">Webhook payload</h4>
+          <p class="panel-sub">Combines your text (from the top of the page) and the embed you built above into a payload ready for a Discord webhook <code>POST</code>.</p>
+          <div class="output-box">
+            <span class="output-label">Payload JSON</span>
+            <pre class="output-text" id="webhook-payload-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-webhook-payload" type="button">Copy</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEXT TOOLS -->
+  <section class="text-tools wide" id="text-tools">
+    <div class="section-head">
+      <h2 class="section-title">Text Tools</h2>
+    </div>
+    <p class="section-note">General text utilities that aren't Discord-specific, but come in handy anyway. All local, nothing leaves your browser.</p>
+
+    <div class="tool-grid">
+      <div class="panel span-2" data-keywords="arrows stars lines brackets math decorative glyphs">
+        <h4 class="panel-title small">Symbol browser</h4>
+        <p class="panel-sub">Search or filter by category, tap a symbol to copy it.</p>
+        <div class="filter-row" id="symbol-filter-row">
+          <button class="filter-pill active" data-symbol-cat="all" type="button">All</button>
+          <button class="filter-pill" data-symbol-cat="arrows" type="button">Arrows</button>
+          <button class="filter-pill" data-symbol-cat="stars" type="button">Stars</button>
+          <button class="filter-pill" data-symbol-cat="lines" type="button">Lines</button>
+          <button class="filter-pill" data-symbol-cat="brackets" type="button">Brackets</button>
+          <button class="filter-pill" data-symbol-cat="math" type="button">Math</button>
+          <button class="filter-pill" data-symbol-cat="decorative" type="button">Decorative</button>
+        </div>
+        <input type="text" id="symbol-search-input" class="text-input" placeholder="Search symbols (e.g. arrow, heart)" autocomplete="off">
+        <div class="symbol-grid" id="symbol-grid"></div>
+      </div>
+
+      <div class="panel" data-keywords="line separator hr rule box">
+        <h4 class="panel-title small">Divider &amp; border generator</h4>
+        <p class="panel-sub">Pick a divider style, or wrap your own text in a border.</p>
+        <div class="divider-list" id="divider-list"></div>
+        <div class="border-form">
+          <input type="text" id="border-text-input" class="text-input" placeholder="Text to put in a border" autocomplete="off" value="Luka's Utils">
+          <div class="output-box mono-output">
+            <span class="output-label">Bordered</span>
+            <pre class="output-text" id="border-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-border" type="button">Copy</button>
+        </div>
+      </div>
+
+      <div class="panel" data-keywords="zero width space blank hidden character">
+        <h4 class="panel-title small">Invisible characters</h4>
+        <p class="panel-sub">Characters that render blank, with what each is actually for.</p>
+        <div class="invisible-list" id="invisible-list"></div>
+      </div>
+
+      <div class="panel" data-keywords="uppercase lowercase title sentence alternating transform">
+        <h4 class="panel-title small">Case converter</h4>
+        <p class="panel-sub">Uses the text from the Example box at the top. Type there (or here), then copy the result.</p>
+        <textarea id="case-input" class="text-input textarea" rows="3" maxlength="1000" placeholder="Example"></textarea>
+        <div class="case-convert-grid" id="case-convert-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLOR LAB -->
+  <section class="color-lab wide" id="colors">
+    <div class="section-head">
+      <h2 class="section-title">Colors</h2>
+    </div>
+    <p class="section-note">Pick a foreground, a background, and a canvas color — the preview updates live, with a real contrast check.</p>
+
+    <div class="color-lab-grid">
+      <div class="panel">
+        <h3 class="panel-title small">Palette presets</h3>
+        <div class="palette-grid" id="palette-grid"></div>
+
+        <div class="color-field">
+          <label for="color-fg-hex">Foreground</label>
+          <div class="color-input-row">
+            <input type="color" id="color-fg-swatch">
+            <input type="text" id="color-fg-hex" spellcheck="false">
+          </div>
+        </div>
+        <div class="color-field">
+          <label for="color-bg-hex">Background</label>
+          <div class="color-input-row">
+            <input type="color" id="color-bg-swatch">
+            <input type="text" id="color-bg-hex" spellcheck="false">
+          </div>
+        </div>
+        <div class="color-field">
+          <label for="color-canvas-hex">Canvas</label>
+          <div class="color-input-row">
+            <input type="color" id="color-canvas-swatch">
+            <input type="text" id="color-canvas-hex" spellcheck="false">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head-row">
+          <h3 class="panel-title small">Preview</h3>
+          <span class="contrast-pill" id="contrast-pill">—</span>
+        </div>
+        <div class="color-preview-box" id="color-preview-box"></div>
+        <div class="color-lab-actions">
+          <button class="btn-outline" id="copy-css-values" type="button">Copy CSS values</button>
+          <button class="btn-outline" id="copy-pair" type="button">Copy pair</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRESETS & TEMPLATES LIBRARY -->
+  <section class="presets-section wide" id="presets">
+    <div class="section-head">
+      <h2 class="section-title">Presets &amp; Templates</h2>
+      <span class="section-count"><span id="lib-count">0</span> total</span>
+    </div>
+    <p class="section-note">Presets change a tool's settings. Templates load content you can edit. Pick one here, or from the Presets and Templates buttons inside each tool. Your own items stay in this browser, and webhook URLs are never saved.</p>
+    <div class="panel lib-panel" id="lib-root"><noscript>The library needs JavaScript.</noscript></div>
+
+    <details class="reference-details snapshot-details">
+      <summary>Session snapshot — your text, colors and favorites as JSON</summary>
+      <div class="panel">
+        <p class="panel-sub">A quick copy of your Example text, colors and favorites. Copy it, download it, or load one back in later — it never leaves your device unless you send it somewhere.</p>
+        <pre class="json-box" id="json-output"></pre>
+        <div class="preset-actions">
+          <button class="btn-outline" id="copy-json" type="button">Copy JSON</button>
+          <button class="btn-outline" id="download-json" type="button">Download</button>
+          <button class="btn-outline" id="import-json-btn" type="button">Import JSON</button>
+          <input type="file" id="import-json-file" accept="application/json" hidden>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- SHORTCUTS -->
+  <section class="shortcuts-section">
+    <h2 class="section-title">Shortcuts</h2>
+    <ul class="shortcut-list">
+      <li><span>Focus the style search</span><span class="kbd-pair"><span class="kbd">⌘</span>/<span class="kbd">Ctrl</span> <span class="kbd">K</span></span></li>
+      <li><span>Copy the first visible style</span><span class="kbd-pair"><span class="kbd">⌘</span>/<span class="kbd">Ctrl</span> <span class="kbd">⇧</span><span class="kbd">C</span></span></li>
+      <li><span>Close the favorites filter</span><span class="kbd-pair"><span class="kbd">Esc</span></span></li>
+    </ul>
+  </section>
+
+  <!-- REFERENCE (collapsed, not primary) -->
+  <section class="reference-section wide">
+    <details class="reference-details">
+      <summary>Full format reference — what's Discord-native vs. Unicode vs. device-dependent</summary>
+      <div class="compat-table-wrap">
+        <table class="compat-table" id="compat-table"></table>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <div class="footer-links">
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="changelog">Changelog →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+<script src="library.js"></script>
+</body>
 </html>
