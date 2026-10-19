@@ -70,9 +70,28 @@
 
   <div class="version-entry">
     <div class="version-head">
+      <span class="version-number">v9.9</span>
+      <span class="version-tag">Bug fixes and layout polish</span>
+      <span class="version-latest">Latest</span>
+    </div>
+    <ul class="version-list">
+      <li>Fixed the tool menu on phones and tablets: choosing a tool left it scrolled off the top of the screen, because the menu closed after the page had already scrolled. The menu now closes first, and the menu bar lands below the Example box instead of underneath it</li>
+      <li>Jumps to a section (Styles, Colors, Library and the tools) are now measured from the real height of the Example box, so headings are no longer hidden under it on very narrow screens</li>
+      <li>Copy no longer copies error messages. If the JSON formatter, Base64 or URL encoder or the Hash tool is showing an error, Copy now says there is nothing to copy, and those messages are shown in red</li>
+      <li>Base64 now reads and writes UTF-8 directly, accepts URL-safe Base64 and input without "=" padding, and tells apart "not valid Base64" from "valid Base64 that isn't readable text". The URL encoder explains unpaired surrogate characters instead of failing quietly</li>
+      <li>Upside down, Strike, Underline, Zalgo, Zero-width and Hidden-dots styles now work on whole visible characters, so emoji families, flags and letters with accents are no longer split apart. Upside down also mirrors brackets when it reverses text</li>
+      <li>The Unix converter accepts fractional seconds such as 1760000000.7</li>
+      <li>Library: the two filter rows are now labelled Type and Source, and the save form has hints and marks Category as optional</li>
+      <li>Light theme: role colour previews stay on a dark Discord-style background so the colours are readable</li>
+      <li>Checked and found already correct, so left unchanged: counter spacing ("Message: 23 / 2000"), clipboard success and failure handling, malformed or blocked browser storage, the circled zero, character counts for emoji, large Text Diff inputs, local and UTC timestamp conversion in several time zones, relative-time updates, stale Hash results, and the built-in permission presets</li>
+      <li>Tested in a headless browser at 320 to 1440px widths in both themes. Not tested on real phones, Safari or Firefox</li>
+    </ul>
+  </div>
+
+  <div class="version-entry">
+    <div class="version-head">
       <span class="version-number">v9.8</span>
       <span class="version-tag">Presets &amp; Templates library</span>
-      <span class="version-latest">Latest</span>
     </div>
     <ul class="version-list">
       <li>Added a Presets &amp; Templates library (Library in the header). Presets change only the settings they define; templates load editable content. Search it, filter by type, built-in or your own, tool and category, and open a preview before applying anything</li>

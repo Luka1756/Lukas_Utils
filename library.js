@@ -311,12 +311,12 @@
       tool: 'mention', type: 'preset', slot: 'tool-mention', label: 'Mention preset', defaultCategory: 'Mentions',
       norm(d) {
         need(isPlain(d) && ['user', 'role', 'channel'].includes(d.type), 'Mention type must be user, role or channel');
-        need(typeof d.id === 'string' && /^\d{15,20}$/.test(d.id), 'ID must be 15–20 digits');
+        need(typeof d.id === 'string' && B.isSnowflake(d.id), 'ID must be 15–20 digits and fit in 64 bits');
         return { type: d.type, id: d.id };
       },
       capture() {
         const id = $('mention-id-input').value.trim();
-        if (!/^\d{15,20}$/.test(id)) bad('Enter a valid ID (15–20 digits) first');
+        if (!B.isSnowflake(id)) bad('Enter a valid ID (15–20 digits) first');
         return { type: $('mention-type-select').value, id };
       },
       apply(d) { const s = $('mention-type-select'); s.value = d.type; setField('mention-id-input', d.id); },
@@ -669,6 +669,10 @@
     dlg.innerHTML = html;
     if (typeof dlg.showModal === 'function') { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
     if (mount) mount(dlg);
+    // On touch screens, focusing a text field opens the keyboard and focusing the close button draws a ring
+    // nobody asked for, so the dialog title takes focus instead (screen readers announce it).
+    const title = dlg.querySelector('#lib-dialog-title');
+    if (window.matchMedia && matchMedia('(pointer: coarse)').matches && title) { title.tabIndex = -1; title.focus({ preventScroll: true }); return; }
     const first = dlg.querySelector('[autofocus], input, textarea, select, button');
     if (first) first.focus();
   }
@@ -707,14 +711,14 @@
     const cats = [...new Set(allItems().map(i => i.category))].sort();
     return `
       <label class="lib-label" for="lib-f-name">Name</label>
-      <input id="lib-f-name" class="text-input" type="text" maxlength="${LIM.name}" value="${esc(v.name || '')}" autocomplete="off" required>
+      <input id="lib-f-name" class="text-input" type="text" maxlength="${LIM.name}" value="${esc(v.name || '')}" placeholder="A short name you will recognise" autocomplete="off" required>
       <label class="lib-label" for="lib-f-desc">Description <span class="optional-tag">optional</span></label>
-      <textarea id="lib-f-desc" class="text-input textarea lib-textarea-sm" rows="2" maxlength="${LIM.desc}">${esc(v.description || '')}</textarea>
+      <textarea id="lib-f-desc" class="text-input textarea lib-textarea-sm" rows="2" maxlength="${LIM.desc}" placeholder="What it is for">${esc(v.description || '')}</textarea>
       <div class="lib-two">
-        <div><label class="lib-label" for="lib-f-cat">Category</label>
-          <input id="lib-f-cat" class="text-input" type="text" maxlength="${LIM.category}" value="${esc(v.category || '')}" list="lib-cats" autocomplete="off"></div>
+        <div><label class="lib-label" for="lib-f-cat">Category <span class="optional-tag">optional</span></label>
+          <input id="lib-f-cat" class="text-input" type="text" maxlength="${LIM.category}" value="${esc(v.category || '')}" list="lib-cats" placeholder="Blank uses the tool's default" autocomplete="off"></div>
         <div><label class="lib-label" for="lib-f-tags">Tags <span class="optional-tag">comma separated</span></label>
-          <input id="lib-f-tags" class="text-input" type="text" value="${esc((v.tags || []).join(', '))}" autocomplete="off"></div>
+          <input id="lib-f-tags" class="text-input" type="text" value="${esc((v.tags || []).join(', '))}" placeholder="e.g. news, staff" autocomplete="off"></div>
       </div>
       <datalist id="lib-cats">${cats.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>`;
   }
@@ -898,13 +902,24 @@
       const fileInput = $('lib-import-file');
       const ta = $('lib-import-text');
       const err = $('lib-import-error');
+      let readToken = 0;   // only the most recently chosen file may fill the box
+      let readTicket = 0;   // a slow older file must never overwrite a newer choice
       fileInput.addEventListener('change', () => {
         const f = fileInput.files && fileInput.files[0];
         if (!f) return;
-        if (f.size > LIM.file) { err.textContent = 'That file is too large to import (limit 1.5 MB).'; err.hidden = false; return; }
+        const ticket = ++readTicket;
+        // Clearing the value lets the same file be chosen again (browsers stay silent when the path is unchanged).
+        const done = () => { try { fileInput.value = ''; } catch (e) { /* some browsers refuse; harmless */ } };
+        if (f.size > LIM.file) { done(); ta.value = ''; ta.dispatchEvent(new Event('input')); err.textContent = 'That file is too large to import (limit 1.5 MB).'; err.hidden = false; return; }
         const reader = new FileReader();
-        reader.onload = () => { ta.value = String(reader.result || ''); err.hidden = true; review(); };
-        reader.onerror = () => { err.textContent = "Couldn't read that file."; err.hidden = false; };
+        reader.onload = () => {
+          done();
+          if (ticket !== readTicket) return;
+          ta.value = String(reader.result || '');
+          ta.dispatchEvent(new Event('input'));   // clears any earlier review before the new one is built
+          err.hidden = true; review();
+        };
+        reader.onerror = () => { done(); if (ticket === readTicket) { err.textContent = "Couldn't read that file."; err.hidden = false; } };
         reader.readAsText(f);
       });
       let pending = null;   // items waiting for the second click; null until a review has run
@@ -968,9 +983,10 @@
           showToast('Downloaded');
         } catch (e) { showToast("Couldn't download — try Copy JSON"); }
       });
-      $('lib-export-copy').addEventListener('click', () => {
-        const p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(json) : Promise.reject();
-        p.then(() => showToast('Copied!'), () => showToast("Couldn't copy — use Download"));
+      // The shared helper tries the Clipboard API, then a fallback, and reports failure itself.
+      $('lib-export-copy').addEventListener('click', async () => {
+        if (!(await B.copyText(json))) return;
+        showToast('Copied!');
       });
     });
   }
@@ -989,8 +1005,8 @@
   const ui = { q: '', type: 'all', source: 'all', tool: 'all', category: 'all' };
   const root = $('lib-root');
 
-  function seg(name, options, current) {
-    return `<div class="lib-seg" role="group" aria-label="${esc(name)}">${options.map(([v, l]) => `<button type="button" class="case-btn ${v === current ? 'active' : ''}" data-seg="${esc(name)}" data-value="${esc(v)}" aria-pressed="${v === current}">${esc(l)}</button>`).join('')}</div>`;
+  function seg(name, options, current, label = true) {
+    return `<div class="lib-seg" role="group" aria-label="${esc(name)}">${label ? `<span class="lib-seg-label" aria-hidden="true">${esc(name)}</span>` : ''}${options.map(([v, l]) => `<button type="button" class="case-btn ${v === current ? 'active' : ''}" data-seg="${esc(name)}" data-value="${esc(v)}" aria-pressed="${v === current}">${esc(l)}</button>`).join('')}</div>`;
   }
   function noticeHtml() {
     const n = [];
@@ -1128,7 +1144,7 @@
       <div class="lib-bar-body" id="${id}" ${b.open ? '' : 'hidden'}>
         <input type="search" class="text-input lib-bar-q" placeholder="Search" aria-label="Search ${esc(slot.label)} library" value="${esc(b.q)}" autocomplete="off">
         <div class="lib-bar-opts">
-          ${types.length > 1 ? seg('Type ' + slotId, [['all', 'All'], ...types.map(t => [t, TYPE_LABEL[t] + 's'])], b.tab) : ''}
+          ${types.length > 1 ? seg('Type ' + slotId, [['all', 'All'], ...types.map(t => [t, TYPE_LABEL[t] + 's'])], b.tab, false) : ''}
           <label class="checkbox-row lib-bar-showall"><input type="checkbox" class="lib-bar-all" ${b.all ? 'checked' : ''}> Show items for other tools</label>
         </div>
         <ul class="lib-list">

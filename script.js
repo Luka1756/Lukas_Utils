@@ -25,16 +25,21 @@
   const SMALL_CAPS = { a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ꜰ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'s',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ' };
   const UPSIDE_DOWN = { a:'ɐ',b:'q',c:'ɔ',d:'p',e:'ǝ',f:'ɟ',g:'ƃ',h:'ɥ',i:'ᴉ',j:'ɾ',k:'ʞ',l:'ʅ',m:'ɯ',n:'u',o:'o',p:'d',q:'b',r:'ɹ',s:'s',t:'ʇ',u:'n',v:'ʌ',w:'ʍ',x:'x',y:'ʎ',z:'z',
     A:'∀',B:'ᙠ',C:'Ɔ',D:'ᗡ',E:'Ǝ',F:'Ⅎ',G:'⅁',H:'H',I:'I',J:'ſ',K:'ʞ',L:'˥',M:'W',N:'N',O:'O',P:'Ԁ',Q:'Ό',R:'ᴚ',S:'S',T:'⊥',U:'∩',V:'Λ',W:'M',X:'X',Y:'⅄',Z:'Z',
-    '.':'˙',',':"'",'?':'¿','!':'¡',"'":',','1':'Ɩ','2':'ᄅ','3':'Ɛ','4':'ㄣ','5':'ϛ','6':'9','7':'ㄥ','8':'8','9':'6','0':'0' };
+    '.':'˙',',':"'",'?':'¿','!':'¡',"'":',','(':')',')':'(','[':']',']':'[','{':'}','}':'{','<':'>','>':'<','&':'⅋','_':'‾',';':'؛','1':'Ɩ','2':'ᄅ','3':'Ɛ','4':'ㄣ','5':'ϛ','6':'9','7':'ㄥ','8':'8','9':'6','0':'0' };
 
+  // Anything that reverses, joins or decorates text works on whole visible characters ("grapheme clusters"),
+  // so an emoji family, a flag or a letter with its accent is never split. Falls back to code points where
+  // Intl.Segmenter is missing.
+  const segmenter = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+  const graphemes = (str) => segmenter ? Array.from(segmenter.segment(str), x => x.segment) : [...str];
   function smallCaps(str){ return [...str].map(c => SMALL_CAPS[c.toLowerCase()] ? (c === c.toUpperCase() && c !== c.toLowerCase() ? c : SMALL_CAPS[c]) : c).join(''); }
-  function upsideDown(str){ return [...str].reverse().map(c => UPSIDE_DOWN[c] || c).join(''); }
+  function upsideDown(str){ return graphemes(str).reverse().map(c => UPSIDE_DOWN[c] || c).join(''); }
   function enclose(str, fn){ return [...str].map(c => fn(c) || c).join(''); }
 
   function circled(ch){
     if (ch >= 'A' && ch <= 'Z') return String.fromCodePoint(0x24B6 + (ch.codePointAt(0) - 65));
     if (ch >= 'a' && ch <= 'z') return String.fromCodePoint(0x24D0 + (ch.codePointAt(0) - 97));
-    if (ch === '0') return 'Ⓞ';
+    if (ch === '0') return '\u24EA';   // ⓪ CIRCLED DIGIT ZERO (the old value was the letter Ⓞ)
     if (ch >= '1' && ch <= '9') return String.fromCodePoint(0x2460 + (ch.codePointAt(0) - 49));
     return ch;
   }
@@ -65,8 +70,8 @@
     regionalLetters: s => enclose(s, regionalLetter),
     emojiSafeBold: s => mapAlpha(s, { upperStart:0x1D5D4, lowerStart:0x1D5EE, digitStart:0x1D7EC }),
     asciiFrame: s => `[ ${s} ]`,
-    strikeLine: s => [...s].map(c => c + '\u0336').join(''),
-    underlineDeco: s => [...s].map(c => c + '\u0332').join(''),
+    strikeLine: s => graphemes(s).map(c => c + '\u0336').join(''),
+    underlineDeco: s => graphemes(s).map(c => c + '\u0332').join(''),
     zalgo: s => zalgoify(s),
     sparkline: s => `✦ ${s} ✦`,
     discordBold: s => `**${s}**`,
@@ -80,8 +85,8 @@
     discordQuote: s => s.split('\n').map(l => `> ${l}`).join('\n'),
     discordHeader: s => `## ${s}`,
     secretLabel: s => `\u200b||${s}||\u200b`,
-    hiddenDots: s => [...s].join('\u2800'),
-    zeroWidth: s => [...s].join('\u200b'),
+    hiddenDots: s => graphemes(s).join('\u2800'),
+    zeroWidth: s => graphemes(s).join('\u200b'),
     secretCode: s => `||\`${s}\`||`,
     superscript: s => enclose(s, ch => SUPERSCRIPT_MAP[ch]),
     subscript: s => enclose(s, ch => SUBSCRIPT_MAP[ch]),
@@ -110,7 +115,7 @@
   function zalgoify(str){
     let out = '';
     let i = 0;
-    for (const ch of str) {
+    for (const ch of graphemes(str)) {
       out += ch;
       if (ch !== ' ') {
         const count = (i % 3) + 1;
@@ -208,19 +213,60 @@
 
 
 
+  /* ============ Safe browser storage ============ */
+  // localStorage can be missing, blocked or full. Every access goes through these two helpers,
+  // so a storage problem never stops the page from starting and never throws inside a click handler.
+  const lsafe = {
+    get(key){ try { return window.localStorage.getItem(key); } catch (e) { return null; } },
+    set(key, value){ try { window.localStorage.setItem(key, value); return true; } catch (e) { return false; } },
+  };
+  let storageWarned = false;
+  function warnStorage(what){
+    if (storageWarned) return;
+    storageWarned = true;
+    showToast(`Couldn't save ${what} in this browser. It will last until you leave this page.`, 3600);
+  }
+  // Saved favourites are untrusted: keep only ids of real styles. An unreadable value is parked under a
+  // _backup key instead of being thrown away.
+  function loadFavorites(){
+    const raw = lsafe.get('lu_favorites');
+    if (!raw) return new Set();
+    let list = null;
+    try { list = JSON.parse(raw); } catch (e) { list = null; }
+    if (!Array.isArray(list)) { lsafe.set('lu_favorites_backup', raw); return new Set(); }
+    const known = new Set(STYLES.map(s => s.id));
+    return new Set(list.filter(id => typeof id === 'string' && known.has(id)));
+  }
+  // Characters are counted as Unicode code points everywhere (an emoji is one, not two UTF-16 units).
+  const charLen = (str) => { let n = 0; for (const _ of str) n++; return n; };
+  const EXAMPLE_MAX = 1000;
+  const clampExample = (str) => {
+    if (str.length <= EXAMPLE_MAX) return str;
+    const points = Array.from(str);
+    return points.length > EXAMPLE_MAX ? points.slice(0, EXAMPLE_MAX).join('') : str;
+  };
+
   /* ============ State ============ */
   const state = {
     text: '',
     caseMode: 'none',
     filter: 'all',
     query: '',
-    favorites: new Set(JSON.parse(localStorage.getItem('lu_favorites') || '[]')),
+    favorites: loadFavorites(),
     onlyFavorites: false,
   };
 
+  // Word starts are found with Unicode letters, not \w, so accented words ("élan") are capitalised
+  // from their first letter instead of from the first ASCII letter inside them.
+  function titleCase(str){
+    return str.replace(/[\p{L}\p{N}_]\S*/gu, w => { const cp = Array.from(w); return cp[0].toUpperCase() + cp.slice(1).join('').toLowerCase(); });
+  }
+  function sentenceCase(str){
+    return str.toLowerCase().replace(/(^\s*|[.!?]\s+)(\p{L})/gu, (m, lead, ch) => lead + ch.toUpperCase());
+  }
   function applyCase(str){
     if (state.caseMode === 'lower') return str.toLowerCase();
-    if (state.caseMode === 'title') return str.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
+    if (state.caseMode === 'title') return titleCase(str);
     return str;
   }
 
@@ -266,7 +312,7 @@
         <p class="style-desc">${style.desc}</p>
         <div class="style-preview ${style.mono ? 'mono-preview' : ''}" data-preview="${style.id}">${escapeHtml(output) || '&nbsp;'}</div>
         <div class="card-bottom">
-          <span class="preview-chars">${[...output].length} chars</span>
+          <span class="preview-chars">${(() => { const n = [...output].length; return `${n} ${n === 1 ? 'char' : 'chars'}`; })()}</span>
           <button class="copy-btn" data-copy="${style.id}" type="button">
             <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V6a1 1 0 0 1 1-1h9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
             Copy
@@ -329,10 +375,10 @@
     const html = document.documentElement;
     const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     if (next === 'light') html.setAttribute('data-theme', 'light'); else html.removeAttribute('data-theme');
-    localStorage.setItem('lu_theme', next);
+    if (!lsafe.set('lu_theme', next)) warnStorage('your theme choice');
   });
   (function initTheme(){
-    const saved = localStorage.getItem('lu_theme');
+    const saved = lsafe.get('lu_theme');
     if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
   })();
 
@@ -344,12 +390,14 @@
   });
 
   liveInput.addEventListener('input', (e) => {
-    state.text = e.target.value;
-    charCurrent.textContent = state.text.length;
+    const clamped = clampExample(e.target.value);
+    if (clamped !== e.target.value) e.target.value = clamped;
+    state.text = clamped;
+    charCurrent.textContent = charLen(state.text);
     refreshCaseFromState();
     renderAll();
   });
-  charCurrent.textContent = state.text.length;
+  charCurrent.textContent = charLen(state.text);
 
   document.getElementById('live-clear').addEventListener('click', () => {
     state.text = '';
@@ -417,15 +465,15 @@
 
   function toggleFav(id){
     if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id);
-    localStorage.setItem('lu_favorites', JSON.stringify([...state.favorites]));
+    if (!lsafe.set('lu_favorites', JSON.stringify([...state.favorites]))) warnStorage('your favourites');
     renderAll();
   }
 
-  function doCopy(id, btnEl){
+  async function doCopy(id, btnEl){
     const style = STYLES.find(s => s.id === id);
     if (!style) return;
     const output = TRANSFORMS[style.fn](applyCase(sampleText()));
-    navigator.clipboard?.writeText(output).catch(() => {});
+    if (!(await copyText(output))) return;
     showToast('Copied!');
     if (btnEl) {
       btnEl.classList.add('copied');
@@ -434,11 +482,66 @@
   }
 
   let toastTimer;
-  function showToast(msg){
+  // The toast is a manual popover where the browser supports it, which puts it in the top layer. A modal
+  // dialog (Export, Import, Save) would otherwise cover it and "Copied!" would never be seen.
+  const toastPopover = !!(toast && typeof toast.showPopover === 'function');
+  if (toastPopover) toast.setAttribute('popover', 'manual');
+  let toastHideTimer;
+  function showToast(msg, ms){
     toast.textContent = msg;
-    toast.classList.add('show');
+    clearTimeout(toastHideTimer);
+    if (toastPopover) { try { if (!toast.matches(':popover-open')) toast.showPopover(); } catch (e) {} }
+    // one frame after it is displayed, so the fade-in still plays
+    requestAnimationFrame(() => toast.classList.add('show'));
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+      if (toastPopover) toastHideTimer = setTimeout(() => { try { toast.hidePopover(); } catch (e) {} }, 220);
+    }, ms || 1400);
+  }
+
+  // Copies text and reports the truth: resolves true only when something was really copied.
+  // Tries the async Clipboard API first, then a hidden-textarea fallback for older or restricted browsers.
+  // On failure it shows its own message, so callers simply stop instead of showing "Copied!".
+  async function copyText(text){
+    const value = text == null ? '' : String(text);
+    if (!value.trim()) { showToast('Nothing to copy'); return false; }
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+    } catch (e) { /* fall through to the fallback */ }
+    const previous = document.activeElement;
+    const ta = document.createElement('textarea');
+    try {
+      ta.value = value;
+      ta.setAttribute('readonly', '');
+      ta.setAttribute('aria-hidden', 'true');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+      // An open modal dialog makes everything outside it inert, so the helper has to live inside it.
+      (document.querySelector('dialog[open]') || document.body).appendChild(ta);
+      ta.focus({ preventScroll: true });
+      ta.select();
+      ta.setSelectionRange(0, value.length);
+      if (document.execCommand('copy')) return true;
+    } catch (e) { /* reported below */ }
+    finally {
+      ta.remove();
+      if (previous && previous.focus) { try { previous.focus({ preventScroll: true }); } catch (e) {} }
+    }
+    showToast("Couldn't copy — select the text and copy it manually", 3200);
+    return false;
+  }
+  // Output boxes that can show an error message mark themselves with data-state="error". Copying then
+  // says there is nothing to copy instead of putting the error text on the clipboard.
+  function setOutput(el, text, isError){
+    el.textContent = text;
+    if (isError) el.dataset.state = 'error'; else delete el.dataset.state;
+  }
+  async function copyOutput(el){
+    if (el.dataset.state === 'error') { showToast('Nothing to copy — fix the input first'); return false; }
+    return copyText(el.textContent);
   }
 
   /* ============ Compatibility table ============ */
@@ -487,8 +590,8 @@
     renderFormatGrid();
     renderDiscordOutput();
   });
-  document.getElementById('copy-discord-format')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(discordOutputEl.textContent).catch(() => {});
+  document.getElementById('copy-discord-format')?.addEventListener('click', async () => {
+    if (!(await copyText(discordOutputEl.textContent))) return;
     showToast('Copied!');
   });
 
@@ -520,8 +623,8 @@
     renderTemplateGrid();
     renderTemplateOutput();
   });
-  document.getElementById('copy-template')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(templateOutputEl.textContent).catch(() => {});
+  document.getElementById('copy-template')?.addEventListener('click', async () => {
+    if (!(await copyText(templateOutputEl.textContent))) return;
     showToast('Copied!');
   });
   const templateCountEl = document.getElementById('template-count');
@@ -542,14 +645,17 @@
       </button>
     `).join('');
   }
+  // Discord only colours text when the real escape character (U+001B) sits inside a code block marked "ansi".
+  // The literal characters "\u001b" do nothing, so the copied text carries the real character, and the page
+  // shows it as the visible symbol ␛ so the output stays readable.
+  const ANSI_ESC = '\u001b';
   function ansiString(){
     const c = ANSI_COLORS.find(c => c.id === ansiState.id) || ANSI_COLORS[0];
-    return `\\u001b[${c.code}m${applyCase(sampleText())}\\u001b[0m`;
+    return '```ansi\n' + `${ANSI_ESC}[${c.code}m${applyCase(sampleText())}${ANSI_ESC}[0m` + '\n```';
   }
   function renderAnsiOutput(){
     if (!ansiOutputEl) return;
-    const box = ansiOutputEl.querySelector('.output-text') ? ansiOutputEl : ansiOutputEl;
-    ansiOutputEl.innerHTML = `<span class="output-label">Ansi output</span><div class="output-text">${escapeHtml(ansiString())}</div>`;
+    ansiOutputEl.innerHTML = `<span class="output-label">Ansi output</span><div class="output-text ansi-code">${escapeHtml(ansiString().split(ANSI_ESC).join('\u241B'))}</div><p class="ansi-note">␛ is the invisible escape character. Copy includes the real one, so paste it straight into Discord.</p>`;
   }
   ansiSwatches?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-ansi]');
@@ -558,8 +664,8 @@
     renderAnsiSwatches();
     renderAnsiOutput();
   });
-  document.getElementById('copy-ansi')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(ansiString()).catch(() => {});
+  document.getElementById('copy-ansi')?.addEventListener('click', async () => {
+    if (!(await copyText(ansiString()))) return;
     showToast('Copied!');
   });
 
@@ -653,13 +759,13 @@
     if (ratio < 4.5) contrastPill.classList.add('low');
     else if (ratio < 7) contrastPill.classList.add('mid');
   }
-  document.getElementById('copy-css-values')?.addEventListener('click', () => {
+  document.getElementById('copy-css-values')?.addEventListener('click', async () => {
     const css = `--foreground: ${colorState.fg};\n--preview: ${colorState.bg};\n--canvas: ${colorState.canvas};`;
-    navigator.clipboard?.writeText(css).catch(() => {});
+    if (!(await copyText(css))) return;
     showToast('Copied!');
   });
-  document.getElementById('copy-pair')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(`${colorState.fg} on ${colorState.bg}`).catch(() => {});
+  document.getElementById('copy-pair')?.addEventListener('click', async () => {
+    if (!(await copyText(`${colorState.fg} on ${colorState.bg}`))) return;
     showToast('Copied!');
   });
 
@@ -679,8 +785,8 @@
     if (!jsonOutputEl) return;
     jsonOutputEl.textContent = JSON.stringify(currentPresetObject(), null, 2);
   }
-  document.getElementById('copy-json')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(JSON.stringify(currentPresetObject(), null, 2)).catch(() => {});
+  document.getElementById('copy-json')?.addEventListener('click', async () => {
+    if (!(await copyText(JSON.stringify(currentPresetObject(), null, 2)))) return;
     showToast('Copied!');
   });
   document.getElementById('download-json')?.addEventListener('click', () => {
@@ -689,32 +795,55 @@
     const a = document.createElement('a');
     a.href = url; a.download = 'lukas-utils-preset.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Downloaded');
   });
   const importFileInput = document.getElementById('import-json-file');
   document.getElementById('import-json-btn')?.addEventListener('click', () => importFileInput.click());
+  // Session snapshot import. The file is untrusted, so everything is checked first and only valid parts are
+  // applied: favourites must be real style ids, colours must be #RRGGBB, text is clamped like typed text.
+  const SNAPSHOT_MAX_BYTES = 1000000;
+  const HEX6 = /^#[0-9a-fA-F]{6}$/;
   importFileInput?.addEventListener('change', () => {
     const file = importFileInput.files[0];
     if (!file) return;
+    // Clearing the input lets the same file be chosen again (browsers fire no change event otherwise).
+    const release = () => { try { importFileInput.value = ''; } catch (e) {} };
+    if (file.size > SNAPSHOT_MAX_BYTES) { showToast('That file is too large to import', 2600); release(); return; }
     const reader = new FileReader();
+    reader.onerror = () => { release(); showToast("Couldn't read that file", 2600); };
     reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (typeof data.text === 'string') { state.text = data.text; liveInput.value = data.text; charCurrent.textContent = data.text.length; refreshCaseFromState(); }
-        if (Array.isArray(data.favorites)) { state.favorites = new Set(data.favorites); localStorage.setItem('lu_favorites', JSON.stringify(data.favorites)); }
-        if (data.colors) {
-          if (data.colors.foreground) colorState.fg = data.colors.foreground;
-          if (data.colors.background) colorState.bg = data.colors.background;
-          if (data.colors.canvas) colorState.canvas = data.colors.canvas;
-          colorState.activePreset = null;
-          syncColorInputs();
-        }
-        renderAll();
-        showToast('Imported!');
-      } catch {
-        showToast('Invalid JSON');
+      release();
+      let data;
+      try { data = JSON.parse(reader.result); } catch (e) { showToast("That isn't valid JSON", 2600); return; }
+      if (!data || typeof data !== 'object' || Array.isArray(data)) { showToast("That isn't a session snapshot", 2600); return; }
+      const applied = [], skipped = [];
+      if (data.text !== undefined) {
+        if (typeof data.text === 'string') {
+          state.text = clampExample(data.text); liveInput.value = state.text; charCurrent.textContent = charLen(state.text);
+          refreshCaseFromState(); applied.push('text');
+        } else skipped.push('text');
       }
+      if (data.favorites !== undefined) {
+        if (Array.isArray(data.favorites)) {
+          const known = new Set(STYLES.map(s => s.id));
+          const keep = [...new Set(data.favorites.filter(id => typeof id === 'string' && known.has(id)))];
+          if (keep.length < data.favorites.length) skipped.push('some favorites');
+          state.favorites = new Set(keep);
+          if (!lsafe.set('lu_favorites', JSON.stringify(keep))) warnStorage('your favorites');
+          applied.push('favorites');
+        } else skipped.push('favorites');
+      }
+      if (data.colors !== undefined) {
+        const c = data.colors && typeof data.colors === 'object' && !Array.isArray(data.colors) ? data.colors : null;
+        const next = {};
+        if (c) [['foreground', 'fg'], ['background', 'bg'], ['canvas', 'canvas']].forEach(([from, to]) => { if (typeof c[from] === 'string' && HEX6.test(c[from].trim())) next[to] = c[from].trim().toUpperCase(); });
+        if (Object.keys(next).length) { Object.assign(colorState, next); colorState.activePreset = null; syncColorInputs(); applied.push('colors'); }
+        else skipped.push('colors');
+      }
+      renderAll();
+      if (!applied.length) showToast('Nothing usable in that file', 2800);
+      else showToast(skipped.length ? `Imported ${applied.join(', ')} — skipped ${skipped.join(', ')}` : 'Imported!', skipped.length ? 3200 : 1400);
     };
     reader.readAsText(file);
   });
@@ -746,6 +875,9 @@
   });
   /* ============ Discord Tools ============ */
   const DISCORD_EPOCH = 1420070400000n;
+  // A snowflake is an unsigned 64-bit number. Twenty digits is not enough on its own: 99999999999999999999 is
+  // twenty digits and far too big to be an ID.
+  const isSnowflake = (str) => /^\d{15,20}$/.test(str) && BigInt(str) <= 18446744073709551615n;
 
   // 1. Snowflake decoder
   const snowflakeInput = document.getElementById('snowflake-input');
@@ -753,7 +885,7 @@
   function renderSnowflake(){
     const raw = snowflakeInput.value.trim();
     if (!raw) { snowflakeOutput.innerHTML = ''; return; }
-    if (!/^\d{15,20}$/.test(raw)) { snowflakeOutput.innerHTML = `<span class="err">Doesn't look like a valid snowflake — should be 15-20 digits.</span>`; return; }
+    if (!isSnowflake(raw)) { snowflakeOutput.innerHTML = `<span class="err">Doesn't look like a valid snowflake — it should be 15 to 20 digits and no larger than 18446744073709551615.</span>`; return; }
     try {
       const id = BigInt(raw);
       const ms = Number((id >> 22n) + DISCORD_EPOCH);
@@ -815,7 +947,8 @@
     if (mins < 60) { val = mins; unit = 'minute'; }
     else if (mins < 1440) { val = Math.round(mins / 60); unit = 'hour'; }
     else if (mins < 43200) { val = Math.round(mins / 1440); unit = 'day'; }
-    else { val = Math.round(mins / 43200); unit = 'month'; }
+    else if (mins < 525600) { val = Math.min(11, Math.round(mins / 43200)); unit = 'month'; }   // never "12 months"
+    else { val = Math.round(mins / 525600); unit = 'year'; }
     const plural = val === 1 ? '' : 's';
     return diffMs >= 0 ? `in ${val} ${unit}${plural}` : `${val} ${unit}${plural} ago`;
   }
@@ -831,12 +964,12 @@
       </div>
       <div class="ts-highlight-item">
         <span class="ts-highlight-label">Relative, right now</span>
-        <span class="ts-highlight-value">${escapeHtml(relativeTimeText(date))}</span>
+        <span class="ts-highlight-value" data-ts-rel="${date.getTime()}">${escapeHtml(relativeTimeText(date))}</span>
       </div>`;
 
     timestampGrid.innerHTML = TS_FORMATS.map(f => `
       <button type="button" class="ts-row" data-ts-copy="<t:${unix}:${f.code}>">
-        <span class="ts-label"><strong>${f.label}</strong> — ${escapeHtml(f.desc)}<br>${escapeHtml(tsPreviewText(date, f.code))}</span>
+        <span class="ts-label"><strong>${f.label}</strong> — ${escapeHtml(f.desc)}<br>${f.code === 'R' ? `<span data-ts-rel="${date.getTime()}">${escapeHtml(tsPreviewText(date, f.code))}</span>` : escapeHtml(tsPreviewText(date, f.code))}</span>
         <span class="ts-code">&lt;t:${unix}:${f.code}&gt;</span>
       </button>
     `).join('');
@@ -844,15 +977,24 @@
     renderTzRows(date);
   }
   timestampInput?.addEventListener('input', renderTimestamps);
-  timestampGrid?.addEventListener('click', (e) => {
+  // "Relative" is measured from right now, so it has to keep moving while the page stays open. Only the text
+  // is updated (not the buttons), so keyboard focus and text selection are never disturbed.
+  function refreshRelativeTimes(){
+    document.querySelectorAll('[data-ts-rel]').forEach(el => {
+      const next = relativeTimeText(new Date(Number(el.dataset.tsRel)));
+      if (el.textContent !== next) el.textContent = next;
+    });
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshRelativeTimes(); });
+  timestampGrid?.addEventListener('click', async (e) => {
     const row = e.target.closest('[data-ts-copy]');
     if (!row) return;
-    navigator.clipboard?.writeText(row.dataset.tsCopy).catch(() => {});
+    if (!(await copyText(row.dataset.tsCopy))) return;
     showToast('Copied!');
   });
-  tsHighlightRow?.addEventListener('click', () => {
+  tsHighlightRow?.addEventListener('click', async () => {
     const date = getTimestampDate();
-    if (date) { navigator.clipboard?.writeText(String(Math.floor(date.getTime()/1000))).catch(() => {}); showToast('Copied!'); }
+    if (date) { if (!(await copyText(String(Math.floor(date.getTime()/1000))))) return; showToast('Copied!'); }
   });
   tsHourToggle?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-hour-mode]');
@@ -909,10 +1051,16 @@
       if (Array.isArray(supported) && supported.length) ALL_TIMEZONES = supported;
     }
   } catch {}
+  // Browsers leave plain UTC out of their zone lists, but it is the one people most often want to compare against.
+  if (!ALL_TIMEZONES.includes('UTC')) ALL_TIMEZONES = [...ALL_TIMEZONES, 'UTC'];
 
+  // Browsers still report some zones under their old names (Chrome says Asia/Calcutta for a Kolkata clock).
+  // Only the label changes; the stored zone name stays whatever the browser gave.
+  const TZ_LABELS = { Calcutta:'Kolkata', Kiev:'Kyiv', Katmandu:'Kathmandu', Rangoon:'Yangon', Saigon:'Ho Chi Minh City', Godthab:'Nuuk', Faeroe:'Faroe' };
   function tzDisplayName(tz){
     const parts = tz.split('/');
-    return (parts[parts.length - 1] || tz).replace(/_/g, ' ');
+    const city = (parts[parts.length - 1] || tz).replace(/_/g, ' ');
+    return TZ_LABELS[city] || city;
   }
   function tzRegion(tz){
     const parts = tz.split('/');
@@ -944,15 +1092,26 @@
     return diff > 0 ? `+${diff}d` : `${diff}d`;
   }
 
+  // Saved zones are untrusted: keep only real, unique IANA names (at most 24). Anything unreadable is parked
+  // under a _backup key rather than thrown away, and the page falls back to the browser's own zone.
+  function isValidZone(tz){
+    if (typeof tz !== 'string' || !tz || tz.length > 64) return false;
+    try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; }
+  }
+  function cleanZones(list){ return [...new Set((Array.isArray(list) ? list : []).filter(isValidZone))].slice(0, 24); }
   function loadSavedZones(){
-    try {
-      const raw = localStorage.getItem('lu_timezones');
-      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length) return arr; }
-    } catch {}
+    const raw = lsafe.get('lu_timezones');
+    if (raw) {
+      let arr = null;
+      try { arr = JSON.parse(raw); } catch { arr = null; }
+      const clean = cleanZones(arr);
+      if (!Array.isArray(arr) || clean.length !== arr.length) lsafe.set('lu_timezones_backup', raw);
+      if (clean.length) return clean;
+    }
     return [BROWSER_TZ];
   }
   function saveZones(){
-    try { localStorage.setItem('lu_timezones', JSON.stringify(tzState.zones)); } catch {}
+    if (!lsafe.set('lu_timezones', JSON.stringify(tzState.zones))) warnStorage('your time zones');
   }
   const tzState = { zones: loadSavedZones() };
 
@@ -991,7 +1150,7 @@
     const q = query.toLowerCase();
     const matches = ALL_TIMEZONES
       .filter(tz => !tzState.zones.includes(tz))
-      .filter(tz => tz.toLowerCase().replace(/_/g, ' ').includes(q))
+      .filter(tz => (tz.replace(/_/g, ' ') + ' ' + tzDisplayName(tz)).toLowerCase().includes(q))   // so "Kolkata" finds Asia/Calcutta
       .slice(0, 8);
     if (!matches.length) {
       tzSearchResults.innerHTML = `<div class="tz-search-empty">No matching city or timezone.</div>`;
@@ -1033,7 +1192,14 @@
     setTimestampFromDate(new Date());
   })();
   // Keep the relative-time preview (and live timezone rows) fresh while the tool is open
-  setInterval(() => { if (timestampInput?.value) renderTimestamps(); }, 30000);
+  // Rebuilding the grid would drop keyboard focus from the button being used, so while the person is working inside
+  // it (or the timezone list) only the relative text is refreshed and the rows are left alone.
+  setInterval(() => {
+    if (!timestampInput?.value || document.hidden) return;
+    const active = document.activeElement;
+    const busy = active && [timestampGrid, tzRowsContainer, tzSearchResults, tsHighlightRow].some(box => box && box.contains(active));
+    if (busy) refreshRelativeTimes(); else renderTimestamps();
+  }, 30000);
 
   // 3. Role color converter
   const roleColorSwatch = document.getElementById('role-color-swatch');
@@ -1041,9 +1207,11 @@
   const roleColorOutput = document.getElementById('role-color-output');
   const roleColorPreview = document.getElementById('role-color-preview');
   function renderRoleColor(){
-    const v = roleColorHex.value.trim();
+    // "22d3ee" is a perfectly good 6-digit hex colour, so the leading # is optional.
+    let v = roleColorHex.value.trim();
+    if (/^[0-9a-fA-F]{6}$/.test(v)) v = '#' + v;
     if (!/^#[0-9a-fA-F]{6}$/.test(v)) {
-      roleColorOutput.innerHTML = `<span class="err">Enter a 6-digit hex color.</span>`;
+      roleColorOutput.innerHTML = v ? `<span class="err">Enter a 6-digit hex color, like #22D3EE.</span>` : `<span class="muted">Type a 6-digit hex color, like #22D3EE.</span>`;
       if (roleColorPreview) roleColorPreview.innerHTML = '';
       return;
     }
@@ -1057,7 +1225,8 @@
   }
   roleColorSwatch?.addEventListener('input', () => { roleColorHex.value = roleColorSwatch.value; renderRoleColor(); });
   roleColorHex?.addEventListener('input', () => {
-    if (/^#[0-9a-fA-F]{6}$/.test(roleColorHex.value.trim())) roleColorSwatch.value = roleColorHex.value.trim();
+    const typed = roleColorHex.value.trim();
+    if (/^#?[0-9a-fA-F]{6}$/.test(typed)) roleColorSwatch.value = typed.startsWith('#') ? typed : '#' + typed;
     renderRoleColor();
   });
   if (roleColorHex) { roleColorHex.value = '#22D3EE'; roleColorSwatch.value = '#22D3EE'; renderRoleColor(); }
@@ -1073,21 +1242,23 @@
   ];
   function renderLength(){
     const raw = lengthInput.value;
-    const len = [...raw].length;
+    const len = charLen(raw);
     const lines = raw.length ? raw.split('\n').length : 0;
     const words = raw.trim() ? raw.trim().split(/\s+/).length : 0;
+    // Every row is "label: value" with a real separator in the text (hidden visually), so the label and the
+    // number never run together when the text is read aloud or copied.
+    const row = (label, value, cls) => `<div class="length-row${cls ? ' ' + cls : ''}"><span class="length-label">${label}</span><span class="length-sep">: </span><span class="length-value">${value}</span></div>`;
     const bars = LENGTH_LIMITS.map(l => {
       const pct = Math.min(100, (len / l.max) * 100);
       const over = len > l.max;
       return `
-        <div class="length-bar-item">
-          <div class="row"><span>${l.label}</span><span>${len} / ${l.max}${over ? ' — over' : ''}</span></div>
+        <div class="length-bar-item${over ? ' is-over' : ''}">
+          ${row(l.label, `${len} / ${l.max}${over ? ` · over by ${len - l.max}` : ''}`)}
           <div class="length-bar-track"><div class="length-bar-fill ${over ? 'over' : ''}" style="width:${pct}%"></div></div>
         </div>`;
     }).join('');
     lengthBars.innerHTML = bars
-      + `<div class="row" style="margin-top:2px"><span>Words</span><span>${words}</span></div>`
-      + `<div class="row"><span>Lines</span><span>${lines}</span></div>`;
+      + `<div class="length-stats">${row('Characters', len)}${row('Words', words)}${row('Lines', lines)}</div>`;
   }
   lengthInput?.addEventListener('input', renderLength);
   renderLength();
@@ -1102,7 +1273,7 @@
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
       .replace(/__(.*?)__/g, '$1')
-      .replace(/_(.*?)_/g, '$1')
+      .replace(/(^|[^\w])_([^_\n]+?)_(?!\w)/g, '$1$2')   // _italic_ only at word edges: snake_case_name stays as it is
       .replace(/~~(.*?)~~/g, '$1')
       .replace(/`([^`]*)`/g, '$1')
       .replace(/\|\|(.*?)\|\|/g, '$1')
@@ -1120,8 +1291,8 @@
   }
   cleanerInput?.addEventListener('input', renderCleaner);
   cleanerStripMd?.addEventListener('change', renderCleaner);
-  document.getElementById('copy-cleaner')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(cleanerOutput.textContent).catch(() => {});
+  document.getElementById('copy-cleaner')?.addEventListener('click', async () => {
+    if (!(await copyText(cleanerOutput.textContent))) return;
     showToast('Copied!');
   });
 
@@ -1153,10 +1324,10 @@
       <img class="emoji-preview" src="${url}" alt="" loading="lazy" onerror="this.style.display='none'">`;
   }
   emojiTagInput?.addEventListener('input', renderEmojiTag);
-  emojiTagOutput?.addEventListener('click', (e) => {
+  emojiTagOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
 
@@ -1174,6 +1345,24 @@
   const permGrid = document.getElementById('perm-grid');
   const permIntegerInput = document.getElementById('perm-integer-input');
   let permSyncing = false;
+  // Discord has permission bits above 31 that this grid has no checkbox for. They are remembered when an
+  // integer is typed or pasted, and added back when the number is rebuilt, so ticking a box never drops them.
+  const PERM_KNOWN_MASK = PERMISSIONS.reduce((m, [bit]) => m | (1n << BigInt(bit)), 0n);
+  let permExtra = 0n;
+  let permNote = null;
+  function setPermNote(msg, isError){
+    if (!permIntegerInput) return;
+    if (!permNote) {
+      permNote = document.createElement('p');
+      permNote.className = 'perm-note';
+      permNote.setAttribute('role', 'status');
+      permIntegerInput.insertAdjacentElement('afterend', permNote);
+    }
+    permNote.textContent = msg;
+    permNote.hidden = !msg;
+    permNote.classList.toggle('is-error', !!isError);
+    permIntegerInput.setAttribute('aria-invalid', isError ? 'true' : 'false');
+  }
   function renderPermGrid(){
     if (!permGrid) return;
     permGrid.innerHTML = PERMISSIONS.map(([bit, name]) => `
@@ -1185,20 +1374,24 @@
     permGrid.querySelectorAll('[data-perm-bit]').forEach(cb => {
       if (cb.checked) total |= (1n << BigInt(cb.dataset.permBit));
     });
-    return total;
+    return total | permExtra;
   }
   function syncPermsFromCheckboxes(){
     if (permSyncing) return;
     permSyncing = true;
     permIntegerInput.value = permsToInteger().toString();
+    setPermNote(permExtra ? 'This number also has permission bits this calculator has no checkbox for. They are kept as they are.' : '', false);
     permSyncing = false;
   }
   function syncCheckboxesFromInteger(){
     if (permSyncing) return;
     const raw = permIntegerInput.value.trim();
-    if (!/^\d+$/.test(raw)) return;
+    if (!raw) { permExtra = 0n; setPermNote('', false); permGrid.querySelectorAll('[data-perm-bit]').forEach(cb => { cb.checked = false; }); return; }
+    if (!/^\d+$/.test(raw)) { setPermNote('Enter a whole number, like 8 or 2251673153.', true); return; }
     permSyncing = true;
     const value = BigInt(raw);
+    permExtra = value & ~PERM_KNOWN_MASK;
+    setPermNote(permExtra ? 'This number also has permission bits this calculator has no checkbox for. They are kept as they are.' : '', false);
     permGrid.querySelectorAll('[data-perm-bit]').forEach(cb => {
       cb.checked = ((value >> BigInt(cb.dataset.permBit)) & 1n) === 1n;
     });
@@ -1221,8 +1414,10 @@
     const hash = cdnHashInput.value.trim();
     const type = cdnTypeSelect.value;
     const size = cdnSizeSelect.value;
-    if (!/^\d{15,20}$/.test(id)) { cdnOutput.innerHTML = `<span class="err">Enter a valid ID (15-20 digits).</span>`; return; }
+    if (!isSnowflake(id)) { cdnOutput.innerHTML = `<span class="err">Enter a valid ID (15-20 digits).</span>`; return; }
     let url;
+    // Hashes are letters and digits (animated ones start with a_). Anything else would end up inside the URL.
+    if (hash && !/^(?:a_)?[A-Za-z0-9]{1,64}$/.test(hash)) { cdnOutput.innerHTML = `<span class="err">An asset hash is letters and numbers only, like 8342729096ea3675442027381ff50dfe.</span>`; return; }
     if (hash) {
       const ext = hash.startsWith('a_') ? 'gif' : 'png';
       const folder = type === 'avatar' ? 'avatars' : type === 'icon' ? 'icons' : 'banners';
@@ -1238,13 +1433,13 @@
     }
     cdnOutput.innerHTML = `
       <div class="row"><span>URL</span><span>${escapeHtml(url)}</span></div>
-      <button type="button" class="copy-link" data-copy-url="${url}">Copy URL</button>`;
+      <button type="button" class="copy-link" data-copy-url="${escapeHtml(url)}">Copy URL</button>`;
   }
   [cdnIdInput, cdnHashInput, cdnTypeSelect, cdnSizeSelect].forEach(el => el?.addEventListener('input', renderCdn));
-  cdnOutput?.addEventListener('click', (e) => {
+  cdnOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
 
@@ -1299,8 +1494,9 @@
     });
   }
   function scrollToWorkspace(){
-    const row = document.querySelector('.tool-search-row');
-    row?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
+    // On phones the menu bar sits above the search box, so it is the top of the workspace there.
+    const menuBar = toolNavToggle && getComputedStyle(toolNavToggle).display !== 'none' ? toolNavToggle : null;
+    (menuBar || document.querySelector('.tool-search-row'))?.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
   }
   function showTool(id, scroll){
     const panel = toolPanelById(id);
@@ -1339,6 +1535,9 @@
     if (!a) return;
     e.preventDefault();
     const id = a.dataset.tool;
+    // Close the phone menu first: it sits above the tools, so collapsing it after the scroll has been
+    // worked out would shift the page and leave the chosen tool above the screen.
+    setToolNavOpen(false);
     if (toolSearchInput?.value) { toolSearchInput.value = ''; filterTools(); }
     if (id) {
       history.pushState(null, '', '#' + id);
@@ -1347,7 +1546,6 @@
       history.pushState(null, '', '#discord-tools');
       showAllTools(true);
     }
-    setToolNavOpen(false);
   });
   toolNavToggle?.addEventListener('click', () => setToolNavOpen(!toolNav.classList.contains('open')));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && toolNav?.classList.contains('open')) { setToolNavOpen(false); toolNavToggle?.focus(); } });
@@ -1401,6 +1599,8 @@
   const webhookPayloadOutput = document.getElementById('webhook-payload-output');
   let embedFields = [];
   let embedFieldIdSeq = 0;
+  // The Webhook builder preview is defined further down; it registers itself here so an embed edit can refresh it.
+  let webhookPreviewHook = null;
 
   const EMBED_LIMITS = {
     title: 256, description: 4096, fieldName: 256, fieldValue: 1024,
@@ -1496,18 +1696,21 @@
 
   function validateEmbed(embed){
     const warnings = [];
-    if (embed.title && embed.title.length > EMBED_LIMITS.title) warnings.push(`Title is ${embed.title.length}/${EMBED_LIMITS.title} characters.`);
-    if (embed.description && embed.description.length > EMBED_LIMITS.description) warnings.push(`Description is ${embed.description.length}/${EMBED_LIMITS.description} characters.`);
-    if (embed.footer?.text && embed.footer.text.length > EMBED_LIMITS.footer) warnings.push(`Footer text is ${embed.footer.text.length}/${EMBED_LIMITS.footer} characters.`);
-    if (embed.author?.name && embed.author.name.length > EMBED_LIMITS.author) warnings.push(`Author name is ${embed.author.name.length}/${EMBED_LIMITS.author} characters.`);
-    if (embed.fields?.length > EMBED_LIMITS.maxFields) warnings.push(`${embed.fields.length}/${EMBED_LIMITS.maxFields} fields — Discord will reject extras.`);
+    // Counted in Unicode code points, the same way as the Message length tool.
+    const len = (v) => charLen(v || '');
+    const check = (label, value, max) => { const n = len(value); if (n > max) warnings.push(`${label} is ${n} / ${max} characters.`); };
+    check('Title', embed.title, EMBED_LIMITS.title);
+    check('Description', embed.description, EMBED_LIMITS.description);
+    check('Footer text', embed.footer?.text, EMBED_LIMITS.footer);
+    check('Author name', embed.author?.name, EMBED_LIMITS.author);
+    if (embed.fields?.length > EMBED_LIMITS.maxFields) warnings.push(`${embed.fields.length} / ${EMBED_LIMITS.maxFields} fields — Discord will reject extras.`);
     (embed.fields || []).forEach((f, i) => {
-      if (f.name.length > EMBED_LIMITS.fieldName) warnings.push(`Field ${i + 1} name is ${f.name.length}/${EMBED_LIMITS.fieldName} characters.`);
-      if (f.value.length > EMBED_LIMITS.fieldValue) warnings.push(`Field ${i + 1} value is ${f.value.length}/${EMBED_LIMITS.fieldValue} characters.`);
+      check(`Field ${i + 1} name`, f.name, EMBED_LIMITS.fieldName);
+      check(`Field ${i + 1} value`, f.value, EMBED_LIMITS.fieldValue);
     });
-    const total = (embed.title?.length || 0) + (embed.description?.length || 0) + (embed.footer?.text?.length || 0)
-      + (embed.author?.name?.length || 0) + (embed.fields || []).reduce((sum, f) => sum + f.name.length + f.value.length, 0);
-    if (total > EMBED_LIMITS.totalChars) warnings.push(`Combined embed text is ${total}/${EMBED_LIMITS.totalChars} characters — Discord's overall limit.`);
+    const total = len(embed.title) + len(embed.description) + len(embed.footer?.text) + len(embed.author?.name)
+      + (embed.fields || []).reduce((sum, f) => sum + len(f.name) + len(f.value), 0);
+    if (total > EMBED_LIMITS.totalChars) warnings.push(`Combined embed text is ${total} / ${EMBED_LIMITS.totalChars} characters — Discord's overall limit.`);
     return warnings;
   }
 
@@ -1553,6 +1756,7 @@
     if (embedPreviewTimeEl) embedPreviewTimeEl.textContent = 'Today at ' + new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
 
     renderMessagePreview();
+    if (webhookPreviewHook) webhookPreviewHook();
     renderWebhookPayload();
   }
   Object.values(embedInputs).forEach(el => el?.addEventListener('input', renderEmbedOutput));
@@ -1561,15 +1765,16 @@
   embedInputs.colorHex?.addEventListener('input', () => {
     if (/^#[0-9a-fA-F]{6}$/.test(embedInputs.colorHex.value.trim())) embedInputs.colorSwatch.value = embedInputs.colorHex.value.trim();
   });
-  document.getElementById('copy-embed-json')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(embedJsonOutput.textContent).catch(() => {});
+  document.getElementById('copy-embed-json')?.addEventListener('click', async () => {
+    if (!(await copyText(embedJsonOutput.textContent))) return;
     showToast('Copied!');
   });
   // Single place the webhook payload is assembled — used by both Copy Webhook Payload and Send.
   // A color-only embed counts as empty (Discord rejects it), so it's left out.
+  const hasRealEmbed = (embed) => Object.keys(embed).some(k => k !== 'color');
   function buildEmbedWebhookPayload(){
     const embed = currentEmbedObject();
-    const hasEmbed = Object.keys(embed).some(k => k !== 'color');
+    const hasEmbed = hasRealEmbed(embed);
     const hasContent = embedMessageContent.value.trim().length > 0;
     const payload = {};
     if (hasContent) payload.content = embedMessageContent.value;
@@ -1580,8 +1785,8 @@
     if (senderAvatar) payload.avatar_url = senderAvatar;
     return { payload, embed, hasEmbed, hasContent, senderName, senderAvatar };
   }
-  document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(JSON.stringify(buildEmbedWebhookPayload().payload, null, 2)).catch(() => {});
+  document.getElementById('copy-embed-webhook-payload')?.addEventListener('click', async () => {
+    if (!(await copyText(JSON.stringify(buildEmbedWebhookPayload().payload, null, 2)))) return;
     showToast('Copied!');
   });
 
@@ -1645,7 +1850,7 @@
     if (senderName && /clyde|discord/i.test(senderName)) { setSendStatus('err', 'Discord does not allow "discord" or "clyde" in a webhook name.'); return; }
     if (senderAvatar && !/^https?:\/\/[^\s]+\.[^\s]+$/i.test(senderAvatar)) { setSendStatus('err', 'Bot avatar: Discord needs a full http(s) URL.'); return; }
     if (!hasEmbed && !hasContent) { setSendStatus('err', 'Nothing to send yet — add message content or some embed content.'); return; }
-    if (hasContent && [...payload.content].length > 2000) { setSendStatus('err', `Message content is ${[...payload.content].length}/2000 characters.`); return; }
+    if (hasContent && [...payload.content].length > 2000) { setSendStatus('err', `Message content is ${[...payload.content].length} / 2000 characters.`); return; }
     if (hasEmbed) {
       const problems = validateEmbed(embed);
       if (problems.length) { setSendStatus('err', `Over Discord's limits — ${problems[0]}${problems.length > 1 ? ` (+${problems.length - 1} more)` : ''}`); return; }
@@ -1709,23 +1914,47 @@
      from these two drifting out of sync). Supports headings, lists, quotes,
      code, inline emphasis, spoilers, and links (masked + bare URLs). */
   function renderDiscordMarkdown(raw){
-    const lines = raw.split('\n');
+    const lines = String(raw == null ? '' : raw).split('\n');
     const blocks = [];
     let i = 0;
+    // Finds the closing fence of a code block. Returns the index of the line that holds it, or -1.
+    const findFenceEnd = (from) => { for (let k = from; k < lines.length; k++) if (lines[k].includes('```')) return k; return -1; };
     while (i < lines.length) {
       const line = lines[i];
       if (line.startsWith('```')) {
-        const codeLines = [];
-        i++;
-        while (i < lines.length && !lines[i].startsWith('```')) { codeLines.push(lines[i]); i++; }
-        i++;
-        blocks.push({ type:'code', text: codeLines.join('\n') });
-        continue;
+        const rest = line.slice(3);
+        const closeOnSame = rest.indexOf('```');
+        if (closeOnSame >= 0) {
+          // A fenced block opened and closed on one line. Only that part is code; the rest is ordinary text.
+          blocks.push({ type:'code', text: rest.slice(0, closeOnSame) });
+          const tail = rest.slice(closeOnSame + 3);
+          if (tail.trim()) blocks.push({ type:'p', text: tail });
+          i++; continue;
+        }
+        const end = findFenceEnd(i + 1);
+        if (end < 0) { blocks.push({ type:'p', text: line }); i++; continue; }   // never closed: Discord shows it as plain text
+        const body = lines.slice(i + 1, end + 1);
+        const last = body.pop();
+        const before = last.slice(0, last.indexOf('```'));
+        const tail = last.slice(last.indexOf('```') + 3);
+        if (before) body.push(before);
+        // The first line is a language name only when it is a single word and more lines follow it.
+        const code = /^[\w+#.-]+$/.test(rest.trim()) ? body : [rest, ...body].filter((l, n) => n > 0 || l !== '');
+        blocks.push({ type:'code', text: code.join('\n') });
+        if (tail.trim()) blocks.push({ type:'p', text: tail });
+        i = end + 1; continue;
       }
       const h = line.match(/^(#{1,3})\s+(.*)$/);
       if (h) { blocks.push({ type:'heading', level: h[1].length, text: h[2] }); i++; continue; }
-      const bq = line.match(/^>\s?(.*)$/);
-      if (bq) { blocks.push({ type:'quote', text: bq[1] }); i++; continue; }
+      if (line.startsWith('>>> ')) {   // one block quote that runs to the end of the message
+        blocks.push({ type:'quote', lines: [line.slice(4), ...lines.slice(i + 1)] });
+        i = lines.length; continue;
+      }
+      if (/^>( |$)/.test(line)) {
+        const q = [];
+        while (i < lines.length && /^>( |$)/.test(lines[i]) && !lines[i].startsWith('>>> ')) { q.push(lines[i].replace(/^> ?/, '')); i++; }
+        blocks.push({ type:'quote', lines: q }); continue;
+      }
       const ul = line.match(/^[-*]\s+(.*)$/);
       if (ul) {
         const items = [ul[1]]; i++;
@@ -1741,27 +1970,79 @@
       blocks.push({ type:'p', text: line }); i++;
     }
 
+    // Emphasis on text that is already HTML-escaped and has code, escapes and links set aside.
+    function emphasis(html){
+      return html
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.+?)__/g, '<u>$1</u>')
+        .replace(/~~(.+?)~~/g, '<del>$1</del>')
+        .replace(/(^|[^*])\*(?![\s*])([^*]*?[^\s*])\*(?!\*)/g, '$1<em>$2</em>')
+        .replace(/(^|[^\w])_(?![\s_])([^_]*?[^\s_])_(?!\w)/g, '$1<em>$2</em>')
+        .replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
+    }
+
     function inline(str){
-      let html = escapeHtml(str);
       const stash = [];
       const hold = (snippet) => { stash.push(snippet); return `\u0000${stash.length - 1}\u0000`; };
+      const s = str.replace(/\u0000/g, '');
+      // Pass 1, left to right: a backslash makes the next symbol literal, and a run of backticks opens a code span
+      // that ends at the next run of the same length. Nothing inside either is ever formatted.
+      let text = '';
+      for (let p = 0; p < s.length;) {
+        const ch = s[p];
+        if (ch === '\\' && p + 1 < s.length && /[^0-9A-Za-z\s]/.test(s[p + 1])) { text += hold(escapeHtml(s[p + 1])); p += 2; continue; }
+        if (ch === '`') {
+          let n = 1; while (s[p + n] === '`') n++;
+          let j = p + n, close = -1;
+          while (j < s.length) {
+            const k = s.indexOf('`', j);
+            if (k < 0) break;
+            let m = 1; while (s[k + m] === '`') m++;
+            if (m === n) { close = k; break; }
+            j = k + m;
+          }
+          if (close > p + n) {
+            let body = s.slice(p + n, close);
+            if (n > 1 && /^ .*[^ ].* $/.test(body)) body = body.slice(1, -1);
+            text += hold(`<code>${escapeHtml(body)}</code>`);
+            p = close + n; continue;
+          }
+          text += s.slice(p, p + n); p += n; continue;
+        }
+        text += ch; p++;
+      }
+      let html = escapeHtml(text);
+      // Trailing punctuation belongs to the sentence, not to the link.
+      const linkOut = (url) => {
+        let tail = '';
+        for (;;) {
+          const m = url.match(/(?:[.,;:!?*_~|]|&quot;|&#39;|&gt;)$/);
+          if (m) { tail = m[0] + tail; url = url.slice(0, -m[0].length); continue; }
+          if (url.endsWith(')') && !url.includes('(')) { tail = ')' + tail; url = url.slice(0, -1); continue; }
+          break;
+        }
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${tail}`;
+      };
       html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
-        (_, text, url) => hold(`<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`));
-      html = html.replace(/(https?:\/\/[^\s<]+)/g, (m) => hold(`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`));
-      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/__(.+?)__/g, '<u>$1</u>');
-      html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-      html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
-      html = html.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
-      html = html.replace(/\u0000(\d+)\u0000/g, (_, idx) => stash[Number(idx)]);
+        (_, label, url) => hold(`<a href="${url}" target="_blank" rel="noopener noreferrer">${emphasis(label)}</a>`));
+      html = html.replace(/&lt;(https?:\/\/(?:(?!&gt;)[^\s])+)&gt;/g,
+        (_, url) => hold(`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`));
+      html = html.replace(/https?:\/\/(?:(?!&lt;|&gt;)[^\s<])+/g, (m) => {
+        const out = linkOut(m);
+        const k = out.indexOf('</a>') + 4;
+        return hold(out.slice(0, k)) + out.slice(k);
+      });
+      html = emphasis(html);
+      for (let guard = 0; guard < 4 && /\u0000\d+\u0000/.test(html); guard++) {
+        html = html.replace(/\u0000(\d+)\u0000/g, (_, idx) => stash[Number(idx)]);
+      }
       return html;
     }
 
     return blocks.map(b => {
       if (b.type === 'heading') return `<div class="md-h${b.level}">${inline(b.text)}</div>`;
-      if (b.type === 'quote') return `<blockquote>${inline(b.text)}</blockquote>`;
+      if (b.type === 'quote') return `<blockquote>${b.lines.map(inline).join('<br>')}</blockquote>`;
       if (b.type === 'ul') return `<ul>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ul>`;
       if (b.type === 'ol') return `<ol>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ol>`;
       if (b.type === 'code') return `<pre>${escapeHtml(b.text)}</pre>`;
@@ -1778,8 +2059,8 @@
     const spoiler = e.target.closest('[data-spoiler]');
     if (spoiler) spoiler.classList.toggle('revealed');
   });
-  document.getElementById('copy-md-raw')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(mdPreviewInput.value).catch(() => {});
+  document.getElementById('copy-md-raw')?.addEventListener('click', async () => {
+    if (!(await copyText(mdPreviewInput.value))) return;
     showToast('Copied!');
   });
   renderMarkdownPreview();
@@ -1795,7 +2076,7 @@
   };
   function renderMention(){
     const id = mentionIdInput.value.trim();
-    if (!/^\d{15,20}$/.test(id)) { mentionOutput.innerHTML = `<span class="err">Enter a valid ID (15-20 digits).</span>`; return; }
+    if (!isSnowflake(id)) { mentionOutput.innerHTML = `<span class="err">Enter a valid ID (15-20 digits).</span>`; return; }
     const type = mentionTypeSelect.value;
     const tag = type === 'user' ? `<@${id}>` : type === 'role' ? `<@&${id}>` : `<#${id}>`;
     mentionOutput.innerHTML = `
@@ -1804,10 +2085,10 @@
       <button type="button" class="copy-link" data-copy-url="${escapeHtml(tag)}">Copy</button>`;
   }
   [mentionTypeSelect, mentionIdInput].forEach(el => el?.addEventListener('input', renderMention));
-  mentionOutput?.addEventListener('click', (e) => {
+  mentionOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
 
@@ -1817,7 +2098,7 @@
     const text = applyCase(state.text) || '';
     const now = new Date();
     const embed = currentEmbedObject();
-    const hasEmbed = Object.keys(embed).length > 0;
+    const hasEmbed = hasRealEmbed(embed);
     let embedHtml = '';
     if (hasEmbed) embedHtml = `<div class="mp-embed-wrap">${embedPreviewEl.innerHTML}</div>`;
     messagePreviewBox.innerHTML = `
@@ -1841,10 +2122,10 @@
     const content = webhookContentInput.value;
     const now = new Date();
     const embed = currentEmbedObject();
-    const hasEmbed = Object.keys(embed).length > 0;
+    const hasEmbed = hasRealEmbed(embed);
     const avatarHtml = avatarUrl
-      ? `<img src="${escapeHtml(avatarUrl)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"><span style="display:none">${escapeHtml(name[0]?.toUpperCase() || 'W')}</span>`
-      : escapeHtml(name[0]?.toUpperCase() || 'W');
+      ? `<img src="${escapeHtml(avatarUrl)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"><span style="display:none">${escapeHtml(Array.from(name)[0]?.toUpperCase() || 'W')}</span>`
+      : escapeHtml(Array.from(name)[0]?.toUpperCase() || 'W');
     webhookPreviewBox.innerHTML = `
       <div class="mp-avatar wh-avatar">${avatarHtml}</div>
       <div class="mp-body">
@@ -1854,19 +2135,24 @@
       </div>`;
   }
   [webhookUsernameInput, webhookAvatarInput, webhookContentInput].forEach(el => el?.addEventListener('input', renderWebhookPreview));
+  webhookPreviewHook = renderWebhookPreview;
   renderWebhookPreview();
 
   /* ============ Invites ============ */
   const inviteInput = document.getElementById('invite-input');
   const inviteOutput = document.getElementById('invite-output');
+  // Accepts a bare code ("Uh7k7pxRPk") or a real invite link on discord.gg / discord.com/invite, with an optional
+  // query string or fragment. Anything else (a sentence, another site, a link with no code) is not an invite.
   function extractInviteCode(raw){
-    const trimmed = raw.trim().replace(/\/+$/, '');
-    const match = trimmed.match(/(?:discord\.gg\/|discord(?:app)?\.com\/invite\/)?([\w-]{2,32})$/);
-    return match ? match[1] : null;
+    const s = raw.trim();
+    if (!s) return null;
+    const link = s.match(/^(?:https?:\/\/)?(?:www\.)?(?:discord\.gg|discord(?:app)?\.com\/invite)\/([\w-]{2,32})\/?(?:[?#].*)?$/i);
+    if (link) return link[1];
+    return /^[\w-]{2,32}$/.test(s) ? s : null;
   }
   function renderInviteFormat(){
     const code = extractInviteCode(inviteInput.value);
-    if (!code) { inviteOutput.innerHTML = ''; return; }
+    if (!code) { inviteOutput.innerHTML = inviteInput.value.trim() ? `<span class="err">That doesn't look like a Discord invite link or code.</span>` : ''; return; }
     const url = `https://discord.gg/${code}`;
     inviteOutput.innerHTML = `
       <div class="row"><span>Code</span><span>${escapeHtml(code)}</span></div>
@@ -1874,49 +2160,97 @@
       <button type="button" class="copy-link" data-copy-url="${url}">Copy link</button>`;
   }
   inviteInput?.addEventListener('input', renderInviteFormat);
-  inviteOutput?.addEventListener('click', (e) => {
+  inviteOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
 
   const inviteLookupInput = document.getElementById('invite-lookup-input');
   const inviteLookupBtn = document.getElementById('invite-lookup-btn');
   const inviteLookupOutput = document.getElementById('invite-lookup-output');
+  // One lookup at a time: the button is disabled while a request is running, every request has a time limit, and
+  // only the newest request may write its answer, so a slow older reply can never replace a newer one.
+  let inviteTicket = 0;
+  const inviteMsg = (text, cls) => { inviteLookupOutput.innerHTML = `<span${cls ? ` class="${cls}"` : ''}>${escapeHtml(text)}</span>`; };
   inviteLookupBtn?.addEventListener('click', async () => {
     const code = extractInviteCode(inviteLookupInput.value);
-    if (!code) { inviteLookupOutput.innerHTML = `<span class="err">Enter an invite code or link first.</span>`; return; }
-    inviteLookupOutput.innerHTML = `<span>Looking up…</span>`;
+    if (!code) { inviteMsg(inviteLookupInput.value.trim() ? "That doesn't look like a Discord invite link or code." : 'Enter an invite code or link first.', 'err'); return; }
+    const ticket = ++inviteTicket;
+    inviteLookupBtn.disabled = true; inviteLookupBtn.setAttribute('aria-busy', 'true');
+    inviteLookupOutput.setAttribute('aria-live', 'polite');
+    inviteMsg('Looking up…');
+    const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = ctl ? setTimeout(() => ctl.abort(), 10000) : null;
     try {
-      const res = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`);
-      if (!res.ok) { inviteLookupOutput.innerHTML = `<span class="err">That invite doesn't seem to exist, or has expired.</span>`; return; }
-      const data = await res.json();
+      const res = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, ctl ? { signal: ctl.signal } : undefined);
+      if (ticket !== inviteTicket) return;
+      if (!res.ok) {
+        if (res.status === 404) inviteMsg("That invite doesn't seem to exist, or has expired.", 'err');
+        else if (res.status === 429) inviteMsg('Discord is rate limiting lookups right now. Wait a moment and try again.', 'err');
+        else if (res.status >= 500) inviteMsg('Discord is having a problem right now. Try again in a little while.', 'err');
+        else inviteMsg(`Discord couldn't look that invite up (error ${res.status}).`, 'err');
+        return;
+      }
+      let data;
+      try { data = await res.json(); } catch (e) { if (ticket === inviteTicket) inviteMsg("Discord's reply couldn't be read.", 'err'); return; }
+      if (ticket !== inviteTicket) return;
+      data = data && typeof data === 'object' ? data : {};
       const guild = data.guild || {};
       inviteLookupOutput.innerHTML = `
-        <div class="row"><span>Server</span><span>${escapeHtml(guild.name || '—')}</span></div>
-        <div class="row"><span>Members</span><span>${data.approximate_member_count ?? '—'}</span></div>
-        <div class="row"><span>Online</span><span>${data.approximate_presence_count ?? '—'}</span></div>
-        <div class="row"><span>Channel</span><span>${escapeHtml(data.channel?.name || '—')}</span></div>`;
-    } catch {
-      inviteLookupOutput.innerHTML = `<span class="err">Couldn't reach Discord's API from here — this can happen due to browser restrictions. The invite formatter above still works fully offline.</span>`;
+        <div class="row"><span>Server</span><span>${escapeHtml(String(guild.name || '—'))}</span></div>
+        <div class="row"><span>Members</span><span>${escapeHtml(String(data.approximate_member_count ?? '—'))}</span></div>
+        <div class="row"><span>Online</span><span>${escapeHtml(String(data.approximate_presence_count ?? '—'))}</span></div>
+        <div class="row"><span>Channel</span><span>${escapeHtml(String(data.channel?.name || '—'))}</span></div>`;
+    } catch (e) {
+      if (ticket !== inviteTicket) return;
+      inviteMsg(e && e.name === 'AbortError'
+        ? 'Discord took too long to answer. Try again in a moment.'
+        : "Couldn't reach Discord's API from here — this can happen due to browser restrictions. The invite formatter above still works fully offline.", 'err');
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (ticket === inviteTicket) { inviteLookupBtn.disabled = false; inviteLookupBtn.removeAttribute('aria-busy'); }
     }
   });
 
   /* ============ Developer tools ============ */
   // JSON formatter
+  // Re-indents (or compacts) valid JSON text without parsing the values, so numbers stay exactly as typed.
+  // JSON.stringify(JSON.parse(x)) would turn 12345678901234567890 into 12345678901234567000.
+  function reformatJson(src, minify){
+    let out = '', depth = 0, inStr = false;
+    const nl = () => minify ? '' : '\n' + '  '.repeat(depth);
+    for (let i = 0; i < src.length; i++) {
+      const ch = src[i];
+      if (inStr) { out += ch; if (ch === '\\') out += src[++i]; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') { inStr = true; out += ch; continue; }
+      if (ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') continue;
+      if (ch === '{' || ch === '[') {
+        let j = i + 1;
+        while (j < src.length && /\s/.test(src[j])) j++;
+        if (src[j] === (ch === '{' ? '}' : ']')) { out += ch + src[j]; i = j; continue; }   // empty stays {} or []
+        depth++; out += ch + nl(); continue;
+      }
+      if (ch === '}' || ch === ']') { depth--; out += nl() + ch; continue; }
+      if (ch === ',') { out += ',' + nl(); continue; }
+      if (ch === ':') { out += minify ? ':' : ': '; continue; }
+      out += ch;
+    }
+    return out;
+  }
   const jsonFmtInput = document.getElementById('json-fmt-input');
   const jsonFmtOutput = document.getElementById('json-fmt-output');
   const jsonFmtModeToggle = document.getElementById('json-fmt-mode-toggle');
   let jsonFmtMode = 'format';
   function renderJsonFmt(){
     const raw = jsonFmtInput.value.trim();
-    if (!raw) { jsonFmtOutput.textContent = ''; return; }
+    if (!raw) { setOutput(jsonFmtOutput, ''); return; }
     try {
-      const parsed = JSON.parse(raw);
-      jsonFmtOutput.textContent = jsonFmtMode === 'minify' ? JSON.stringify(parsed) : JSON.stringify(parsed, null, 2);
+      JSON.parse(raw);   // throws on invalid input, which is all this is for
+      setOutput(jsonFmtOutput, reformatJson(raw, jsonFmtMode === 'minify'));
     } catch (err) {
-      jsonFmtOutput.textContent = `Invalid JSON: ${err.message}`;
+      setOutput(jsonFmtOutput, `Invalid JSON: ${err.message}`, true);
     }
   }
   jsonFmtInput?.addEventListener('input', renderJsonFmt);
@@ -1928,8 +2262,8 @@
     jsonFmtMode = btn.dataset.jsonMode;
     renderJsonFmt();
   });
-  document.getElementById('copy-json-fmt')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(jsonFmtOutput.textContent).catch(() => {});
+  document.getElementById('copy-json-fmt')?.addEventListener('click', async () => {
+    if (!(await copyOutput(jsonFmtOutput))) return;
     showToast('Copied!');
   });
 
@@ -1938,17 +2272,25 @@
   const base64Output = document.getElementById('base64-output');
   const base64ModeToggle = document.getElementById('base64-mode-toggle');
   let base64Mode = 'encode';
+  // Base64 works on UTF-8 bytes, so emoji and accented text round-trip. Decoding also accepts the URL-safe
+  // alphabet (- and _) and missing "=" padding, and says which step failed.
   function renderBase64(){
     const raw = base64Input.value;
-    if (!raw) { base64Output.textContent = ''; return; }
+    if (!raw) { setOutput(base64Output, ''); return; }
+    if (base64Mode === 'encode') {
+      const bytes = new TextEncoder().encode(raw);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      setOutput(base64Output, btoa(bin));
+      return;
+    }
+    let bin;
+    try { bin = atob(raw.trim().replace(/-/g, '+').replace(/_/g, '/')); }
+    catch { setOutput(base64Output, "That doesn't look like valid Base64.", true); return; }
     try {
-      if (base64Mode === 'encode') {
-        base64Output.textContent = btoa(unescape(encodeURIComponent(raw)));
-      } else {
-        base64Output.textContent = decodeURIComponent(escape(atob(raw.trim())));
-      }
+      setOutput(base64Output, new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
     } catch {
-      base64Output.textContent = base64Mode === 'decode' ? "That doesn't look like valid Base64." : 'Could not encode that text.';
+      setOutput(base64Output, "That's valid Base64, but it doesn't decode to readable UTF-8 text (it may be binary data).", true);
     }
   }
   base64Input?.addEventListener('input', renderBase64);
@@ -1961,8 +2303,8 @@
     base64Input.placeholder = base64Mode === 'encode' ? 'Text to encode' : 'Base64 to decode';
     renderBase64();
   });
-  document.getElementById('copy-base64')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(base64Output.textContent).catch(() => {});
+  document.getElementById('copy-base64')?.addEventListener('click', async () => {
+    if (!(await copyOutput(base64Output))) return;
     showToast('Copied!');
   });
   document.getElementById('clear-base64')?.addEventListener('click', () => {
@@ -1978,11 +2320,11 @@
   let urlMode = 'encode';
   function renderUrlEncode(){
     const raw = urlEncodeInput.value;
-    if (!raw) { urlEncodeOutput.textContent = ''; return; }
+    if (!raw) { setOutput(urlEncodeOutput, ''); return; }
     try {
-      urlEncodeOutput.textContent = urlMode === 'encode' ? encodeURIComponent(raw) : decodeURIComponent(raw);
+      setOutput(urlEncodeOutput, urlMode === 'encode' ? encodeURIComponent(raw) : decodeURIComponent(raw));
     } catch {
-      urlEncodeOutput.textContent = "That doesn't look like validly encoded text.";
+      setOutput(urlEncodeOutput, urlMode === 'encode' ? "That text contains a broken character (an unpaired surrogate) and can't be encoded." : "That doesn't look like validly encoded text.", true);
     }
   }
   urlEncodeInput?.addEventListener('input', renderUrlEncode);
@@ -1995,8 +2337,8 @@
     urlEncodeInput.placeholder = urlMode === 'encode' ? 'Text or URL' : 'Percent-encoded text';
     renderUrlEncode();
   });
-  document.getElementById('copy-url-encode')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(urlEncodeOutput.textContent).catch(() => {});
+  document.getElementById('copy-url-encode')?.addEventListener('click', async () => {
+    if (!(await copyOutput(urlEncodeOutput))) return;
     showToast('Copied!');
   });
 
@@ -2011,7 +2353,8 @@
     });
   }
   function renderUuid(){
-    const count = Math.min(50, Math.max(1, Number(uuidCountInput?.value) || 1));
+    const count = Math.min(50, Math.max(1, Math.floor(Number(uuidCountInput?.value)) || 1));
+    if (uuidCountInput && uuidCountInput.value !== String(count)) uuidCountInput.value = String(count);   // show the number actually used
     const ids = Array.from({ length: count }, makeUuid);
     uuidOutput.innerHTML = ids.map(id => `
       <div class="uuid-line"><span>${id}</span><button type="button" class="copy-link" data-copy-url="${id}">Copy</button></div>
@@ -2022,14 +2365,14 @@
     }
   }
   document.getElementById('generate-uuid')?.addEventListener('click', renderUuid);
-  uuidOutput?.addEventListener('click', (e) => {
+  uuidOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
-  copyAllUuidBtn?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(copyAllUuidBtn.dataset.allUuids || '').catch(() => {});
+  copyAllUuidBtn?.addEventListener('click', async () => {
+    if (!(await copyText(copyAllUuidBtn.dataset.allUuids || ''))) return;
     showToast('Copied!');
   });
   renderUuid();
@@ -2041,9 +2384,14 @@
     const raw = unixInput.value.trim();
     if (!raw) { unixOutput.innerHTML = ''; return; }
     let date;
-    if (/^\d{10}$/.test(raw)) date = new Date(Number(raw) * 1000);
-    else if (/^\d{13}$/.test(raw)) date = new Date(Number(raw));
-    else date = new Date(raw);
+    // Digits only means a Unix time, never a calendar date (new Date("5") would be a day in 2001):
+    // up to 11 digits are seconds, 12 or 13 digits are milliseconds, a leading minus is allowed.
+    if (/^-?\d+$/.test(raw)) {
+      const digits = raw.replace('-', '').length;
+      date = digits <= 11 ? new Date(Number(raw) * 1000) : digits <= 13 ? new Date(Number(raw)) : new Date(NaN);
+    } else if (/^-?\d{1,11}\.\d+$/.test(raw)) {
+      date = new Date(Math.floor(Number(raw) * 1000));   // fractional seconds, like Python's time.time()
+    } else date = new Date(raw);
     if (isNaN(date?.getTime())) { unixOutput.innerHTML = `<span class="err">Couldn't parse that as a timestamp or date.</span>`; return; }
     const unixSec = Math.floor(date.getTime() / 1000);
     unixOutput.innerHTML = `
@@ -2056,10 +2404,10 @@
       <button type="button" class="copy-link" data-copy-url="<t:${unixSec}:f>">Copy Discord tag</button>`;
   }
   unixInput?.addEventListener('input', renderUnix);
-  unixOutput?.addEventListener('click', (e) => {
+  unixOutput?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-url]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyUrl).catch(() => {});
+    if (!(await copyText(btn.dataset.copyUrl))) return;
     showToast('Copied!');
   });
 
@@ -2068,16 +2416,21 @@
   const hashOutput = document.getElementById('hash-output');
   const hashAlgoToggle = document.getElementById('hash-algo-toggle');
   let hashAlgo = 'SHA-256';
+  // digest() is asynchronous, so a slow earlier call could finish after a newer one (or after the box was
+  // cleared) and overwrite the result. Every run takes a ticket and only the newest ticket may write.
+  let hashTicket = 0;
   async function renderHash(){
-    if (!hashInput.value) { hashOutput.textContent = ''; return; }
-    if (!window.crypto?.subtle) { hashOutput.textContent = 'Hashing needs a secure (HTTPS) connection — not available here.'; return; }
+    const ticket = ++hashTicket;
+    const value = hashInput.value, algo = hashAlgo;
+    if (!value) { setOutput(hashOutput, ''); return; }
+    if (!window.crypto?.subtle) { setOutput(hashOutput, 'Hashing needs a secure (HTTPS) connection — not available here.', true); return; }
     try {
-      const data = new TextEncoder().encode(hashInput.value);
-      const buffer = await crypto.subtle.digest(hashAlgo, data);
-      const hex = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-      hashOutput.textContent = hex;
+      const data = new TextEncoder().encode(value);
+      const buffer = await crypto.subtle.digest(algo, data);
+      if (ticket !== hashTicket) return;
+      setOutput(hashOutput, Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join(''));
     } catch {
-      hashOutput.textContent = 'Could not compute a hash for that input.';
+      if (ticket === hashTicket) setOutput(hashOutput, 'Could not compute a hash for that input.', true);
     }
   }
   hashInput?.addEventListener('input', renderHash);
@@ -2089,8 +2442,8 @@
     hashAlgo = btn.dataset.hashAlgo;
     renderHash();
   });
-  document.getElementById('copy-hash')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(hashOutput.textContent).catch(() => {});
+  document.getElementById('copy-hash')?.addEventListener('click', async () => {
+    if (!(await copyOutput(hashOutput))) return;
     showToast('Copied!');
   });
 
@@ -2099,31 +2452,49 @@
   const diffInputB = document.getElementById('diff-input-b');
   const diffOutputEl = document.getElementById('diff-output');
   const DIFF_LINE_CAP = 2000;
+  const DIFF_CHAR_CAP = 400000;   // total across both boxes, checked before anything is split or compared
+  // Line-based longest-common-subsequence. Equal lines at the start and end are peeled off first (they are
+  // most of the text in a typical edit), the rest are turned into small integers so comparing long lines is
+  // cheap, and the table is one typed array (about 8 MB at the 2000-line limit) instead of thousands of arrays.
   function diffLines(a, b){
-    const linesA = a.split('\n');
-    const linesB = b.split('\n');
-    const n = linesA.length, m = linesB.length;
-    const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    // An empty box has no lines (splitting '' would give one empty line and show a phantom blank row).
+    const toLines = (t) => t === '' ? [] : t.replace(/\r\n?/g, '\n').split('\n');
+    const A = toLines(a), Bl = toLines(b);
+    let head = 0;
+    while (head < A.length && head < Bl.length && A[head] === Bl[head]) head++;
+    let endA = A.length, endB = Bl.length;
+    while (endA > head && endB > head && A[endA - 1] === Bl[endB - 1]) { endA--; endB--; }
+    const ids = new Map();
+    const idOf = (line) => { let v = ids.get(line); if (v === undefined) { v = ids.size; ids.set(line, v); } return v; };
+    const MA = A.slice(head, endA).map(idOf), MB = Bl.slice(head, endB).map(idOf);
+    const n = MA.length, m = MB.length, w = m + 1;
+    const dp = new Uint16Array((n + 1) * w);
     for (let i = n - 1; i >= 0; i--) {
       for (let j = m - 1; j >= 0; j--) {
-        dp[i][j] = linesA[i] === linesB[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        dp[i * w + j] = MA[i] === MB[j] ? dp[(i + 1) * w + j + 1] + 1 : Math.max(dp[(i + 1) * w + j], dp[i * w + j + 1]);
       }
     }
     const result = [];
+    for (let k = 0; k < head; k++) result.push({ type:'same', text:A[k] });
     let i = 0, j = 0;
     while (i < n && j < m) {
-      if (linesA[i] === linesB[j]) { result.push({ type:'same', text:linesA[i] }); i++; j++; }
-      else if (dp[i + 1][j] >= dp[i][j + 1]) { result.push({ type:'removed', text:linesA[i] }); i++; }
-      else { result.push({ type:'added', text:linesB[j] }); j++; }
+      if (MA[i] === MB[j]) { result.push({ type:'same', text:A[head + i] }); i++; j++; }
+      else if (dp[(i + 1) * w + j] >= dp[i * w + j + 1]) { result.push({ type:'removed', text:A[head + i] }); i++; }
+      else { result.push({ type:'added', text:Bl[head + j] }); j++; }
     }
-    while (i < n) { result.push({ type:'removed', text:linesA[i] }); i++; }
-    while (j < m) { result.push({ type:'added', text:linesB[j] }); j++; }
+    while (i < n) { result.push({ type:'removed', text:A[head + i] }); i++; }
+    while (j < m) { result.push({ type:'added', text:Bl[head + j] }); j++; }
+    for (let k = endA; k < A.length; k++) result.push({ type:'same', text:A[k] });
     return result;
   }
   function renderDiff(){
     if (!diffOutputEl) return;
     const a = diffInputA.value, b = diffInputB.value;
     if (!a && !b) { diffOutputEl.innerHTML = `<p class="tz-empty-note">Paste text in both boxes to compare.</p>`; return; }
+    if (a.length + b.length > DIFF_CHAR_CAP) {
+      diffOutputEl.innerHTML = `<p class="tz-empty-note">That's too much text to compare in the browser (limit about ${Math.round(DIFF_CHAR_CAP / 1000)},000 characters across both boxes).</p>`;
+      return;
+    }
     const linesA = a.split('\n').length, linesB = b.split('\n').length;
     if (linesA > DIFF_LINE_CAP || linesB > DIFF_LINE_CAP) {
       diffOutputEl.innerHTML = `<p class="tz-empty-note">That's too much text for a line-by-line comparison here (${DIFF_LINE_CAP}-line limit per side).</p>`;
@@ -2141,8 +2512,11 @@
     }).join('\n');
     diffOutputEl.innerHTML = summary + body;
   }
-  diffInputA?.addEventListener('input', renderDiff);
-  diffInputB?.addEventListener('input', renderDiff);
+  // Wait for a short pause in typing so a paste or fast typing does not run the comparison on every keystroke.
+  let diffTimer = null;
+  const queueDiff = () => { clearTimeout(diffTimer); diffTimer = setTimeout(renderDiff, 140); };
+  diffInputA?.addEventListener('input', queueDiff);
+  diffInputB?.addEventListener('input', queueDiff);
   renderDiff();
 
   // Webhook payload builder
@@ -2151,11 +2525,11 @@
     const payload = {};
     if (state.text?.trim()) payload.content = applyCase(state.text);
     const embed = currentEmbedObject();
-    if (Object.keys(embed).length) payload.embeds = [embed];
+    if (hasRealEmbed(embed)) payload.embeds = [embed];
     webhookPayloadOutput.textContent = JSON.stringify(payload, null, 2);
   }
-  document.getElementById('copy-webhook-payload')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(webhookPayloadOutput.textContent).catch(() => {});
+  document.getElementById('copy-webhook-payload')?.addEventListener('click', async () => {
+    if (!(await copyText(webhookPayloadOutput.textContent))) return;
     showToast('Copied!');
   });
   renderMessagePreview();
@@ -2197,10 +2571,10 @@
     `).join('') : `<p class="tz-empty-note">No matches.</p>`;
   }
   cheatsheetSearch?.addEventListener('input', renderCheatsheet);
-  cheatsheetList?.addEventListener('click', (e) => {
+  cheatsheetList?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-cheat]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyCheat).catch(() => {});
+    if (!(await copyText(btn.dataset.copyCheat))) return;
     showToast('Copied!');
   });
   renderCheatsheet();
@@ -2238,10 +2612,10 @@
     renderSymbolGrid();
   });
   symbolSearchInput?.addEventListener('input', renderSymbolGrid);
-  symbolGrid?.addEventListener('click', (e) => {
+  symbolGrid?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-symbol]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copySymbol).catch(() => {});
+    if (!(await copyText(btn.dataset.copySymbol))) return;
     showToast('Copied!');
   });
 
@@ -2269,10 +2643,10 @@
       </div>
     `).join('');
   }
-  dividerList?.addEventListener('click', (e) => {
+  dividerList?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-divider]');
     if (!btn) return;
-    navigator.clipboard?.writeText(btn.dataset.copyDivider).catch(() => {});
+    if (!(await copyText(btn.dataset.copyDivider))) return;
     showToast('Copied!');
   });
   function buildBorder(text){
@@ -2288,8 +2662,8 @@
     borderOutput.textContent = buildBorder(borderTextInput.value);
   }
   borderTextInput?.addEventListener('input', renderBorder);
-  document.getElementById('copy-border')?.addEventListener('click', () => {
-    navigator.clipboard?.writeText(borderOutput.textContent).catch(() => {});
+  document.getElementById('copy-border')?.addEventListener('click', async () => {
+    if (!(await copyText(borderOutput.textContent))) return;
     showToast('Copied!');
   });
   renderBorder();
@@ -2317,10 +2691,10 @@
       </div>
     `).join('');
   }
-  invisibleList?.addEventListener('click', (e) => {
+  invisibleList?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-invisible]');
     if (!btn) return;
-    navigator.clipboard?.writeText(decodeURIComponent(btn.dataset.copyInvisible)).catch(() => {});
+    if (!(await copyText(decodeURIComponent(btn.dataset.copyInvisible)))) return;
     showToast('Copied!');
   });
   renderInvisibleList();
@@ -2329,8 +2703,8 @@
   const CASE_CONVERTERS = [
     { label:'lowercase', fn: s => s.toLowerCase() },
     { label:'UPPERCASE', fn: s => s.toUpperCase() },
-    { label:'Title Case', fn: s => s.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase()) },
-    { label:'Sentence case', fn: s => s.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g, c => c.toUpperCase()) },
+    { label:'Title Case', fn: titleCase },
+    { label:'Sentence case', fn: sentenceCase },
     { label:'aLtErNaTiNg CaSe', fn: s => [...s].map((c, i) => i % 2 === 0 ? c.toLowerCase() : c.toUpperCase()).join('') },
     { label:'InVERSE case', fn: s => [...s].map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('') },
   ];
@@ -2354,18 +2728,20 @@
     renderCaseConvert();
   }
   caseInput?.addEventListener('input', () => {
-    state.text = caseInput.value;
+    const clamped = clampExample(caseInput.value);
+    if (clamped !== caseInput.value) caseInput.value = clamped;
+    state.text = clamped;
     if (liveInput.value !== state.text) liveInput.value = state.text;
-    charCurrent.textContent = state.text.length;
+    charCurrent.textContent = charLen(state.text);
     renderCaseConvert();
     renderAll();
   });
-  caseConvertGrid?.addEventListener('click', (e) => {
+  caseConvertGrid?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-copy-case]');
     if (!btn) return;
     if (!state.text) { showToast('Type something first'); return; }
     const converter = CASE_CONVERTERS[Number(btn.dataset.copyCase)];
-    navigator.clipboard?.writeText(converter.fn(state.text)).catch(() => {});
+    if (!(await copyText(converter.fn(state.text)))) return;
     showToast('Copied!');
   });
   refreshCaseFromState();
@@ -2374,8 +2750,20 @@
   // Hiding only hides the panel (display:none), so its text, font-size and case settings are kept
   // and it keeps feeding the Case Converter. The button lives in the sticky header, so it is always reachable.
   const exampleToggle = document.getElementById('example-toggle');
+  // The sticky Example box changes height with the screen width, so jumps to a section are measured from
+  // its real bottom edge. A fixed number left headings underneath it on narrow phones.
+  const exampleWrap = document.querySelector('.live-text-wrap');
+  function syncScrollOffset(){
+    const root = document.documentElement;
+    if (!exampleWrap || root.classList.contains('example-hidden')) { root.style.removeProperty('--scroll-offset'); return; }
+    const headerH = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 61;
+    root.style.setProperty('--scroll-offset', Math.ceil(headerH + exampleWrap.offsetHeight + 12) + 'px');
+  }
+  if (exampleWrap && 'ResizeObserver' in window) new ResizeObserver(syncScrollOffset).observe(exampleWrap);
+  window.addEventListener('resize', syncScrollOffset);
   function setExampleHidden(hidden, persist){
     document.documentElement.classList.toggle('example-hidden', hidden);
+    syncScrollOffset();
     if (exampleToggle) {
       const label = hidden ? 'Show example box' : 'Hide example box';
       exampleToggle.setAttribute('aria-pressed', String(!hidden));
@@ -2392,7 +2780,7 @@
   // same inputs and handlers a person would use, so presets and templates never bypass a tool.
   const setVal = (el, v) => { if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } };
   window.LuBridge = {
-    escapeHtml, renderDiscordMarkdown, showToast, applyCase, sampleText,
+    escapeHtml, renderDiscordMarkdown, showToast, applyCase, sampleText, copyText, isSnowflake,
     openTool(id){
       if (toolPanelById(id)) {
         if (toolSearchInput?.value) { toolSearchInput.value = ''; filterTools(); }
@@ -2417,11 +2805,11 @@
     },
     timestamp: {
       get(){ return { tzMode: tsTzMode, hourMode: tsHourMode, zones: [...tzState.zones] }; },
-      isZone(tz){ try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; } },
+      isZone: isValidZone,
       set(o){
         if (o.tzMode) tsTzToggle?.querySelector(`[data-tz-mode="${o.tzMode}"]`)?.click();
         if (o.hourMode) tsHourToggle?.querySelector(`[data-hour-mode="${o.hourMode}"]`)?.click();
-        if (Array.isArray(o.zones)) { tzState.zones = [...o.zones]; saveZones(); renderTimestamps(); }
+        if (Array.isArray(o.zones)) { const clean = cleanZones(o.zones); tzState.zones = clean; saveZones(); renderTimestamps(); }
       },
     },
     colors: {
@@ -2471,6 +2859,14 @@
       set(text){ templateState.custom = text || ''; renderTemplateGrid(); renderTemplateOutput(); },
     },
   };
+
+  // The text field in a search or hex row is shorter than the row, so a tap on the padding missed it.
+  document.addEventListener('click', (e) => {
+    const row = e.target.closest('.search-row, .tool-search-row, .tz-search-row, .lib-search, .color-input-row');
+    if (!row || e.target.closest('button, a, input, select, textarea, label')) return;
+    const field = row.querySelector('input[type="text"], input:not([type])');
+    if (field) field.focus();
+  });
 
   /* ============ Init ============ */
   liveInput.value = state.text;
