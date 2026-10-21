@@ -14,7 +14,7 @@ jobs:
         env:
           WEBHOOK: ${{ secrets.WEBSITE_STATUS_WEBHOOK }}
         run: |
-          URL="https://lukas-utils.vercel.app/"
+          URL="https://lukas-utils.in/"
 
           STATUS=$(curl -L -o /dev/null -s -w "%{http_code}" "$URL")
 
@@ -46,7 +46,7 @@ jobs:
           📡 **HTTP Status:** \`200 OK\`
           ⏱️ **Check:** Daily
 
-          🔗 https://lukas-utils.vercel.app/"
+          🔗 https://lukas-utils.in/"
 
           fi
 
