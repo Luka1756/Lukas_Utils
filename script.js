@@ -146,7 +146,7 @@
     { id:'circled', name:'Circled', desc:'Every character gets a halo', kind:'symbols', badge:'varies', fn:'circled', keywords:'circle round bubble' },
     { id:'squared', name:'Squared', desc:'Boxed-out display type', kind:'symbols', badge:'varies', fn:'squared', keywords:'square box block' },
     { id:'fullwidth', name:'Fullwidth', desc:'Vaporwave terminal spacing', kind:'symbols', badge:'unicode', fn:'fullwidth', keywords:'wide aesthetic spaced' },
-    { id:'regional-letters', name:'Regional Letters', desc:'Flag-style letter signals', kind:'symbols', badge:'varies', fn:'regionalLetters', keywords:'flag emoji letters' },
+    // Regional Letters moved to the Symbols tool on the Text Tools page (v10.0 Phase 14); LuBridge.regionalLetters keeps the same converter.
 
     { id:'ascii-frame', name:'ASCII Frame', desc:'Compatibility-friendly bracket frame', kind:'decorative', badge:'discord', fn:'asciiFrame', keywords:'brackets border frame' },
     { id:'upside-down', name:'Upside Down', desc:'Flips and reverses your text', kind:'decorative', badge:'discord', fn:'upsideDown', keywords:'flip mirror reverse' },
@@ -256,6 +256,18 @@
     onlyFavorites: false,
   };
 
+  /* ---- v10.0: the Example box follows you from page to page ----
+     The site is now several pages, so the text, case mode and size are kept in sessionStorage for this tab. */
+  const EXAMPLE_KEY = 'lu_example';
+  const savedExample = (() => {
+    let o = null;
+    try { o = JSON.parse(sessionStorage.getItem(EXAMPLE_KEY)); } catch (e) { o = null; }
+    return o && typeof o === 'object' ? o : {};
+  })();
+  if (typeof savedExample.t === 'string') state.text = clampExample(savedExample.t);
+  if (savedExample.c === 'lower' || savedExample.c === 'title') state.caseMode = savedExample.c;
+  const savedSize = Number.isInteger(savedExample.s) && savedExample.s >= 14 && savedExample.s <= 34 ? savedExample.s : null;
+
   // Word starts are found with Unicode letters, not \w, so accented words ("élan") are capitalised
   // from their first letter instead of from the first ASCII letter inside them.
   function titleCase(str){
@@ -324,6 +336,8 @@
   function escapeHtml(str){
     return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+  // Preview links only ever point at web addresses; anything else (javascript:, data:) is shown as plain text.
+  function isWebUrl(u){ return typeof u === 'string' && /^https?:\/\//i.test(u.trim()); }
 
   function matchesQuery(style, q){
     if (!q) return true;
@@ -365,12 +379,6 @@
   }
 
   /* ============ Events ============ */
-  document.getElementById('menu-toggle').addEventListener('click', (e) => {
-    const menu = document.getElementById('mobile-menu');
-    const open = menu.classList.toggle('open');
-    e.currentTarget.setAttribute('aria-expanded', open);
-  });
-
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const html = document.documentElement;
     const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
@@ -425,6 +433,7 @@
     sizeLabel.textContent = sizeRange.value + 'px';
     document.documentElement.style.setProperty('--preview-size', sizeRange.value + 'px');
     document.querySelectorAll('.style-preview').forEach(el => el.style.fontSize = sizeRange.value + 'px');
+    persistExample();
   });
 
   document.querySelectorAll('#filter-row .filter-pill').forEach(pill => {
@@ -443,12 +452,8 @@
   });
 
   document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-      e.preventDefault();
-      searchInput.focus();
-    }
+    // Ctrl/Cmd+K and "/" now live in shortcuts.js, the one place that owns the keyboard shortcuts.
     if (e.key === 'Escape') {
-      document.getElementById('mobile-menu').classList.remove('open');
       if (document.activeElement) document.activeElement.blur();
     }
   });
@@ -581,7 +586,11 @@
   function renderDiscordOutput(){
     if (!discordOutputEl) return;
     const fmt = DISCORD_FORMATS.find(f => f.id === discordLabState.formatId) || DISCORD_FORMATS[0];
-    discordOutputEl.textContent = TRANSFORMS[fmt.fn](applyCase(sampleText()));
+    const raw = TRANSFORMS[fmt.fn](applyCase(sampleText()));
+    discordOutputEl.textContent = raw;
+    // The preview is drawn from the very string shown (and copied) above, never from a separate sample.
+    const prev = document.getElementById('md-fmt-preview');
+    if (prev && prev.isConnected) prev.innerHTML = raw ? renderDiscordMarkdown(raw) : '<span class="dm-empty">Nothing to preview yet.</span>';
   }
   formatGrid?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-format]');
@@ -849,7 +858,14 @@
   });
 
   /* ============ renderAll ============ */
+  function persistExample(){
+    try {
+      const size = sizeRange.isConnected ? Number(sizeRange.value) : savedSize;
+      sessionStorage.setItem(EXAMPLE_KEY, JSON.stringify({ t: state.text, c: state.caseMode, s: size }));
+    } catch (e) { /* storage unavailable: the box just won't carry over */ }
+  }
   function renderAll(){
+    persistExample();
     render();
     renderDiscordOutput();
     renderTemplateOutput();
@@ -908,7 +924,7 @@
   const tsTzToggle = document.getElementById('ts-tz-toggle');
   const tsPresetRow = document.getElementById('ts-preset-row');
   let tsHourMode = '12';
-  let tsTzMode = 'local';
+  let tsTzMode = 'local';   // 'local' | 'utc' | 'zone': which quick button matches the selected zone
   const TS_FORMATS = [
     { code:'t', label:'Short time', desc:'Just the time' },
     { code:'T', label:'Long time', desc:'Time, with seconds' },
@@ -918,23 +934,64 @@
     { code:'F', label:'Long date/time', desc:'Full date, weekday and time' },
     { code:'R', label:'Relative', desc:"Counts automatically — \"in 2 hours\", then \"1 hour ago\", etc." },
   ];
-  function getTimestampDate(){
-    if (!timestampInput.value) return null;
-    if (tsTzMode === 'utc') {
-      const d = new Date(timestampInput.value + 'Z');
-      return isNaN(d.getTime()) ? null : d;
-    }
-    const d = new Date(timestampInput.value);
-    return isNaN(d.getTime()) ? null : d;
+  /* ---- Time-zone maths: all of it comes from the browser's own IANA database (Intl), no offsets are hardcoded ---- */
+  const BROWSER_TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { return ''; } })();
+  const zoneFmtCache = {};
+  function zfmt(tz){
+    return zoneFmtCache[tz] || (zoneFmtCache[tz] = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }));
   }
+  function zoneWall(tz, ms){   // the wall-clock fields shown in zone `tz` at instant `ms`
+    const o = {};
+    zfmt(tz).formatToParts(new Date(ms)).forEach(p => { if (p.type !== 'literal') o[p.type] = p.value; });
+    return { y:+o.year, mo:+o.month, d:+o.day, h:(+o.hour) % 24, mi:+o.minute, s:+o.second };
+  }
+  function utcFromFields(f){ const d = new Date(0); d.setUTCFullYear(f.y, f.mo - 1, f.d); d.setUTCHours(f.h, f.mi, f.s, 0); return d.getTime(); }
+  function zoneOffsetMs(tz, ms){ return utcFromFields(zoneWall(tz, ms)) - Math.floor(ms / 1000) * 1000; }
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function fieldsToInput(f){ return `${String(f.y).padStart(4, '0')}-${pad2(f.mo)}-${pad2(f.d)}T${pad2(f.h)}:${pad2(f.mi)}`; }
+  function parseInputFields(v){
+    const m = /^(\d{4,6})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d))?/.exec(v || '');
+    return m ? { y:+m[1], mo:+m[2], d:+m[3], h:+m[4], mi:+m[5], s:+(m[6] || 0) } : null;
+  }
+  // Which instants show this wall-clock time in the zone? Normally one. Zero means the clock skips it (spring
+  // forward); two means the clock shows it twice (fall back).
+  function wallToInstants(tz, f){
+    const guess = utcFromFields(f);
+    const DAY = 86400000;
+    const offs = [...new Set([zoneOffsetMs(tz, guess - DAY * 1.5), zoneOffsetMs(tz, guess - DAY / 2), zoneOffsetMs(tz, guess + DAY / 2), zoneOffsetMs(tz, guess + DAY * 1.5)])];
+    const found = [...new Set(offs.map(o => guess - o))].filter(t => zoneOffsetMs(tz, t) === guess - t).sort((a, b) => a - b);
+    return { guess, found, before: zoneOffsetMs(tz, guess - DAY) };
+  }
+  let tsZone = BROWSER_TZ || 'UTC';
+  let tsFold = 'first';   // which of the two repeated clock times to use after a fall-back change
+  // Reads the date/time box as a moment in the selected zone. status: ok | gap (skipped time, moved forward) | fold (repeated time)
+  function tsResolve(){
+    const f = parseInputFields(timestampInput.value);
+    if (!f || f.y < 1 || f.y > 9999) return null;
+    try {
+      const { guess, found, before } = wallToInstants(tsZone, f);
+      let ms, status = 'ok', alts = found;
+      if (found.length === 0) { ms = guess - before; status = 'gap'; }
+      else if (found.length === 1) ms = found[0];
+      else { ms = tsFold === 'second' ? found[found.length - 1] : found[0]; status = 'fold'; }
+      const d = new Date(ms);
+      return isNaN(d.getTime()) ? null : { date: d, status, alts, fields: f };
+    } catch { return null; }
+  }
+  function getTimestampDate(){ const r = tsResolve(); return r ? r.date : null; }
   function tsPreviewText(date, code){
     const hour12 = tsHourMode === '12';
-    if (code === 't') return date.toLocaleTimeString([], { hour:'numeric', minute:'2-digit', hour12 });
-    if (code === 'T') return date.toLocaleTimeString([], { hour:'numeric', minute:'2-digit', second:'2-digit', hour12 });
-    if (code === 'd') return date.toLocaleDateString();
-    if (code === 'D') return date.toLocaleDateString([], { day:'numeric', month:'long', year:'numeric' });
-    if (code === 'f') return date.toLocaleDateString([], { day:'numeric', month:'long', year:'numeric' }) + ' ' + date.toLocaleTimeString([], { hour:'numeric', minute:'2-digit', hour12 });
-    if (code === 'F') return date.toLocaleDateString([], { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' ' + date.toLocaleTimeString([], { hour:'numeric', minute:'2-digit', hour12 });
+    const tz = tsZone;
+    const T = (o) => date.toLocaleTimeString([], Object.assign({ timeZone: tz, hour12 }, o));
+    const D = (o) => date.toLocaleDateString([], Object.assign({ timeZone: tz }, o));
+    try {
+      if (code === 't') return T({ hour:'numeric', minute:'2-digit' });
+      if (code === 'T') return T({ hour:'numeric', minute:'2-digit', second:'2-digit' });
+      if (code === 'd') return D({});
+      if (code === 'D') return D({ day:'numeric', month:'long', year:'numeric' });
+      if (code === 'f') return D({ day:'numeric', month:'long', year:'numeric' }) + ' ' + T({ hour:'numeric', minute:'2-digit' });
+      if (code === 'F') return D({ weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' ' + T({ hour:'numeric', minute:'2-digit' });
+    } catch { return ''; }
     if (code === 'R') return relativeTimeText(date);
     return '';
   }
@@ -953,7 +1010,9 @@
     return diffMs >= 0 ? `in ${val} ${unit}${plural}` : `${val} ${unit}${plural} ago`;
   }
   function renderTimestamps(){
-    const date = getTimestampDate();
+    const res = tsResolve();
+    const date = res ? res.date : null;
+    renderZoneSummary(res);
     if (!date) { timestampGrid.innerHTML = ''; tsHighlightRow.innerHTML = ''; return; }
     const unix = Math.floor(date.getTime() / 1000);
 
@@ -976,7 +1035,7 @@
 
     renderTzRows(date);
   }
-  timestampInput?.addEventListener('input', renderTimestamps);
+  timestampInput?.addEventListener('input', () => { tsFold = 'first'; renderTimestamps(); });
   // "Relative" is measured from right now, so it has to keep moving while the page stays open. Only the text
   // is updated (not the buttons), so keyboard focus and text selection are never disturbed.
   function refreshRelativeTimes(){
@@ -1004,23 +1063,36 @@
     tsHourMode = btn.dataset.hourMode;
     renderTimestamps();
   });
+  // The quick buttons are shortcuts for choosing a zone: your device's zone, or UTC.
   tsTzToggle?.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-tz-mode]');
-    if (!btn) return;
-    tsTzToggle.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    tsTzMode = btn.dataset.tzMode;
-    renderTimestamps();
+    if (!btn || btn.disabled) return;
+    setTsZone(btn.dataset.tzMode === 'utc' ? 'UTC' : BROWSER_TZ);
   });
+  function syncZoneButtons(){
+    tsTzMode = tsZone === 'UTC' ? 'utc' : (tsZone === BROWSER_TZ ? 'local' : 'zone');
+    tsTzToggle?.querySelectorAll('[data-tz-mode]').forEach(b => {
+      const on = b.dataset.tzMode === tsTzMode;
+      b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on));
+    });
+  }
+  // Changing the zone never changes the moment: the clock time in the box is converted so it still means the same instant.
+  function setTsZone(tz, opts){
+    if (!isValidZone(tz)) return false;
+    const keep = !(opts && opts.keepClock);
+    const before = keep ? getTimestampDate() : null;
+    tsZone = tz; tsFold = 'first';
+    if (before) setTimestampFromDate(before); else renderTimestamps();
+    syncZoneButtons();
+    if (zoneInput) zoneInput.value = tsZone;
+    renderTimestamps();
+    return true;
+  }
   function setTimestampFromDate(date){
-    let value;
-    if (tsTzMode === 'utc') {
-      value = date.toISOString().slice(0, 16);
-    } else {
-      const adjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-      value = adjusted.toISOString().slice(0, 16);
-    }
-    timestampInput.value = value;
+    timestampInput.value = fieldsToInput(zoneWall(tsZone, date.getTime()));
+    // If that clock time occurs twice, remember which of the two this moment is.
+    const f = parseInputFields(timestampInput.value);
+    if (f) { try { const { found } = wallToInstants(tsZone, f); if (found.length > 1) tsFold = date.getTime() === found[0] ? 'first' : 'second'; else tsFold = 'first'; } catch {} }
     renderTimestamps();
   }
   tsPresetRow?.addEventListener('click', (e) => {
@@ -1035,7 +1107,6 @@
   const tzSearchInput = document.getElementById('tz-search-input');
   const tzSearchResults = document.getElementById('tz-search-results');
   const tzRowsContainer = document.getElementById('tz-rows');
-  const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const FALLBACK_TIMEZONES = [
     'UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
     'America/Sao_Paulo','America/Mexico_City','America/Toronto','Europe/London','Europe/Paris',
@@ -1085,7 +1156,7 @@
   }
   function tzDayDiff(date, tz){
     const a = tzDateKey(date, tz);
-    const b = tzDateKey(date, BROWSER_TZ);
+    const b = tzDateKey(date, tsZone);
     if (!a || !b || a === b) return null;
     const diff = Math.round((new Date(a + 'T00:00:00Z') - new Date(b + 'T00:00:00Z')) / 86400000);
     if (diff === 0) return null;
@@ -1187,6 +1258,155 @@
     if (e.key === 'Escape') { tzSearchResults.hidden = true; tzSearchInput.blur(); }
   });
 
+  /* ---- Searchable time-zone selector (every zone this browser's IANA database lists) ---- */
+  const zoneInput = document.getElementById('ts-zone-input');
+  const zoneList = document.getElementById('ts-zone-list');
+  const zoneBrowse = document.getElementById('ts-zone-browse');
+  const zoneError = document.getElementById('ts-zone-error');
+  const zoneSummary = document.getElementById('ts-zone-summary');
+  const zoneNote = document.getElementById('ts-zone-note');
+  const zoneListIsFull = ALL_TIMEZONES !== FALLBACK_TIMEZONES;
+  const ZONE_ALIASES = { Calcutta:'kolkata india delhi mumbai bombay', Kolkata:'calcutta india delhi mumbai bombay', Kiev:'kyiv', Kyiv:'kiev', Katmandu:'kathmandu nepal', Kathmandu:'katmandu nepal', Rangoon:'yangon myanmar burma', Yangon:'rangoon', Saigon:'ho chi minh vietnam', Ho_Chi_Minh:'saigon vietnam', New_York:'nyc eastern', Los_Angeles:'la pacific', London:'uk britain england gmt bst', Tokyo:'japan', Sydney:'australia', Auckland:'new zealand nz', Dubai:'uae', Shanghai:'china beijing', Singapore:'sg' };
+  function zoneGroupName(tz){ return tz.includes('/') ? tz.split('/')[0] : 'UTC'; }
+  function zoneHaystack(tz, date){
+    const city = tz.split('/').pop();
+    return (tz + ' ' + tz.replace(/[_/]/g, ' ') + ' ' + tzDisplayName(tz) + ' ' + (ZONE_ALIASES[city] || '') + ' ' + tzOffsetLabel(date, tz)).toLowerCase();
+  }
+  function zoneLongName(tz, date){
+    try {
+      const p = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'long' }).formatToParts(date).find(x => x.type === 'timeZoneName');
+      const q = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(date).find(x => x.type === 'timeZoneName');
+      return { long: p ? p.value : '', short: q ? q.value : '' };
+    } catch { return { long:'', short:'' }; }
+  }
+  function zoneDstState(tz, date){
+    try {
+      const y = zoneWall(tz, date.getTime()).y;
+      const jan = zoneOffsetMs(tz, Date.UTC(y, 0, 1)), jul = zoneOffsetMs(tz, Date.UTC(y, 6, 1)), now = zoneOffsetMs(tz, date.getTime());
+      if (jan === jul) return { observes:false, active:false };
+      return { observes:true, active: now > Math.min(jan, jul) };
+    } catch { return { observes:false, active:false }; }
+  }
+  let zoneActive = -1, zoneShown = [];
+  function zoneRefDate(){ return getTimestampDate() || new Date(); }
+  function renderZoneList(query, browseAll){
+    if (!zoneList) return;
+    const ref = zoneRefDate();
+    const q = (query || '').toLowerCase().replace(/[_/]+/g, ' ').trim();
+    const toks = q.split(/\s+/).filter(Boolean);
+    let hits = ALL_TIMEZONES.filter(tz => !toks.length || toks.every(t => zoneHaystack(tz, ref).replace(/[_/]+/g, ' ').includes(t)));
+    if (toks.length) {   // names that start with the search first, then the rest
+      const rank = (tz) => { const n = tzDisplayName(tz).toLowerCase(); return n.startsWith(q) ? 0 : tz.toLowerCase().replace(/[_/]+/g, ' ').includes(q) ? 1 : 2; };
+      hits = hits.map((tz, i) => [tz, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
+    }
+    const CAP = 80;
+    const more = hits.length > CAP;
+    zoneShown = hits.slice(0, CAP);
+    if (!zoneShown.length) {
+      zoneList.innerHTML = `<div class="tsz-empty">No time zone matches “${escapeHtml(query)}”. Try a city (Tokyo), a region (Europe) or an identifier (Europe/London).</div>`;
+      zoneActive = -1;
+    } else {
+      let html = '', lastGroup = null;
+      zoneShown.forEach((tz, i) => {
+        const g = zoneGroupName(tz);
+        if (g !== lastGroup) { html += `<div class="tsz-group" role="presentation">${escapeHtml(g)}</div>`; lastGroup = g; }
+        html += `<div class="tsz-opt${tz === tsZone ? ' is-selected' : ''}" role="option" id="tsz-opt-${i}" data-zone="${escapeHtml(tz)}" aria-selected="false"><span class="tsz-name">${escapeHtml(tzDisplayName(tz))}<span class="tsz-id">${escapeHtml(tz)}</span></span><span class="tsz-off">${escapeHtml(tzOffsetLabel(ref, tz))}</span></div>`;
+      });
+      if (more) html += `<div class="tsz-empty">Showing the first ${CAP} of ${hits.length}. Keep typing to narrow it down.</div>`;
+      zoneList.innerHTML = html;
+      zoneActive = Math.max(0, zoneShown.indexOf(tsZone));
+      if (toks.length) zoneActive = 0;
+    }
+    zoneList.hidden = false;
+    zoneInput.setAttribute('aria-expanded', 'true');
+    zoneBrowse?.setAttribute('aria-expanded', 'true');
+    markZoneActive(true);
+  }
+  function markZoneActive(scroll){
+    if (!zoneList) return;
+    zoneList.querySelectorAll('.tsz-opt').forEach((el, i) => { const on = i === zoneActive; el.classList.toggle('is-active', on); el.setAttribute('aria-selected', String(on)); if (on && scroll) el.scrollIntoView({ block:'nearest' }); });
+    if (zoneActive >= 0) zoneInput.setAttribute('aria-activedescendant', 'tsz-opt-' + zoneActive); else zoneInput.removeAttribute('aria-activedescendant');
+  }
+  function closeZoneList(){
+    if (!zoneList) return;
+    zoneList.hidden = true; zoneInput.setAttribute('aria-expanded', 'false'); zoneBrowse?.setAttribute('aria-expanded', 'false'); zoneInput.removeAttribute('aria-activedescendant');
+  }
+  function showZoneError(msg){ if (!zoneError) return; zoneError.textContent = msg || ''; zoneError.hidden = !msg; zoneInput?.setAttribute('aria-invalid', msg ? 'true' : 'false'); }
+  // Typed text that is not in the list but that the browser still accepts as an identifier (any letter case).
+  function canonicalZone(text){
+    const t = String(text || '').trim();
+    if (!t || t.length > 64 || !/^[A-Za-z0-9_+\-\/:]+$/.test(t)) return '';
+    try { return new Intl.DateTimeFormat('en', { timeZone: t }).resolvedOptions().timeZone || ''; } catch { return ''; }
+  }
+  function chooseZone(tz){
+    showZoneError('');
+    closeZoneList();
+    setTsZone(tz);
+    zoneInput.value = tsZone;
+  }
+  function commitTypedZone(){
+    const typed = zoneInput.value.trim();
+    if (!typed || typed === tsZone) { showZoneError(''); closeZoneList(); zoneInput.value = tsZone; return; }
+    if (!zoneList.hidden && zoneActive >= 0 && zoneShown[zoneActive]) { chooseZone(zoneShown[zoneActive]); return; }
+    const c = canonicalZone(typed);
+    if (c) { chooseZone(c); return; }
+    showZoneError(`“${typed}” is not a time zone this browser knows. Pick one from the list, or type an identifier such as Europe/London.`);
+  }
+  if (zoneInput) {
+    zoneInput.addEventListener('input', () => { showZoneError(''); renderZoneList(zoneInput.value, false); });
+    zoneInput.addEventListener('focus', () => { zoneInput.select(); });
+    zoneInput.addEventListener('click', () => { if (zoneList.hidden) { renderZoneList('', true); } });
+    zoneInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (zoneList.hidden) { renderZoneList(zoneInput.value === tsZone ? '' : zoneInput.value, true); return; }
+        const n = zoneShown.length; if (!n) return;
+        zoneActive = (zoneActive + (e.key === 'ArrowDown' ? 1 : -1) + n) % n; markZoneActive(true);
+      } else if (e.key === 'Enter') { e.preventDefault(); commitTypedZone(); }
+      else if (e.key === 'Escape') { if (!zoneList.hidden) { e.preventDefault(); e.stopPropagation(); closeZoneList(); zoneInput.value = tsZone; showZoneError(''); } }
+    });
+    zoneInput.addEventListener('blur', () => { setTimeout(() => { if (document.activeElement !== zoneInput && !zoneList.matches(':hover')) { closeZoneList(); if (!zoneError.hidden) return; zoneInput.value = tsZone; } }, 120); });
+    zoneList.addEventListener('mousedown', (e) => e.preventDefault());   // keep focus in the box while choosing
+    zoneList.addEventListener('click', (e) => { const o = e.target.closest('[data-zone]'); if (o) chooseZone(o.dataset.zone); });
+    zoneBrowse?.addEventListener('click', () => { if (zoneList.hidden) { renderZoneList('', true); zoneInput.focus(); } else closeZoneList(); });
+    document.addEventListener('click', (e) => { if (zoneList && !zoneList.hidden && !e.target.closest('.tsz-combo')) { closeZoneList(); zoneInput.value = tsZone; } });
+    zoneInput.value = tsZone;
+    if (!BROWSER_TZ || !isValidZone(BROWSER_TZ)) {
+      const lb = tsTzToggle?.querySelector('[data-tz-mode="local"]');
+      if (lb) { lb.disabled = true; lb.title = 'This browser did not report a time zone'; }
+      if (zoneNote) zoneNote.textContent = 'This browser did not report your time zone, so “My time zone” is unavailable. Pick one from the list.';
+    } else if (!zoneListIsFull && zoneNote) {
+      zoneNote.textContent = 'This browser cannot list every time zone, so only common ones are shown. You can still type any identifier it recognises.';
+    }
+  }
+  function renderZoneSummary(res){
+    if (!zoneSummary) return;
+    syncZoneButtons();
+    if (!res) { zoneSummary.innerHTML = `<span class="tsz-warn">Enter a valid date and time to see the timestamp.</span>`; return; }
+    const d = res.date, unix = Math.floor(d.getTime() / 1000);
+    const nm = zoneLongName(tsZone, d), dst = zoneDstState(tsZone, d);
+    const iso = new Date(d.getTime()).toISOString().replace('T', ' ').replace(/\.000Z$/, '').replace(/Z$/, '') + ' UTC';
+    let html = `<div class="tsz-line"><strong>${escapeHtml(tzDisplayName(tsZone))}</strong> <code>${escapeHtml(tsZone)}</code> <span class="tsz-badge">${escapeHtml(tzOffsetLabel(d, tsZone) || 'UTC')}</span>`
+      + `${dst.active ? ' <span class="tsz-badge tsz-dst" title="The offset is higher than this zone\'s other offset this year, so daylight saving time is in effect">DST</span>' : ''}`
+      + `${!dst.observes ? ' <span class="tsz-badge tsz-muted" title="This zone has the same offset in January and July of this year">no DST this year</span>' : ''}</div>`;
+    if (nm.long) html += `<div class="tsz-sub">${escapeHtml(nm.long)}${nm.short && nm.short !== nm.long ? ' (' + escapeHtml(nm.short) + ')' : ''}</div>`;
+    html += `<div class="tsz-sub">Same moment everywhere: <code>${escapeHtml(iso)}</code> = Unix <code>${unix}</code>. The zone only decides how the clock time above is read and shown; the timestamp itself is absolute.</div>`;
+    if (res.status === 'gap') {
+      html += `<div class="tsz-warn" role="status">That clock time does not exist in ${escapeHtml(tsZone)} (the clocks skip it when daylight saving starts). It was moved forward to ${escapeHtml(tsPreviewText(d, 'T'))}.</div>`;
+    } else if (res.status === 'fold') {
+      const offs = res.alts.map(t => tzOffsetLabel(new Date(t), tsZone));
+      html += `<div class="tsz-warn" role="status">That clock time happens twice in ${escapeHtml(tsZone)} (the clocks go back). Choose which one:
+        <span class="tsz-fold"><button type="button" class="case-btn${tsFold === 'first' ? ' active' : ''}" data-fold="first" aria-pressed="${tsFold === 'first'}">First, ${escapeHtml(offs[0])}</button><button type="button" class="case-btn${tsFold === 'second' ? ' active' : ''}" data-fold="second" aria-pressed="${tsFold === 'second'}">Second, ${escapeHtml(offs[offs.length - 1])}</button></span></div>`;
+    }
+    zoneSummary.innerHTML = html;
+  }
+  zoneSummary?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-fold]');
+    if (!b) return;
+    tsFold = b.dataset.fold; renderTimestamps();
+    zoneSummary.querySelector(`[data-fold="${tsFold}"]`)?.focus();
+  });
+
   (function initTimestampDefault(){
     if (!timestampInput) return;
     setTimestampFromDate(new Date());
@@ -1197,7 +1417,7 @@
   setInterval(() => {
     if (!timestampInput?.value || document.hidden) return;
     const active = document.activeElement;
-    const busy = active && [timestampGrid, tzRowsContainer, tzSearchResults, tsHighlightRow].some(box => box && box.contains(active));
+    const busy = active && [timestampGrid, tzRowsContainer, tzSearchResults, tsHighlightRow, zoneSummary, zoneList].some(box => box && box.contains(active));
     if (busy) refreshRelativeTimes(); else renderTimestamps();
   }, 30000);
 
@@ -1472,7 +1692,8 @@
   /* ============ Discord Tools sidebar navigation ============ */
   // The sidebar lists every Discord tool. Picking one focuses that panel in the workspace;
   // the other panels are only hidden (not removed), so whatever you typed in them is kept.
-  const discordSection = document.getElementById('discord-tools');
+  // v10.0: each tool page has its own section id (e.g. #embeds-webhooks); the standalone SEO pages have none.
+  const discordSection = document.querySelector('section.discord-tools.hub');
   const toolNav = document.getElementById('tool-nav');
   const toolNavToggle = document.getElementById('tool-nav-toggle');
   const toolNavCurrent = document.getElementById('tool-nav-current');
@@ -1543,7 +1764,7 @@
       history.pushState(null, '', '#' + id);
       showTool(id, true);
     } else {
-      history.pushState(null, '', '#discord-tools');
+      history.pushState(null, '', '#' + discordSection.id);
       showAllTools(true);
     }
   });
@@ -1563,7 +1784,7 @@
   function applyToolHash(scroll){
     const id = location.hash.slice(1);
     if (toolPanelById(id)) showTool(id, scroll);
-    else if (id === 'discord-tools') showAllTools(false);
+    else if (id && id === discordSection.id) showAllTools(false);
   }
   window.addEventListener('hashchange', () => applyToolHash(true));
   if (toolPanelById(location.hash.slice(1))) setTimeout(() => applyToolHash(true), 60);
@@ -1593,6 +1814,31 @@
   const sendStatusEl = document.getElementById('send-status');
   const sendBtn = document.getElementById('send-to-discord');
   const webhookUrlInput = document.getElementById('embed-webhook-url');
+  // Eye button: switches the field between masked and visible. This only changes how the text is drawn on screen.
+  // The value is never copied anywhere, and focus, caret and selection stay where they were.
+  const webhookToggle = document.getElementById('embed-webhook-toggle');
+  if (webhookToggle && webhookToggle.isConnected && webhookUrlInput) {
+    const [iconShow, iconHide] = [webhookToggle.querySelector('.pw-eye'), webhookToggle.querySelector('.pw-eye-off')];
+    webhookToggle.addEventListener('mousedown', (e) => e.preventDefault());   // keep the caret in the field
+    webhookToggle.addEventListener('click', () => {
+      const wasFocused = document.activeElement === webhookUrlInput;
+      const { selectionStart: a, selectionEnd: b, selectionDirection: d } = webhookUrlInput;
+      const reveal = webhookUrlInput.type === 'password';
+      webhookUrlInput.type = reveal ? 'text' : 'password';
+      const label = reveal ? 'Hide webhook URL' : 'Show webhook URL';
+      webhookToggle.setAttribute('aria-label', label); webhookToggle.title = label;
+      webhookToggle.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+      // The icons are SVG, which has no .hidden property, so the attribute is set directly.
+      if (iconShow) iconShow.toggleAttribute('hidden', reveal);
+      if (iconHide) iconHide.toggleAttribute('hidden', !reveal);
+      if (wasFocused) {
+        // Changing the type resets the caret, and some browsers do it a moment later, so restore it now and on the next frame.
+        const restore = () => { if (document.activeElement !== webhookUrlInput) return; try { webhookUrlInput.setSelectionRange(a, b, d || 'none'); } catch { /* not supported for this type */ } };
+        webhookUrlInput.focus({ preventScroll: true }); restore();
+        requestAnimationFrame(() => { if (webhookUrlInput.selectionStart === 0 && webhookUrlInput.selectionEnd === 0) restore(); });
+      }
+    });
+  }
   let embedSending = false;
   const embedJsonOutput = document.getElementById('embed-json-output');
   const messagePreviewBox = document.getElementById('message-preview-box');
@@ -1731,18 +1977,18 @@
     let html = '';
     if (embed.author) {
       const icon = embed.author.icon_url ? `<img class="ep-author-icon" src="${escapeHtml(embed.author.icon_url)}" alt="" onerror="this.style.display='none'">` : '';
-      const nameHtml = embed.author.url ? `<a href="${escapeHtml(embed.author.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.author.name)}</a>` : escapeHtml(embed.author.name);
+      const nameHtml = isWebUrl(embed.author.url) ? `<a href="${escapeHtml(embed.author.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.author.name)}</a>` : escapeHtml(embed.author.name);
       html += `<div class="ep-author">${icon}${nameHtml}</div>`;
     }
     if (embed.thumbnail) html += `<img class="ep-thumb" src="${escapeHtml(embed.thumbnail.url)}" alt="" onerror="this.style.display='none'">`;
     if (embed.title) {
-      const titleHtml = embed.url ? `<a href="${escapeHtml(embed.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.title)}</a>` : escapeHtml(embed.title);
+      const titleHtml = isWebUrl(embed.url) ? `<a href="${escapeHtml(embed.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(embed.title)}</a>` : escapeHtml(embed.title);
       html += `<div class="ep-title">${titleHtml}</div>`;
     }
-    if (embed.description) html += `<div class="ep-desc">${escapeHtml(embed.description)}</div>`;
+    if (embed.description) html += `<div class="ep-desc dm-content">${renderDiscordMarkdown(embed.description)}</div>`;
     if (embed.fields?.length) {
       const allInline = embed.fields.every(f => f.inline);
-      html += `<div class="ep-fields ${allInline ? '' : 'ep-fields-stack'}">${embed.fields.map(f => `<div class="ep-field"><div class="ep-field-name">${escapeHtml(f.name)}</div><div class="ep-field-value">${escapeHtml(f.value)}</div></div>`).join('')}</div>`;
+      html += `<div class="ep-fields ${allInline ? '' : 'ep-fields-stack'}">${embed.fields.map(f => `<div class="ep-field"><div class="ep-field-name">${escapeHtml(f.name)}</div><div class="ep-field-value dm-content">${renderDiscordMarkdown(f.value)}</div></div>`).join('')}</div>`;
     }
     if (embed.image) html += `<img class="ep-image" src="${escapeHtml(embed.image.url)}" alt="" onerror="this.style.display='none'">`;
     if (embed.footer || embed.timestamp) {
@@ -1955,17 +2201,19 @@
         while (i < lines.length && /^>( |$)/.test(lines[i]) && !lines[i].startsWith('>>> ')) { q.push(lines[i].replace(/^> ?/, '')); i++; }
         blocks.push({ type:'quote', lines: q }); continue;
       }
-      const ul = line.match(/^[-*]\s+(.*)$/);
-      if (ul) {
-        const items = [ul[1]]; i++;
-        while (i < lines.length) { const m2 = lines[i].match(/^[-*]\s+(.*)$/); if (!m2) break; items.push(m2[1]); i++; }
-        blocks.push({ type:'ul', items }); continue;
-      }
-      const ol = line.match(/^\d+\.\s+(.*)$/);
-      if (ol) {
-        const items = [ol[1]]; i++;
-        while (i < lines.length) { const m2 = lines[i].match(/^\d+\.\s+(.*)$/); if (!m2) break; items.push(m2[1]); i++; }
-        blocks.push({ type:'ol', items }); continue;
+      const sub = line.match(/^-#\s+(.*)$/);
+      if (sub) { blocks.push({ type:'sub', text: sub[1] }); i++; continue; }
+      const LI = /^( *)([-*]|\d+\.)\s+(.*)$/;
+      if (LI.test(line)) {
+        // A run of list lines. Two spaces of indent per nesting level, as in Discord.
+        const items = [];
+        while (i < lines.length) {
+          const m2 = lines[i].match(LI);
+          if (!m2) break;
+          items.push({ indent: m2[1].length, ordered: /\d/.test(m2[2]), num: parseInt(m2[2], 10), text: m2[3] });
+          i++;
+        }
+        blocks.push({ type:'list', items }); continue;
       }
       blocks.push({ type:'p', text: line }); i++;
     }
@@ -1979,7 +2227,7 @@
         .replace(/~~(.+?)~~/g, '<del>$1</del>')
         .replace(/(^|[^*])\*(?![\s*])([^*]*?[^\s*])\*(?!\*)/g, '$1<em>$2</em>')
         .replace(/(^|[^\w])_(?![\s_])([^_]*?[^\s_])_(?!\w)/g, '$1<em>$2</em>')
-        .replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler>$1</span>');
+        .replace(/\|\|(.+?)\|\|/g, '<span class="spoiler" data-spoiler tabindex="0" role="button" aria-label="Spoiler, press to reveal">$1</span>');
     }
 
     function inline(str){
@@ -2040,11 +2288,35 @@
       return html;
     }
 
+    function renderList(items){
+      let out = '';
+      const stack = [];   // open lists: { depth, tag }
+      let prevDepth = -1;
+      items.forEach((it, n) => {
+        const tag = it.ordered ? 'ol' : 'ul';
+        let depth = Math.min(Math.floor(it.indent / 2), prevDepth + 1);
+        if (n === 0) depth = 0;
+        while (stack.length && stack[stack.length - 1].depth > depth) { out += `</li></${stack.pop().tag}>`; }
+        const top = stack[stack.length - 1];
+        if (top && top.depth === depth) {
+          if (top.tag === tag) out += '</li><li>';
+          else { out += `</li></${top.tag}>`; stack.pop(); stack.push({ depth, tag }); out += `<${tag}><li>`; }
+        } else {
+          const start = tag === 'ol' && it.num !== 1 && Number.isFinite(it.num) && it.num < 1e6 ? ` start="${it.num}"` : '';
+          stack.push({ depth, tag }); out += `<${tag}${start}><li>`;
+        }
+        out += inline(it.text);
+        prevDepth = depth;
+      });
+      while (stack.length) out += `</li></${stack.pop().tag}>`;
+      return out;
+    }
+
     return blocks.map(b => {
       if (b.type === 'heading') return `<div class="md-h${b.level}">${inline(b.text)}</div>`;
       if (b.type === 'quote') return `<blockquote>${b.lines.map(inline).join('<br>')}</blockquote>`;
-      if (b.type === 'ul') return `<ul>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ul>`;
-      if (b.type === 'ol') return `<ol>${b.items.map(t => `<li>${inline(t)}</li>`).join('')}</ol>`;
+      if (b.type === 'sub') return `<div class="md-sub">${inline(b.text)}</div>`;
+      if (b.type === 'list') return renderList(b.items);
       if (b.type === 'code') return `<pre>${escapeHtml(b.text)}</pre>`;
       return b.text ? `<p>${inline(b.text)}</p>` : '<br>';
     }).join('');
@@ -2052,12 +2324,30 @@
 
   function renderMarkdownPreview(){
     if (!mdPreviewOutput) return;
-    mdPreviewOutput.innerHTML = renderDiscordMarkdown(mdPreviewInput.value);
+    mdPreviewOutput.innerHTML = mdPreviewInput.value.trim() ? renderDiscordMarkdown(mdPreviewInput.value) : '<span class="dm-empty">Type some Markdown to see it here.</span>';
   }
   mdPreviewInput?.addEventListener('input', renderMarkdownPreview);
-  mdPreviewOutput?.addEventListener('click', (e) => {
-    const spoiler = e.target.closest('[data-spoiler]');
-    if (spoiler) spoiler.classList.toggle('revealed');
+  // Spoilers in both Discord previews: click, or Enter / Space when focused. Links keep their normal behaviour
+  // (they open in a new tab only when clicked, and never navigate this page).
+  document.addEventListener('click', (e) => {
+    const sp = e.target.closest && e.target.closest('.dm-content [data-spoiler]');
+    if (sp && !e.target.closest('a')) sp.classList.toggle('revealed');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const sp = e.target.closest && e.target.closest('.dm-content [data-spoiler]');
+    if (sp && e.target === sp) { e.preventDefault(); sp.classList.toggle('revealed'); }
+  });
+  // Show / hide the preview column's message (the raw side is never hidden).
+  document.querySelectorAll('[data-md-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const split = btn.closest('[data-md-split]');
+      const hide = !split.classList.contains('preview-hidden');
+      split.classList.toggle('preview-hidden', hide);
+      btn.setAttribute('aria-pressed', String(hide));
+      btn.textContent = hide ? 'Show' : 'Hide';
+      btn.setAttribute('aria-label', hide ? 'Show the Discord preview' : 'Hide the Discord preview');
+    });
   });
   document.getElementById('copy-md-raw')?.addEventListener('click', async () => {
     if (!(await copyText(mdPreviewInput.value))) return;
@@ -2267,51 +2557,633 @@
     showToast('Copied!');
   });
 
-  // Base64
-  const base64Input = document.getElementById('base64-input');
-  const base64Output = document.getElementById('base64-output');
-  const base64ModeToggle = document.getElementById('base64-mode-toggle');
-  let base64Mode = 'encode';
-  // Base64 works on UTF-8 bytes, so emoji and accented text round-trip. Decoding also accepts the URL-safe
-  // alphabet (- and _) and missing "=" padding, and says which step failed.
-  function renderBase64(){
-    const raw = base64Input.value;
-    if (!raw) { setOutput(base64Output, ''); return; }
-    if (base64Mode === 'encode') {
-      const bytes = new TextEncoder().encode(raw);
-      let bin = '';
-      for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
-      setOutput(base64Output, btoa(bin));
-      return;
+  // Text encoder / decoder. One interface, one format list. Pure functions below take a string and return
+  // { ok:true, text } or { ok:false, error }, so the UI code only deals with state and display.
+  // Byte formats (Base64, hex, binary) work on the UTF-8 bytes of the text; the escape formats work on characters.
+  const ENC_MAX_CHARS = 2000000;
+  const encBrokenText = "That text contains a broken character (an unpaired surrogate) and can't be turned into UTF-8.";
+  function encHasLoneSurrogate(s){
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      if (c >= 0xD800 && c <= 0xDBFF) { const n = s.charCodeAt(i + 1); if (n >= 0xDC00 && n <= 0xDFFF) { i++; continue; } return true; }
+      if (c >= 0xDC00 && c <= 0xDFFF) return true;
     }
-    let bin;
-    try { bin = atob(raw.trim().replace(/-/g, '+').replace(/_/g, '/')); }
-    catch { setOutput(base64Output, "That doesn't look like valid Base64.", true); return; }
-    try {
-      setOutput(base64Output, new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
-    } catch {
-      setOutput(base64Output, "That's valid Base64, but it doesn't decode to readable UTF-8 text (it may be binary data).", true);
-    }
+    return false;
   }
-  base64Input?.addEventListener('input', renderBase64);
-  base64ModeToggle?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-b64-mode]');
+  const encUtf8 = (s) => new TextEncoder().encode(s);
+  function encFromBytes(bytes){
+    try { return { ok: true, text: new TextDecoder('utf-8', { fatal: true }).decode(bytes) }; }
+    catch { return { ok: false, error: "That's valid, but the bytes aren't readable UTF-8 text (they may be binary data)." }; }
+  }
+  const encHex2 = (n) => n.toString(16).toUpperCase();
+  const ENC_FORMATS = {
+    base64: {
+      name: 'Base64',
+      note: 'Encodes the UTF-8 bytes of your text. Decoding also accepts the URL-safe alphabet (- and _) and missing "=" padding.',
+      enc(t){
+        const bytes = encUtf8(t); let bin = '';
+        for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+        return { ok: true, text: btoa(bin) };
+      },
+      dec(t){
+        let bin;
+        try { bin = atob(t.trim().replace(/-/g, '+').replace(/_/g, '/')); }
+        catch { return { ok: false, error: "That doesn't look like valid Base64." }; }
+        const r = encFromBytes(Uint8Array.from(bin, c => c.charCodeAt(0)));
+        return r.ok ? r : { ok: false, error: "That's valid Base64, but it doesn't decode to readable UTF-8 text (it may be binary data)." };
+      },
+    },
+    base64url: {
+      name: 'Base64 (URL-safe)',
+      note: 'Like Base64 but uses - and _ and leaves off the "=" padding, so it is safe in URLs and file names. Decoding accepts either alphabet.',
+      enc(t){ const r = ENC_FORMATS.base64.enc(t); return { ok: true, text: r.text.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') }; },
+      dec(t){ return ENC_FORMATS.base64.dec(t); },
+    },
+    hex: {
+      name: 'Hexadecimal',
+      note: 'Shows the UTF-8 bytes of your text as hex pairs. Decoding accepts spaces, commas, colons, dashes, line breaks and 0x prefixes.',
+      opts: [{ id: 'sep', label: 'Space between bytes', def: true }, { id: 'upper', label: 'Uppercase', def: false }],
+      enc(t, o){
+        let out = Array.from(encUtf8(t), b => b.toString(16).padStart(2, '0'));
+        out = o.sep ? out.join(' ') : out.join('');
+        return { ok: true, text: o.upper ? out.toUpperCase() : out };
+      },
+      dec(t){
+        const clean = t.replace(/0x/gi, '').replace(/[\s,:\-]+/g, '');
+        const bad = clean.match(/[^0-9a-fA-F]/);
+        if (bad) return { ok: false, error: `"${bad[0]}" isn't a hexadecimal digit. Use 0-9 and a-f.` };
+        if (clean.length % 2) return { ok: false, error: `Hex needs an even number of digits (two per byte). This has ${clean.length}.` };
+        const bytes = new Uint8Array(clean.length / 2);
+        for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+        return encFromBytes(bytes);
+      },
+    },
+    binary: {
+      name: 'Binary',
+      note: 'Shows the UTF-8 bytes of your text as 8-bit groups. Decoding needs groups of 8 bits (spaces and line breaks between them are optional).',
+      opts: [{ id: 'sep', label: 'Space between bytes', def: true }],
+      enc(t, o){
+        const out = Array.from(encUtf8(t), b => b.toString(2).padStart(8, '0'));
+        return { ok: true, text: out.join(o.sep ? ' ' : '') };
+      },
+      dec(t){
+        const clean = t.replace(/\s+/g, '');
+        const bad = clean.match(/[^01]/);
+        if (bad) return { ok: false, error: `"${bad[0]}" isn't a binary digit. Use only 0 and 1.` };
+        if (clean.length % 8) return { ok: false, error: `Binary must come in groups of 8 bits (one byte each). This has ${clean.length} bits.` };
+        const bytes = new Uint8Array(clean.length / 8);
+        for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(clean.substr(i * 8, 8), 2);
+        return encFromBytes(bytes);
+      },
+    },
+    html: {
+      name: 'HTML entities',
+      note: 'Escapes & < > " and \' so text can sit safely inside HTML. Decoding understands named and numeric entities; anything it does not recognise is left as typed.',
+      opts: [{ id: 'all', label: 'Also encode non-ASCII characters', def: false }],
+      enc(t, o){
+        let out = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        if (o.all) out = Array.from(out, ch => ch.codePointAt(0) > 127 ? `&#x${encHex2(ch.codePointAt(0))};` : ch).join('');
+        return { ok: true, text: out };
+      },
+      dec(t){
+        // The "<" is escaped first so the browser's parser can only ever see text, never a tag.
+        // The parser would also turn CR into LF and drop NUL, so those are protected: CR becomes &#13;, and NUL
+        // (which has no character reference) splits the text, with the pieces joined back afterwards.
+        const box = document.createElement('textarea');
+        const piece = (seg) => { box.innerHTML = seg.replace(/</g, '&lt;').replace(/\r/g, '&#13;'); return box.textContent; };
+        return { ok: true, text: t.split('\u0000').map(piece).join('\u0000') };
+      },
+    },
+    unicode: {
+      name: 'Unicode escapes',
+      note: 'Writes every non-ASCII character as an escape and leaves ASCII readable. Decoding understands \\uXXXX (including surrogate pairs), \\u{X} and \\UXXXXXXXX.',
+      opts: [{ id: 'style', type: 'select', label: 'Style', def: 'u', choices: [['u', '\\uXXXX (JavaScript, JSON)'], ['brace', '\\u{X} (ES6)']] }],
+      enc(t, o){
+        let out = '';
+        if (o.style === 'brace') { for (const ch of t) { const cp = ch.codePointAt(0); out += cp > 127 ? `\\u{${encHex2(cp)}}` : ch; } }
+        else for (let i = 0; i < t.length; i++) { const c = t.charCodeAt(i); out += c > 127 ? '\\u' + encHex2(c).padStart(4, '0') : t[i]; }
+        return { ok: true, text: out };
+      },
+      dec(t){
+        // Any \u or \U that is not a complete, valid escape is reported rather than passed through.
+        const re = /\\(?:u\{([0-9a-fA-F]{1,8})\}|u([0-9a-fA-F]{4})|U([0-9a-fA-F]{8}))|\\[uU]/g;
+        let err = null;
+        const out = t.replace(re, (m, brace, four, eight, off) => {
+          if (err) return m;
+          if (!(brace || four || eight)) { err = `Incomplete escape at position ${off + 1}: "${t.substr(off, 8)}". Expected four hex digits after \\u.`; return m; }
+          const cp = parseInt(brace || four || eight, 16);
+          if (cp > 0x10FFFF) { err = `${m} is beyond the Unicode range (the highest is U+10FFFF).`; return m; }
+          return String.fromCodePoint(cp);
+        });
+        if (err) return { ok: false, error: err };
+        if (encHasLoneSurrogate(out)) return { ok: false, error: 'A surrogate escape (\\uD800 to \\uDFFF) is missing its other half, so it is not a real character.' };
+        return { ok: true, text: out };
+      },
+    },
+    json: {
+      name: 'JSON string',
+      note: 'Escapes quotes, backslashes and control characters the way a JSON string needs them (line breaks become \\n). Decoding also accepts text wrapped in quotes.',
+      enc(t){ return { ok: true, text: JSON.stringify(t).slice(1, -1) }; },
+      dec(t){
+        const fix = (s) => s.replace(/[\u0000-\u001f]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+        const trimmed = t.trim();
+        const attempts = [];
+        if (trimmed.length > 1 && trimmed[0] === '"' && trimmed.endsWith('"')) attempts.push(fix(trimmed));
+        attempts.push('"' + fix(t) + '"');
+        let lastErr = '';
+        for (const a of attempts) {
+          try { const v = JSON.parse(a); if (typeof v === 'string') return { ok: true, text: v }; }
+          catch (e) { lastErr = e.message; }
+        }
+        return { ok: false, error: `That isn't a valid escaped JSON string (${lastErr}). Quotes inside the text need a backslash, like \\".` };
+      },
+    },
+    rot13: {
+      name: 'ROT13',
+      note: 'Swaps each letter A-Z with the one 13 places along. It is its own inverse, so encoding and decoding do the same thing. Numbers, symbols and non-English letters are left alone.',
+      enc(t){ return { ok: true, text: t.replace(/[a-zA-Z]/g, c => { const b = c <= 'Z' ? 65 : 97; return String.fromCharCode((c.charCodeAt(0) - b + 13) % 26 + b); }) }; },
+      dec(t){ return ENC_FORMATS.rot13.enc(t); },
+    },
+  };
+  const ENC_BYTE_FORMATS = new Set(['base64', 'base64url', 'hex', 'binary']);
+  function encConvert(format, mode, text, opts){
+    const f = ENC_FORMATS[format];
+    if (!f) return { ok: false, error: 'Unknown format.' };
+    if (text.length > ENC_MAX_CHARS) return { ok: false, error: `That's too much text for the browser (limit about ${Math.round(ENC_MAX_CHARS / 1000000)} million characters).` };
+    if (mode === 'encode' && ENC_BYTE_FORMATS.has(format) && encHasLoneSurrogate(text)) return { ok: false, error: encBrokenText };
+    try { return mode === 'encode' ? f.enc(text, opts || {}) : f.dec(text, opts || {}); }
+    catch (e) { return { ok: false, error: 'Could not convert that input.' }; }
+  }
+  window.LuEncoder = { convert: encConvert, formats: Object.keys(ENC_FORMATS) };   // used by the tests
+
+  const encInput = document.getElementById('encoder-input');
+  const encOutput = document.getElementById('encoder-output');
+  const encModeToggle = document.getElementById('encoder-mode-toggle');
+  const encFormatSel = document.getElementById('encoder-format');
+  const encOptsBox = document.getElementById('encoder-opts');
+  const encNote = document.getElementById('encoder-note');
+  const encSwapBtn = document.getElementById('swap-encoder');
+  let encMode = 'encode';
+  const encOptState = {};   // format -> { optionId: value }, kept while the page is open so switching formats does not reset them
+  function encCurrentOpts(){
+    const f = ENC_FORMATS[encFormatSel.value];
+    const st = encOptState[encFormatSel.value] || (encOptState[encFormatSel.value] = {});
+    (f.opts || []).forEach(o => { if (!(o.id in st)) st[o.id] = o.def; });
+    return st;
+  }
+  function renderEncoderOpts(){
+    const f = ENC_FORMATS[encFormatSel.value], st = encCurrentOpts();
+    encOptsBox.innerHTML = '';
+    encOptsBox.hidden = !(f.opts && f.opts.length);
+    (f.opts || []).forEach(o => {
+      const label = document.createElement('label');
+      label.className = 'enc-opt';
+      if (o.type === 'select') {
+        const span = document.createElement('span'); span.textContent = o.label;
+        const sel = document.createElement('select'); sel.className = 'text-input select-input';
+        o.choices.forEach(([v, t]) => { const op = document.createElement('option'); op.value = v; op.textContent = t; sel.appendChild(op); });
+        sel.value = st[o.id];
+        sel.addEventListener('change', () => { st[o.id] = sel.value; renderEncoder(); });
+        label.append(span, sel);
+      } else {
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!st[o.id];
+        cb.addEventListener('change', () => { st[o.id] = cb.checked; renderEncoder(); });
+        const span = document.createElement('span'); span.textContent = o.label;
+        label.append(cb, span);
+      }
+      encOptsBox.appendChild(label);
+    });
+  }
+  function renderEncoder(){
+    if (!encActive) return;
+    const f = ENC_FORMATS[encFormatSel.value];
+    encNote.textContent = f.note;
+    encInput.placeholder = encMode === 'encode' ? 'Text to encode' : `${f.name} to decode`;
+    const raw = encInput.value;
+    if (!raw) { setOutput(encOutput, ''); encSwapBtn.disabled = true; return; }
+    const r = encConvert(encFormatSel.value, encMode, raw, encCurrentOpts());
+    setOutput(encOutput, r.ok ? r.text : r.error, !r.ok);
+    encSwapBtn.disabled = !r.ok || !r.text;
+  }
+  function setEncMode(mode){
+    encMode = mode;
+    encModeToggle.querySelectorAll('.case-btn').forEach(b => b.classList.toggle('active', b.dataset.encMode === mode));
+  }
+  encInput?.addEventListener('input', renderEncoder);
+  encModeToggle?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-enc-mode]');
     if (!btn) return;
-    base64ModeToggle.querySelectorAll('.case-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    base64Mode = btn.dataset.b64Mode;
-    base64Input.placeholder = base64Mode === 'encode' ? 'Text to encode' : 'Base64 to decode';
-    renderBase64();
+    setEncMode(btn.dataset.encMode);
+    renderEncoder();
   });
-  document.getElementById('copy-base64')?.addEventListener('click', async () => {
-    if (!(await copyOutput(base64Output))) return;
+  encFormatSel?.addEventListener('change', () => { renderEncoderOpts(); renderEncoder(); });
+  document.getElementById('copy-encoder')?.addEventListener('click', async () => {
+    if (!encOutput.textContent) { showToast('Nothing to copy yet'); return; }
+    if (!(await copyOutput(encOutput))) return;
     showToast('Copied!');
   });
-  document.getElementById('clear-base64')?.addEventListener('click', () => {
-    base64Input.value = '';
-    renderBase64();
-    base64Input.focus();
+  encSwapBtn?.addEventListener('click', () => {
+    if (encSwapBtn.disabled || encOutput.dataset.state === 'error') return;
+    encInput.value = encOutput.textContent;
+    setEncMode(encMode === 'encode' ? 'decode' : 'encode');
+    renderEncoder();
   });
+  document.getElementById('clear-encoder')?.addEventListener('click', () => {
+    encInput.value = '';
+    renderEncoder();
+    encInput.focus();
+  });
+  // On pages without this tool the lookups above return harmless stand-ins, so check for a real format.
+  const encActive = !!(encFormatSel && ENC_FORMATS[encFormatSel.value]);
+  if (encActive) { renderEncoderOpts(); renderEncoder(); }
+  // Old links to the standalone Base64 tool (#tool-base64) now open this tool with Base64 selected.
+  function encLegacyHash(){
+    if (!encActive || location.hash !== '#tool-base64') return;
+    encFormatSel.value = 'base64'; renderEncoderOpts(); renderEncoder();
+    history.replaceState(null, '', '#tool-encoder');
+    applyToolHash(true);
+  }
+  window.addEventListener('hashchange', encLegacyHash);
+  setTimeout(encLegacyHash, 0);
+
+  // Image <-> URL converter.
+  // URL -> Image: the image is shown by the browser straight from its host. Download uses a fetch request, which only
+  // works when that host allows it (CORS), and says so when it doesn't.
+  // Image -> URL: choosing a file only previews it from this device (an object URL), and nothing about it is kept in
+  // browser storage. The file is sent anywhere only when the Upload to ImgBB button is pressed: it goes to this site's own
+  // /api/upload function, which passes it on to ImgBB. Links to other hosting sites are plain links.
+  const imgPanel = document.getElementById('tool-image-url');
+  const IMG_URL_MAX = 4096;
+  const IMG_FILE_MAX = 20 * 1024 * 1024;
+  const IMG_DL_MAX = 50 * 1024 * 1024;
+  const IMG_UP_MAX = 4 * 1024 * 1024;   // must match MAX_BYTES in api/upload.js (Vercel rejects request bodies over 4.5 MB)
+  const IMG_UP_TYPES = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp' };
+  const IMG_UP_KEEP = { never: '', '1h': '1 hour', '1d': '1 day', '7d': '7 days', '30d': '30 days' };
+  // A returned link is only shown if it is a plain https link on ImgBB's own domain.
+  function imgbbLink(v){
+    if (typeof v !== 'string' || v.length > 600) return '';
+    let u; try { u = new URL(v); } catch { return ''; }
+    return (u.protocol === 'https:' && !u.username && !u.password && (u.hostname === 'ibb.co' || u.hostname.endsWith('.ibb.co'))) ? u.href : '';
+  }
+  const IMG_SHOW_EXT = new Set(['png', 'jpg', 'jpeg', 'jfif', 'gif', 'webp', 'avif', 'svg', 'bmp', 'ico', 'apng']);
+  const IMG_NO_SHOW_EXT = new Set(['tif', 'tiff', 'heic', 'heif', 'psd', 'raw', 'cr2', 'nef', 'arw', 'dng', 'ai', 'eps', 'xcf']);
+  const IMG_NOT_IMAGE_EXT = new Set(['html', 'htm', 'php', 'asp', 'aspx', 'pdf', 'txt', 'json', 'xml', 'js', 'css', 'zip', 'rar', '7z', 'gz', 'mp4', 'webm', 'mov', 'mkv', 'mp3', 'wav', 'ogg', 'doc', 'docx', 'xls', 'xlsx', 'exe']);
+  const IMG_FILE_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/avif': 'avif', 'image/bmp': 'bmp', 'image/svg+xml': 'svg' };
+  const IMG_MIME_EXT = Object.assign({ 'image/x-icon': 'ico', 'image/vnd.microsoft.icon': 'ico', 'image/apng': 'png', 'image/pjpeg': 'jpg' }, IMG_FILE_TYPES);
+
+  function imgPrivateHost(host){
+    host = host.toLowerCase().replace(/^\[|\]$/g, '');
+    if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan') || host.endsWith('.home.arpa')) return true;
+    const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (m) {
+      const [a, b] = [Number(m[1]), Number(m[2])];
+      return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
+    }
+    if (host.includes(':')) return host === '::' || host === '::1' || /^f[cd]/.test(host) || /^fe[89ab]/.test(host) || host.startsWith('::ffff:');
+    return !host.includes('.');   // a bare name like "intranet" is not a public website
+  }
+  // Returns { ok:true, url, ext } or { ok:false, error }. The address is never loaded or run here.
+  function checkImageUrl(raw){
+    let s = String(raw || '').trim();
+    if (!s) return { ok: false, error: 'Enter an image URL first.' };
+    if (s.startsWith('<') && s.endsWith('>')) s = s.slice(1, -1).trim();
+    if (/\s/.test(s)) return { ok: false, error: "That address contains spaces. Image URLs can't, so check you pasted only the link." };
+    if (s.length > IMG_URL_MAX) return { ok: false, error: `That address is too long (over ${IMG_URL_MAX} characters).` };
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s) || /^[^/?#]+:\d+(?:[/?#]|$)/.test(s)) s = 'https://' + s.replace(/^\/\//, '');
+    else if (s.startsWith('//')) s = 'https:' + s;
+    let u;
+    try { u = new URL(s); } catch { return { ok: false, error: "That doesn't look like a valid web address. It should look like https://example.com/picture.png." }; }
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: `Only http and https links can be previewed. "${u.protocol}" links aren't accepted.` };
+    if (u.username || u.password) return { ok: false, error: "Links with a username or password in them aren't accepted." };
+    if (imgPrivateHost(u.hostname)) return { ok: false, error: "That points to a private or local address, so it can't be previewed here. Use a link to a public website." };
+    const seg = decodeURIComponentSafe(u.pathname.split('/').pop() || '');
+    const ext = seg.includes('.') ? seg.split('.').pop().toLowerCase() : '';
+    if (IMG_NO_SHOW_EXT.has(ext)) return { ok: false, error: `.${ext} images can't be shown by most browsers. Convert it to PNG or JPG and use that link.` };
+    if (IMG_NOT_IMAGE_EXT.has(ext)) return { ok: false, error: `That link ends in .${ext}, which isn't an image format. Use a link straight to a PNG, JPG, GIF, WebP, AVIF or SVG file.` };
+    return { ok: true, url: u.href, ext };
+  }
+  function decodeURIComponentSafe(s){ try { return decodeURIComponent(s); } catch { return s; } }
+  function imgFormatBytes(n){ return n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(n < 10240 ? 1 : 0)} KB` : `${(n / 1048576).toFixed(1)} MB`; }
+  function imgSafeName(url, mime){
+    let base = decodeURIComponentSafe(new URL(url).pathname.split('/').pop() || '').replace(/[^\w.\-]+/g, '_').replace(/^[._]+/, '').slice(0, 80);
+    const want = IMG_MIME_EXT[(mime || '').split(';')[0].toLowerCase()];
+    const dot = base.lastIndexOf('.');
+    const have = dot > 0 ? base.slice(dot + 1).toLowerCase() : '';
+    if (!base) base = 'image';
+    if (want && have !== want && !(want === 'jpg' && have === 'jpeg')) base = (dot > 0 ? base.slice(0, dot) : base) + '.' + want;
+    else if (!want && dot < 1) base += '.img';
+    return base;
+  }
+  const IMG_KIND_MIME = { png: 'image/png', jpg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', bmp: 'image/bmp', svg: 'image/svg+xml' };
+  // A cheap check on the last bytes for formats with a clear end marker. A warning only: the browser may still draw part of the image.
+  function imgLooksCutShort(kind, t){
+    const txt = String.fromCharCode.apply(null, t);
+    if (kind === 'png') return !txt.includes('IEND');
+    if (kind === 'gif') return t[t.length - 1] !== 0x3B;
+    if (kind === 'jpg') return !txt.includes('\xFF\xD9');
+    return false;
+  }
+  // What a file really is, from its first bytes. Returns 'png', 'jpg', 'gif', 'webp', 'avif', 'bmp', 'svg' or null.
+  const IMG_MAX_PIXELS = 100e6;
+  function imgSniff(b){
+    const at = (i, s) => s.split('').every((c, k) => b[i + k] === c.charCodeAt(0));
+    if (b.length >= 8 && b[0] === 0x89 && at(1, 'PNG') && b[4] === 0x0D && b[5] === 0x0A && b[6] === 0x1A && b[7] === 0x0A) return 'png';
+    if (b.length >= 3 && b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return 'jpg';
+    if (b.length >= 6 && (at(0, 'GIF87a') || at(0, 'GIF89a'))) return 'gif';
+    if (b.length >= 12 && at(0, 'RIFF') && at(8, 'WEBP')) return 'webp';
+    if (b.length >= 2 && at(0, 'BM')) return b.length >= 26 ? 'bmp' : null;
+    if (b.length >= 12 && at(4, 'ftyp') && (at(8, 'avif') || at(8, 'avis'))) return 'avif';
+    let text = '';
+    try { text = new TextDecoder('utf-8').decode(b).replace(/^\uFEFF/, ''); } catch { return null; }
+    if (!/[\u0000]/.test(text) && /^\s*(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*(?:<!DOCTYPE[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(text)) return 'svg';
+    return null;
+  }
+  // Width and height read from the file header, when the format makes that cheap. null when unknown.
+  function imgHeaderSize(kind, b){
+    const u32 = (i) => ((b[i] << 24) | (b[i + 1] << 16) | (b[i + 2] << 8) | b[i + 3]) >>> 0;
+    const l16 = (i) => b[i] | (b[i + 1] << 8), l32 = (i) => (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16) | (b[i + 3] << 24)) >>> 0;
+    try {
+      if (kind === 'png' && b.length >= 24) return { w: u32(16), h: u32(20) };
+      if (kind === 'gif' && b.length >= 10) return { w: l16(6), h: l16(8) };
+      if (kind === 'bmp' && b.length >= 26) return { w: l32(18), h: Math.abs(l32(22) | 0) };
+      if (kind === 'webp' && b.length >= 30) {
+        const t = String.fromCharCode(b[12], b[13], b[14], b[15]);
+        if (t === 'VP8X') return { w: 1 + (b[24] | (b[25] << 8) | (b[26] << 16)), h: 1 + (b[27] | (b[28] << 8) | (b[29] << 16)) };
+        if (t === 'VP8L') { const v = l32(21); return { w: 1 + (v & 0x3FFF), h: 1 + ((v >>> 14) & 0x3FFF) }; }
+        if (t === 'VP8 ') return { w: l16(26) & 0x3FFF, h: l16(28) & 0x3FFF };
+      }
+      if (kind === 'jpg') {   // walk the segments to the first start-of-frame marker
+        let i = 2;
+        while (i + 9 < b.length) {
+          if (b[i] !== 0xFF) { i++; continue; }
+          const m = b[i + 1];
+          if (m === 0xFF) { i++; continue; }
+          if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return { w: (b[i + 7] << 8) | b[i + 8], h: (b[i + 5] << 8) | b[i + 6] };
+          i += 2 + ((b[i + 2] << 8) | b[i + 3]);
+        }
+      }
+    } catch { /* fall through */ }
+    return null;
+  }
+  // True when the <svg> tag gives a real width and height (not a percentage), so the browser's size is meaningful.
+  function imgSvgHasSize(text){
+    const tag = (text.match(/<svg\b[^>]*>/i) || [''])[0];
+    const has = (n) => { const m = tag.match(new RegExp('\\s' + n + '\\s*=\\s*["\']?\\s*([0-9.]+)\\s*(px|pt|em|cm|mm|in)?\\s*["\']?(?:\\s|>|/)', 'i')); return !!m && Number(m[1]) > 0; };
+    return has('width') && has('height');
+  }
+  window.LuImage = { checkUrl: checkImageUrl, safeName: imgSafeName, cutShort: imgLooksCutShort, sniff: imgSniff, headerSize: imgHeaderSize, svgHasSize: imgSvgHasSize };   // used by the tests
+
+  if (imgPanel && imgPanel.isConnected) {
+    const $i = (id) => document.getElementById(id);
+    const tabs = $i('imgurl-tabs'), paneUrl = $i('imgurl-pane-url'), paneFile = $i('imgurl-pane-file');
+    const form = $i('imgurl-form'), input = $i('imgurl-input'), status = $i('imgurl-status');
+    const stage = $i('imgurl-stage'), img = $i('imgurl-img'), result = $i('imgurl-result');
+    const sourceBox = $i('imgurl-source'), openLink = $i('imgurl-open'), dlBtn = $i('imgurl-download');
+    const setStatus = (el, msg, kind) => { el.textContent = msg || ''; if (kind) el.dataset.kind = kind; else delete el.dataset.kind; };
+    let loadTicket = 0, loadTimer = null, currentUrl = '', dlBusy = false;
+
+    function showTab(which){
+      const isUrl = which === 'url';
+      paneUrl.hidden = !isUrl; paneFile.hidden = isUrl;
+      tabs.querySelectorAll('[data-img-tab]').forEach(b => {
+        const on = b.dataset.imgTab === which;
+        b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+    tabs.addEventListener('click', (e) => { const b = e.target.closest('[data-img-tab]'); if (b) showTab(b.dataset.imgTab); });
+    // Arrow keys move between the two tabs.
+    tabs.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const next = e.key === 'ArrowRight' ? 'file' : 'url';
+      showTab(next); $i('imgurl-tab-' + next).focus(); e.preventDefault();
+    });
+    $i('imgurl-goto-url').addEventListener('click', () => {
+      showTab('url'); input.focus();
+      if (!currentUrl) setStatus(status, 'Paste the direct link to your uploaded image (the one that opens just the picture), then press Preview.', '');
+    });
+
+    function resetUrlPreview(keepInput){
+      loadTicket++; clearTimeout(loadTimer); currentUrl = '';
+      img.removeAttribute('src');
+      stage.hidden = true; result.hidden = true; sourceBox.value = ''; openLink.removeAttribute('href');
+      setStatus(status, '');
+      if (!keepInput) input.value = '';
+    }
+    function previewUrl(){
+      const chk = checkImageUrl(input.value);
+      resetUrlPreview(true);
+      if (!chk.ok) { setStatus(status, chk.error, 'error'); return; }
+      const ticket = loadTicket, url = chk.url;
+      currentUrl = url;
+      input.value = url;
+      setStatus(status, 'Loading the image…', 'busy');
+      loadTimer = setTimeout(() => {
+        if (ticket !== loadTicket) return;
+        loadTicket++; img.removeAttribute('src'); currentUrl = '';
+        setStatus(status, 'The image took too long to load (over 20 seconds), so I stopped waiting. The site may be slow or the file very large.', 'error');
+      }, 20000);
+      img.onload = () => {
+        if (ticket !== loadTicket) return;
+        clearTimeout(loadTimer);
+        if (!img.naturalWidth) { img.onerror(); return; }
+        stage.hidden = false; result.hidden = false;
+        sourceBox.value = url; openLink.href = url;
+        const host = new URL(url).host;
+        setStatus(status, `Loaded: ${img.naturalWidth} × ${img.naturalHeight} px, shown directly from ${host}. This site doesn't copy or keep it.`, 'ok');
+      };
+      const currentExtFor = chk.ext;
+      img.onerror = () => {
+        if (ticket !== loadTicket) return;
+        clearTimeout(loadTimer); loadTicket++; img.removeAttribute('src'); currentUrl = '';
+        stage.hidden = true; result.hidden = true;
+        let msg;
+        if (navigator.onLine === false) msg = "You appear to be offline, so the image couldn't be loaded.";
+        else {
+          msg = "That link couldn't be loaded as an image. The address may be wrong or the file removed, it may not be an image format your browser can show, the site may block use on other websites, or it may need you to sign in.";
+          if (url.startsWith('http:')) msg += ' This link is http, and browsers often block http images on secure pages, so try the https version.';
+          if (!IMG_SHOW_EXT.has(currentExtFor)) msg += " If this is a link to a page that shows the image, open it and copy the image's own address instead.";
+        }
+        setStatus(status, msg, 'error');
+      };
+      img.src = url;
+    }
+    form.addEventListener('submit', (e) => { e.preventDefault(); previewUrl(); });
+    // A pasted link previews at once. Typing does not: that would send half-typed addresses to other websites.
+    input.addEventListener('paste', () => setTimeout(() => { if (input.value.trim()) previewUrl(); }, 0));
+    input.addEventListener('input', () => { if (!input.value.trim() && (currentUrl || status.textContent)) resetUrlPreview(true); });
+    $i('imgurl-clear').addEventListener('click', () => { resetUrlPreview(false); input.focus(); });
+    $i('imgurl-copy').addEventListener('click', async () => {
+      if (!sourceBox.value) return;
+      if (!(await copyText(sourceBox.value))) return;
+      showToast('Copied!');
+    });
+
+    async function downloadImage(){
+      if (!currentUrl || dlBusy) return;
+      dlBusy = true; dlBtn.disabled = true;
+      const url = currentUrl, ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 30000);
+      setStatus(status, 'Downloading…', 'busy');
+      const blocked = "Your browser blocked the download. The website hosting this image doesn't allow other sites to fetch it, or the connection failed. The preview works because showing an image is allowed even when copying it isn't. Use Open in new tab and save it from there.";
+      try {
+        let res;
+        try { res = await fetch(url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctl.signal }); }
+        catch (err) { setStatus(status, err && err.name === 'AbortError' ? 'The download took too long (over 30 seconds), so it was stopped.' : blocked, 'error'); return; }
+        if (!res.ok) { setStatus(status, `The server answered ${res.status}${res.statusText ? ' ' + res.statusText : ''}, so nothing was saved.`, 'error'); return; }
+        const declared = Number(res.headers.get('content-length'));
+        if (declared > IMG_DL_MAX) { setStatus(status, `That file is ${imgFormatBytes(declared)}, over the ${imgFormatBytes(IMG_DL_MAX)} limit for downloading here. Use Open in new tab instead.`, 'error'); return; }
+        const blob = await res.blob();
+        if (blob.size > IMG_DL_MAX) { setStatus(status, `That file is over the ${imgFormatBytes(IMG_DL_MAX)} limit for downloading here. Use Open in new tab instead.`, 'error'); return; }
+        const mime = (blob.type || '').split(';')[0].toLowerCase();
+        if (!mime.startsWith('image/')) { setStatus(status, `The server sent ${mime || 'an unknown file type'}, not an image, so nothing was saved.`, 'error'); return; }
+        const name = imgSafeName(url, mime), obj = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = obj; a.download = name; a.rel = 'noopener'; a.hidden = true;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(obj), 4000);
+        setStatus(status, `Download started: ${name} (${imgFormatBytes(blob.size)}). Look in your downloads folder.`, 'ok');
+      } catch {
+        setStatus(status, blocked, 'error');
+      } finally {
+        clearTimeout(timer); dlBusy = false; dlBtn.disabled = false;
+      }
+    }
+    dlBtn.addEventListener('click', downloadImage);
+
+    // ---- Your image: a local preview. Nothing is sent anywhere until Upload to ImgBB is pressed, and neither the image nor its name is stored.
+    const drop = $i('imgfile-drop'), fileInput = $i('imgfile-input'), fStatus = $i('imgfile-status');
+    const fStage = $i('imgfile-stage'), fImg = $i('imgfile-img'), fResult = $i('imgfile-result'), facts = $i('imgfile-facts');
+    let fileObjUrl = '', fileTicket = 0;
+    let upFile = null, upKind = '', upBusy = false, upDelete = '';
+    const upBtn = $i('imgup-btn'), upStatus = $i('imgup-status'), upDone = $i('imgup-done');
+    // Every preview link made for a file is released when the file is replaced, rejected, cleared or the page goes away.
+    function releaseFile(){
+      if (fileObjUrl) { URL.revokeObjectURL(fileObjUrl); fileObjUrl = ''; }
+    }
+    function resetFile(){
+      fileTicket++; releaseFile();
+      fImg.removeAttribute('src'); fStage.hidden = true; fResult.hidden = true; facts.innerHTML = '';
+      fileInput.value = ''; setStatus(fStatus, '');
+      // An upload already on its way is left to finish (its result appears in the box below); only the chosen file is forgotten.
+      upFile = null; upKind = ''; setStatus(upStatus, ''); syncUpBtn();
+    }
+    function syncUpBtn(){
+      upBtn.disabled = !upFile || upBusy;
+      upBtn.textContent = upBusy ? 'Uploading…' : 'Upload to ImgBB';
+      if (upBusy) upBtn.setAttribute('aria-busy', 'true'); else upBtn.removeAttribute('aria-busy');
+    }
+    window.addEventListener('pagehide', (e) => { if (!e.persisted) releaseFile(); });
+    const fail = (msg) => setStatus(fStatus, msg, 'error');
+    async function pickFile(file, extra){
+      resetFile();
+      if (!file) return;
+      const ticket = fileTicket, name = file.name;
+      // Size first, so an oversized file is never read or decoded.
+      if (file.size === 0) return fail(`"${name}" is empty.`);
+      if (file.size > IMG_FILE_MAX) return fail(`"${name}" is ${imgFormatBytes(file.size)}. The limit here is ${imgFormatBytes(IMG_FILE_MAX)}.`);
+      setStatus(fStatus, 'Checking the file…', 'busy');
+      let head;
+      try { head = new Uint8Array(await file.slice(0, 65536).arrayBuffer()); }
+      catch { return fail(`"${name}" couldn't be read. It may have been moved or deleted. Choose it again.`); }
+      if (ticket !== fileTicket) return;
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      const kind = imgSniff(head);   // what the file's bytes say it is, not what its name says
+      if (!kind) {
+        if (IMG_NO_SHOW_EXT.has(ext) || /^image\/(heic|heif|tiff)/.test(file.type)) return fail(`"${name}" is a ${(IMG_NO_SHOW_EXT.has(ext) ? ext : file.type.split('/')[1]).toUpperCase()} file, which most browsers can't show. Convert it to PNG or JPG first.`);
+        if (file.type.startsWith('image/') || IMG_SHOW_EXT.has(ext)) return fail(`"${name}" couldn't be read as an image. It may be damaged or not really ${(IMG_SHOW_EXT.has(ext) ? ext : file.type.split('/')[1]).toUpperCase()}.`);
+        return fail(`"${name}" isn't a supported image. Use PNG, JPG, GIF, WebP, AVIF, BMP or SVG.`);
+      }
+      const label = kind.toUpperCase();
+      const named = ({ jpeg: 'jpg', jpg: 'jpg', png: 'png', gif: 'gif', webp: 'webp', avif: 'avif', bmp: 'bmp', svg: 'svg' })[ext];
+      const notes = [];
+      if (extra) notes.push(extra);
+      if (named && named !== kind) notes.push(`The name says .${ext} but the file is really ${label}, so it is shown as ${label}.`);
+      const px = imgHeaderSize(kind, head);
+      if (px && px.w * px.h > IMG_MAX_PIXELS) return fail(`"${name}" is ${px.w} × ${px.h} px (${Math.round(px.w * px.h / 1e6)} megapixels). That's more than this page will try to show (limit ${IMG_MAX_PIXELS / 1e6} megapixels), because it could freeze your browser.`);
+      const svgText = kind === 'svg' ? new TextDecoder('utf-8').decode(head) : '';
+      // Give the preview the type the bytes proved, not the one the file name implied: a browser will not draw an SVG
+      // that arrives labelled as image/png.
+      fileObjUrl = URL.createObjectURL(file.slice(0, file.size, IMG_KIND_MIME[kind]));
+      setStatus(fStatus, 'Reading the image…', 'busy');
+      let tail = null;
+      try { tail = new Uint8Array(await file.slice(Math.max(0, file.size - 64)).arrayBuffer()); } catch { /* the preview still runs */ }
+      if (ticket !== fileTicket) { releaseFile(); return; }
+      if (tail && imgLooksCutShort(kind, tail)) notes.push('This file looks cut short, so the preview may be incomplete.');
+      fImg.onload = () => {
+        if (ticket !== fileTicket) return;
+        fStage.hidden = false; fResult.hidden = false;
+        const size = (kind === 'svg' && !imgSvgHasSize(svgText)) ? 'No fixed size (it scales to fit)' : `${fImg.naturalWidth} × ${fImg.naturalHeight} px`;
+        const rows = [['Name', name], ['Type', label], ['Size', imgFormatBytes(file.size)], ['Dimensions', size]];
+        facts.innerHTML = '';
+        rows.forEach(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; facts.append(dt, dd); });
+        notes.push('Previewed on this device only. Nothing has been uploaded.');
+        setStatus(fStatus, notes.join(' '), 'ok');
+        // Only what the bytes prove to be a PNG, JPG, GIF or WebP within the limit can be uploaded, and it is sent unchanged.
+        const why = !IMG_UP_TYPES[kind] ? `${label} files can't be uploaded here. Uploading accepts PNG, JPG, GIF and WebP.`
+          : file.size > IMG_UP_MAX ? `This file is ${imgFormatBytes(file.size)}. The upload limit is ${imgFormatBytes(IMG_UP_MAX)}, so it can be previewed but not uploaded.`
+          : (tail && imgLooksCutShort(kind, tail)) ? 'This file looks cut short, so it can\'t be uploaded.' : '';
+        upFile = why ? null : file; upKind = why ? '' : kind;
+        setStatus(upStatus, why || '', why ? 'error' : '');
+        syncUpBtn();
+        $i('imgurl-host').open = true;
+      };
+      fImg.onerror = () => {
+        if (ticket !== fileTicket) return;
+        releaseFile(); fImg.removeAttribute('src'); fStage.hidden = true; fResult.hidden = true;
+        fail(`"${name}" looks like ${label}, but the browser couldn't decode it. It may be damaged, cut short, or too large for your browser to handle.`);
+      };
+      fImg.src = fileObjUrl;
+    }
+    fileInput.addEventListener('change', () => pickFile(fileInput.files && fileInput.files[0]));
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('is-over'); }));
+    drop.addEventListener('drop', (e) => {
+      const files = e.dataTransfer && e.dataTransfer.files;
+      if (!files || !files.length) return;
+      pickFile(files[0], files.length > 1 ? 'Only the first file was used.' : '');
+    });
+    $i('imgfile-clear').addEventListener('click', resetFile);
+
+    // ---- Upload to ImgBB. Goes to this site's /api/upload function, which holds the key and talks to ImgBB.
+    async function doUpload(){
+      if (upBusy || !upFile) return;           // one upload at a time, so a double tap cannot send the file twice
+      const file = upFile, kind = upKind, keep = $i('imgup-expiry').value;
+      upBusy = true; syncUpBtn(); setStatus(upStatus, 'Uploading to ImgBB… keep this page open.', 'busy');
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 45000);
+      let message = '', data = null;
+      try {
+        const res = await fetch('/api/upload?expire=' + encodeURIComponent(Object.prototype.hasOwnProperty.call(IMG_UP_KEEP, keep) ? keep : 'never'),
+          { method: 'POST', headers: { 'Content-Type': IMG_UP_TYPES[kind], 'X-LU-Upload': '1' }, body: file, signal: ctl.signal, credentials: 'omit', cache: 'no-store' });
+        let j = null; try { j = await res.json(); } catch { /* not JSON */ }
+        const url = j && imgbbLink(j.url);
+        if (res.ok && j && j.ok === true && url) data = { url, deleteUrl: imgbbLink(j.deleteUrl), keep: Object.prototype.hasOwnProperty.call(IMG_UP_KEEP, j.expire) ? j.expire : 'never' };
+        else if (res.ok) message = 'The upload service gave an answer this page could not use, so no link was made.';
+        else if (j && typeof j.message === 'string' && j.message.length < 200) message = j.message;
+        else if (res.status === 404) message = 'Uploading is not available on this site yet.';
+        else if (res.status === 413) message = `That image is over the ${imgFormatBytes(IMG_UP_MAX)} upload limit.`;
+        else if (res.status === 429) message = 'Too many uploads. Wait a little and try again.';
+        else message = 'The upload failed. Try again in a moment.';
+      } catch (e) {
+        message = e && e.name === 'AbortError' ? 'The upload took too long, so this page stopped waiting. The image may still have reached ImgBB, but no link was received. Try again.'
+          : "Couldn't reach the upload service. Check your connection and try again.";
+      } finally { clearTimeout(timer); upBusy = false; syncUpBtn(); }
+      if (!data) { setStatus(upStatus, message, 'error'); return; }
+      upDelete = data.deleteUrl;
+      $i('imgup-url').value = data.url; $i('imgup-open').href = data.url;
+      $i('imgup-copy-delete').hidden = !upDelete;
+      $i('imgup-done-note').textContent = 'This image is now hosted by ImgBB, and anyone who has the link can open it. Hiding this box or clearing the preview does not delete it.'
+        + (upDelete ? ' The delete link lets anyone who has it remove the image, so keep it private.' : '')
+        + (data.keep === 'never' ? ' No automatic deletion was requested. How long ImgBB keeps it is up to ImgBB.' : ` ImgBB was asked to delete it automatically after ${IMG_UP_KEEP[data.keep]}. This page can't confirm that it will.`);
+      upDone.hidden = false;
+      setStatus(upStatus, 'Uploaded. Your public link is below.', 'ok');
+    }
+    upBtn.addEventListener('click', doUpload);
+    $i('imgup-copy').addEventListener('click', async () => { const v = $i('imgup-url').value; if (v && await copyText(v)) showToast('Copied!'); });
+    $i('imgup-copy-delete').addEventListener('click', async () => { if (upDelete && await copyText(upDelete)) showToast('Delete link copied'); });
+    $i('imgup-hide').addEventListener('click', () => {
+      upDone.hidden = true; $i('imgup-url').value = ''; $i('imgup-open').removeAttribute('href'); upDelete = ''; $i('imgup-copy-delete').hidden = true;
+      setStatus(upStatus, 'Hidden. The image is still hosted on ImgBB.', '');
+    });
+    syncUpBtn();
+  }
 
   // URL encoder / decoder
   const urlEncodeInput = document.getElementById('url-encode-input');
@@ -2579,89 +3451,33 @@
   });
   renderCheatsheet();
 
-  /* ============ Symbol browser ============ */
-  const SYMBOLS = [
-    ...['→','←','↑','↓','↔','↕','⇒','⇐','⇑','⇓','⇔','↗','↘','↙','↖','➜','➤','⤴','⤵'].map(ch => ({ ch, name:'arrow', cat:'arrows' })),
-    ...['★','☆','✦','✧','✩','✪','✯','✰','⭐'].map(ch => ({ ch, name:'star', cat:'stars' })),
-    ...['─','━','│','┃','═','║','╌','┄','┅','•','·','‣','▪','▫'].map(ch => ({ ch, name:'line', cat:'lines' })),
-    ...['「','」','『','』','【','】','〔','〕','⟨','⟩','❨','❩','❮','❯','‹','›','«','»'].map(ch => ({ ch, name:'bracket', cat:'brackets' })),
-    ...['±','×','÷','≠','≈','≤','≥','∞','√','∑','∏','∆','∫','π','∈','∉','⊂','⊃','∅'].map(ch => ({ ch, name:'math', cat:'math' })),
-    ...['✦','❖','☾','☽','❀','✿','❁','✾','✽','❋','☼','⚡','♪','♫','☯','♥','♡'].map(ch => ({ ch, name:'decorative', cat:'decorative' })),
-  ];
-  const symbolSearchInput = document.getElementById('symbol-search-input');
-  const symbolGrid = document.getElementById('symbol-grid');
-  const symbolFilterRow = document.getElementById('symbol-filter-row');
-  let symbolCat = 'all';
-  function renderSymbolGrid(){
-    if (!symbolGrid) return;
-    const q = (symbolSearchInput?.value || '').trim().toLowerCase();
-    const list = SYMBOLS.filter(s => (symbolCat === 'all' || s.cat === symbolCat) && (!q || s.name.includes(q) || s.cat.includes(q) || s.ch === q));
-    symbolGrid.innerHTML = list.length ? list.map(s => `
-      <button type="button" class="symbol-chip" data-copy-symbol="${escapeHtml(s.ch)}" title="${escapeHtml(s.name)}">
-        <span class="sc-glyph">${escapeHtml(s.ch)}</span>
-        <span class="sc-name">${escapeHtml(s.name)}</span>
-      </button>
-    `).join('') : `<p class="tz-empty-note">No matching symbols.</p>`;
-  }
-  symbolFilterRow?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-symbol-cat]');
-    if (!btn) return;
-    symbolFilterRow.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    symbolCat = btn.dataset.symbolCat;
-    renderSymbolGrid();
-  });
-  symbolSearchInput?.addEventListener('input', renderSymbolGrid);
-  symbolGrid?.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-copy-symbol]');
-    if (!btn) return;
-    if (!(await copyText(btn.dataset.copySymbol))) return;
-    showToast('Copied!');
-  });
-
-  /* ============ Divider & border generator ============ */
-  const DIVIDERS = [
-    '──────────────────────',
-    '━━━━━━━━━━━━━━━━━━━━━━',
-    '══════════════════════',
-    '• • • • • • • • • • • •',
-    '· · · · · · · · · · · ·',
-    '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬',
-    '☆ ─────────────────── ☆',
-    '✦ ═══════════════════ ✦',
-    '~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~',
-  ];
-  const dividerList = document.getElementById('divider-list');
+  /* ============ Border generator ============ */
+  // The symbol browser and the divider list moved to symbols.js in v10.0 (Brackets & symbols, Logos & icons).
+  const BORDER_STYLES = {
+    single:  { tl:'┌', tr:'┐', bl:'└', br:'┘', h:'─', v:'│' },
+    rounded: { tl:'╭', tr:'╮', bl:'╰', br:'╯', h:'─', v:'│' },
+    double:  { tl:'╔', tr:'╗', bl:'╚', br:'╝', h:'═', v:'║' },
+    heavy:   { tl:'┏', tr:'┓', bl:'┗', br:'┛', h:'━', v:'┃' },
+    ascii:   { tl:'+', tr:'+', bl:'+', br:'+', h:'-', v:'|' },
+  };
   const borderTextInput = document.getElementById('border-text-input');
+  const borderStyleSelect = document.getElementById('border-style');
   const borderOutput = document.getElementById('border-output');
-  function renderDividerList(){
-    if (!dividerList) return;
-    dividerList.innerHTML = DIVIDERS.map(d => `
-      <div class="divider-row">
-        <span class="divider-preview">${escapeHtml(d)}</span>
-        <button type="button" class="copy-btn small" data-copy-divider="${escapeHtml(d)}">Copy</button>
-      </div>
-    `).join('');
-  }
-  dividerList?.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-copy-divider]');
-    if (!btn) return;
-    if (!(await copyText(btn.dataset.copyDivider))) return;
-    showToast('Copied!');
-  });
-  function buildBorder(text){
+  function buildBorder(text, styleName){
+    const b = BORDER_STYLES[styleName] || BORDER_STYLES.single;
     const lines = (text || '').split('\n');
     const width = Math.max(...lines.map(l => [...l].length), 1);
-    const top = '┌' + '─'.repeat(width + 2) + '┐';
-    const bottom = '└' + '─'.repeat(width + 2) + '┘';
-    const middle = lines.map(l => '│ ' + l + ' '.repeat(width - [...l].length) + ' │');
+    const top = b.tl + b.h.repeat(width + 2) + b.tr;
+    const bottom = b.bl + b.h.repeat(width + 2) + b.br;
+    const middle = lines.map(l => b.v + ' ' + l + ' '.repeat(width - [...l].length) + ' ' + b.v);
     return [top, ...middle, bottom].join('\n');
   }
   function renderBorder(){
     if (!borderOutput) return;
-    borderOutput.textContent = buildBorder(borderTextInput.value);
+    borderOutput.textContent = buildBorder(borderTextInput.value, borderStyleSelect?.value);
   }
   borderTextInput?.addEventListener('input', renderBorder);
+  borderStyleSelect?.addEventListener('change', renderBorder);
   document.getElementById('copy-border')?.addEventListener('click', async () => {
     if (!(await copyText(borderOutput.textContent))) return;
     showToast('Copied!');
@@ -2781,6 +3597,7 @@
   const setVal = (el, v) => { if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } };
   window.LuBridge = {
     escapeHtml, renderDiscordMarkdown, showToast, applyCase, sampleText, copyText, isSnowflake,
+    regionalLetters: (text) => TRANSFORMS.regionalLetters(String(text == null ? '' : text)),
     openTool(id){
       if (toolPanelById(id)) {
         if (toolSearchInput?.value) { toolSearchInput.value = ''; filterTools(); }
@@ -2804,10 +3621,13 @@
       },
     },
     timestamp: {
-      get(){ return { tzMode: tsTzMode, hourMode: tsHourMode, zones: [...tzState.zones] }; },
+      get(){ return { tzMode: tsTzMode, zone: tsZone, hourMode: tsHourMode, zones: [...tzState.zones] }; },
       isZone: isValidZone,
       set(o){
-        if (o.tzMode) tsTzToggle?.querySelector(`[data-tz-mode="${o.tzMode}"]`)?.click();
+        // A restored preset re-reads the clock time in the saved zone, so the clock text stays as saved.
+        if (typeof o.zone === 'string' && isValidZone(o.zone)) setTsZone(o.zone, { keepClock: true });
+        else if (o.tzMode === 'utc') setTsZone('UTC', { keepClock: true });
+        else if (o.tzMode === 'local' && BROWSER_TZ) setTsZone(BROWSER_TZ, { keepClock: true });
         if (o.hourMode) tsHourToggle?.querySelector(`[data-hour-mode="${o.hourMode}"]`)?.click();
         if (Array.isArray(o.zones)) { const clean = cleanZones(o.zones); tzState.zones = clean; saveZones(); renderTimestamps(); }
       },
@@ -2870,6 +3690,12 @@
 
   /* ============ Init ============ */
   liveInput.value = state.text;
+  if (savedSize !== null && sizeRange.isConnected) {
+    sizeRange.value = String(savedSize);
+    sizeLabel.textContent = savedSize + 'px';
+    document.documentElement.style.setProperty('--preview-size', savedSize + 'px');
+  }
+  document.querySelectorAll('.live-controls .case-btn').forEach(b => b.classList.toggle('active', b.dataset.case === state.caseMode));
   renderCompatTable();
   renderFormatGrid();
   renderTemplateGrid();

@@ -368,7 +368,7 @@
     },
     colors: {
       label: 'Color Lab', kinds: ['colors/preset'], barLabel: 'Presets',
-      anchor: () => $('palette-grid') && $('palette-grid').parentElement.querySelector('.panel-title'),
+      anchor: () => { const g = $('palette-grid'); return g && g.parentElement ? g.parentElement.querySelector('.panel-title') : null; },
       snapshot: () => B.colors.get(), restore: (s) => B.colors.set(s),
     },
     'tool-timestamp': {
@@ -638,12 +638,32 @@
     undoTimer = setTimeout(hideUndo, 9000);
   }
 
+  /* v10.0: the tools live on separate pages. When the tool an item belongs to is not on this page, Apply
+     leaves a short-lived note in sessionStorage and opens that page; the page applies the item once its
+     tool is ready. It only fills in the tool's fields. Nothing is sent anywhere. */
+  const CATALOG = window.LU_CATALOG || {};
+  const PENDING_KEY = 'lu_pending_apply';
+  const slotHere = (slotId) => { const el = document.getElementById(slotId); return !!(el && el.isConnected); };
+  function handOff(item, slotKey) {
+    const page = CATALOG.slotPage && CATALOG.slotPage[slotKey];
+    if (!page) { showToast("Couldn't find that tool"); return false; }
+    try { sessionStorage.setItem(PENDING_KEY, JSON.stringify({ id: item.id, slot: slotKey, t: Date.now() })); }
+    catch (e) { showToast("Couldn't open that tool. Open it yourself and use its Presets or Templates button."); return false; }
+    location.href = page + '#' + slotKey;
+    return true;
+  }
+  function gotoSlot(slotKey) {
+    if (slotHere(slotKey)) B.openTool(slotKey);
+    else if (CATALOG.slotPage && CATALOG.slotPage[slotKey]) location.href = CATALOG.slotPage[slotKey] + '#' + slotKey;
+  }
+
   function applyItem(item, slotId, { navigate } = {}) {
     const key = kindKey(item);
     const kind = KINDS[key];
     const slotKey = slotId || kind.slot;
     const slot = SLOTS[slotKey];
     if (!kind || !slot || !slotAccepts(slotKey, item)) { showToast("That item doesn't fit this tool"); return false; }
+    if (!slotHere(slotKey)) return handOff(item, slotKey);
     const snap = slot.snapshot();
     try {
       kind.apply(item.data, slotKey);
@@ -1112,7 +1132,7 @@
   function mountBars() {
     Object.entries(SLOTS).forEach(([slotId, slot]) => {
       const anchor = slot.anchor();
-      if (!anchor) return;
+      if (!anchor || !anchor.isConnected) return; // that tool is on another page
       const el = document.createElement('div');
       el.className = 'lib-bar';
       el.dataset.slot = slotId;
@@ -1150,7 +1170,7 @@
         <ul class="lib-list">
           ${list.length ? list.map(i => barRow(i, slotId)).join('') : `<li class="lib-list-empty">${b.q ? 'Nothing matches.' : 'Nothing here yet. Use “Save current…” to add your own.'}</li>`}
         </ul>
-        <a class="lib-bar-link" href="#presets">Open the full library →</a>
+        <a class="lib-bar-link" href="/library">Open the full library →</a>
       </div>`;
     if (hadFocus && hadFocus.includes('lib-bar-q')) { const q = b.el.querySelector('.lib-bar-q'); q.focus(); const n = q.value.length; try { q.setSelectionRange(n, n); } catch (e) {} }
   }
@@ -1182,7 +1202,7 @@
     if (!item) return;
     if (act.dataset.barAct === 'apply') applyItem(item, slotId);
     else if (act.dataset.barAct === 'preview') openPreviewDialog(item, slotAccepts(slotId, item) ? slotId : null, act);
-    else if (act.dataset.barAct === 'goto') B.openTool(homeSlot(item));
+    else if (act.dataset.barAct === 'goto') gotoSlot(homeSlot(item));
   }
 
   /* ---------------------------------------------------------------- wiring */
@@ -1199,6 +1219,16 @@
   loadStore();
   mountBars();
   refresh();
+
+  // Arrived from another page's Apply: fill in the tool now that it exists on this page.
+  (function consumePending() {
+    let p = null;
+    try { p = JSON.parse(sessionStorage.getItem(PENDING_KEY)); sessionStorage.removeItem(PENDING_KEY); } catch (e) { p = null; }
+    if (!p || typeof p.id !== 'string' || typeof p.slot !== 'string' || !(Date.now() - p.t < 60000) || !SLOTS[p.slot] || !slotHere(p.slot)) return;
+    const item = findItem(p.id);
+    if (!item) { showToast('That item is no longer in your library'); return; }
+    applyItem(item, p.slot);
+  })();
 
   // Small, read-only surface for tests and debugging; it exposes no way around validation.
   window.LuLibrary = {

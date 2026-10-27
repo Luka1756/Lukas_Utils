@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer Tools — Luka&#x27;s Utils</title>
+<meta name="description" content="Developer tools in your browser: JSON formatter, JSON to CSV, text encoder and decoder, URL encoder and parser, JWT decoder, regex tester, cron explainer, number base converter, UUID and password generators, hash generator and text diff. Nothing is uploaded.">
+<link rel="canonical" href="https://lukas-utils.in/developer-tools">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Developer Tools — Luka&#x27;s Utils">
+<meta property="og:description" content="Developer tools in your browser: JSON formatter, JSON to CSV, text encoder and decoder, URL encoder and parser, JWT decoder, regex tester, cron explainer, number base converter, UUID and password generators, hash generator and text diff. Nothing is uploaded.">
+<meta property="og:url" content="https://lukas-utils.in/developer-tools">
+<meta property="og:image" content="https://lukas-utils.in/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Developer Tools — Luka&#x27;s Utils">
+<meta name="twitter:description" content="Developer tools in your browser: JSON formatter, JSON to CSV, text encoder and decoder, URL encoder and parser, JWT decoder, regex tester, cron explainer, number base converter, UUID and password generators, hash generator and text diff. Nothing is uploaded.">
+<meta name="twitter:image" content="https://lukas-utils.in/og-image.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.in/"}, {"@type": "ListItem", "position": 2, "name": "Developer Tools", "item": "https://lukas-utils.in/developer-tools"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebPage", "name": "Developer Tools — Luka's Utils", "url": "https://lukas-utils.in/developer-tools", "description": "Developer tools in your browser: JSON formatter, JSON to CSV, text encoder and decoder, URL encoder and parser, JWT decoder, regex tester, cron explainer, number base converter, UUID and password generators, hash generator and text diff. Nothing is uploaded.", "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.in/"}}
+</script>
+<script>
+  // Match the saved theme and Example box state before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    if (localStorage.getItem('lu_example_hidden') === '1') document.documentElement.classList.add('example-hidden');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body data-page="developer-tools">
+
+<div class="bg-fx" aria-hidden="true"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="/styles">Styles</a><a href="/discord-tools">Discord</a><a href="/embeds-webhooks">Embeds</a><a href="/formatting">Formatting</a><a href="/text-tools">Text</a><a href="/developer-tools" aria-current="page">Developer</a><a href="/colors">Colors</a><a href="/library">Library</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+      
+      <button class="icon-btn" id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></g></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-active="developer-tools">
+    <nav class="mm-panel" aria-label="Site menu">
+      <div class="mm-head">
+        <div class="mm-search">
+          <label class="sr-only" for="mm-search">Search tools</label>
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="search" id="mm-search" placeholder="Search 54 tools" autocomplete="off" spellcheck="false" enterkeyhint="go">
+        </div>
+        <button type="button" class="mm-close" id="mm-close" aria-label="Close menu"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+      </div>
+      <ul class="mm-results" id="mm-results" hidden></ul>
+      <p class="mm-empty" id="mm-empty" hidden>No tool matches that. Try a shorter word.</p>
+      <ul class="mm-list" id="mm-list"><li><a class="mm-row" href="/"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 11l8-6.5 8 6.5M6 9.8V19h12V9.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Home</span></a></li><li><a class="mm-row" href="/styles" data-mm-item data-name="Text styles" data-cat="" data-kw="Unicode fonts Discord syntax Symbols Favorites"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5l1.9 5.4 5.4 1.9-5.4 1.9L12 18.1l-1.9-5.4-5.4-1.9 5.4-1.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M18.5 16.5v3M17 18h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="mm-label">Text styles</span></a></li><li class="mm-cat" data-cat="discord-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-discord-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 6.5h14v9H12l-4 3v-3H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Discord Tools</span><span class="mm-count" aria-label="12 tools">12</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-discord-tools" hidden><a class="mm-all" href="/discord-tools">All Discord Tools<span aria-hidden="true">→</span></a><p class="mm-group">Time</p><ul><li><a href="/discord-tools#tool-timestamp" data-mm-item data-name="Timestamp builder" data-cat="Discord Tools" data-kw="clock unix epoch relative discord tag clock date time epoch relative &lt;t: countdown">Timestamp builder</a></li><li><a href="/discord-tools#tool-unix" data-mm-item data-name="Unix timestamp" data-cat="Discord Tools" data-kw="epoch convert date discord tag epoch seconds milliseconds date convert">Unix timestamp</a></li></ul><p class="mm-group">Discord tools</p><ul><li><a href="/discord-tools#tool-snowflake" data-mm-item data-name="Snowflake decoder" data-cat="Discord Tools" data-kw="id creation date decode id user server channel message created date">Snowflake decoder</a></li><li><a href="/discord-tools#tool-discord-link" data-mm-item data-name="Link parser" data-cat="Discord Tools" data-kw="message link channel link jump url copy link ids guild server channel message id snowflake created parse jump link message link ids">Link parser</a></li><li><a href="/discord-tools#tool-permissions" data-mm-item data-name="Permissions calculator" data-cat="Discord Tools" data-kw="perms bitfield integer bot role perms bitfield integer bot role admin">Permissions calculator</a></li><li><a href="/discord-tools#tool-oauth-url" data-mm-item data-name="Bot invite link" data-cat="Discord Tools" data-kw="bot invite oauth2 authorize add bot link client id scope applications.commands permissions url invite bot oauth2 authorize add bot">Bot invite link</a></li><li><a href="/discord-tools#tool-intents" data-mm-item data-name="Gateway intents" data-cat="Discord Tools" data-kw="gateway intents bitfield bot privileged message content presences members discord.js discord.py intent number bitfield privileged message content">Gateway intents</a></li><li><a href="/discord-tools#tool-role-color" data-mm-item data-name="Role color converter" data-cat="Discord Tools" data-kw="hex rgb decimal role hex decimal colour bot role">Role color converter</a></li><li><a href="/discord-tools#tool-cdn" data-mm-item data-name="CDN image URL" data-cat="Discord Tools" data-kw="avatar icon banner link url avatar icon banner image link">CDN image URL</a></li><li><a href="/discord-tools#tool-emoji" data-mm-item data-name="Emoji tag" data-cat="Discord Tools" data-kw="custom emoji format cdn custom emoji nitro animated">Emoji tag</a></li><li><a href="/discord-tools#tool-invite-formatter" data-mm-item data-name="Invite formatter" data-cat="Discord Tools" data-kw="server link code server link code">Invite formatter</a></li><li><a href="/discord-tools#tool-invite-lookup" data-mm-item data-name="Invite lookup" data-cat="Discord Tools" data-kw="server info api server info api">Invite lookup</a></li></ul></div></li><li class="mm-cat" data-cat="embeds-webhooks"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-embeds-webhooks"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 9.5h16" stroke="currentColor" stroke-width="1.7"/></svg></span><span class="mm-label">Embeds &amp; Webhooks</span><span class="mm-count" aria-label="8 tools">8</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-embeds-webhooks" hidden><a class="mm-all" href="/embeds-webhooks">All Embeds &amp; Webhooks<span aria-hidden="true">→</span></a><ul><li><a href="/embeds-webhooks#tool-embed" data-mm-item data-name="Embed builder" data-cat="Embeds &amp; Webhooks" data-kw="json fields preview bot webhook json fields preview bot webhook send">Embed builder</a></li><li><a href="/embeds-webhooks#tool-embed-check" data-mm-item data-name="Embed validator" data-cat="Embeds &amp; Webhooks" data-kw="embed json validator limits character 6000 fields 25 title 256 description 4096 payload check webhook errors limits 6000 fields validate errors">Embed validator</a></li><li><a href="/embeds-webhooks#tool-webhook-builder" data-mm-item data-name="Webhook message builder" data-cat="Embeds &amp; Webhooks" data-kw="webhook bot preview username avatar username avatar content">Webhook message builder</a></li><li><a href="/embeds-webhooks#tool-message-preview" data-mm-item data-name="Message preview" data-cat="Embeds &amp; Webhooks" data-kw="chat bubble render chat render">Message preview</a></li><li><a href="/embeds-webhooks#tool-webhook-payload" data-mm-item data-name="Webhook payload" data-cat="Embeds &amp; Webhooks" data-kw="bot post json content json post request curl">Webhook payload</a></li><li><a href="/embeds-webhooks#tool-webhook-code" data-mm-item data-name="Webhook code snippets" data-cat="Embeds &amp; Webhooks" data-kw="webhook code snippet curl python requests javascript fetch node post example send message script curl fetch requests script">Webhook code snippets</a></li><li><a href="/embeds-webhooks#tool-webhook-inspector" data-mm-item data-name="Webhook URL inspector" data-cat="Embeds &amp; Webhooks" data-kw="webhook url inspect parse id token created date thread id check valid format leaked secret token id valid leaked">Webhook URL inspector</a></li><li><a href="/embeds-webhooks#tool-image-url" data-mm-item data-name="Image preview &amp; link checker" data-cat="Embeds &amp; Webhooks" data-kw="image url link preview picture photo png jpg gif webp download upload host hotlink embed thumbnail image url link preview picture photo png jpg gif webp download upload host hotlink thumbnail">Image preview &amp; link checker</a></li></ul></div></li><li class="mm-cat" data-cat="formatting"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-formatting"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Formatting</span><span class="mm-count" aria-label="10 tools">10</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-formatting" hidden><a class="mm-all" href="/formatting">All Formatting<span aria-hidden="true">→</span></a><ul><li><a href="/formatting#tool-markdown-preview" data-mm-item data-name="Markdown preview" data-cat="Formatting" data-kw="render html live preview headings lists links discord message spoiler subtext bold italic spoiler quote code render">Markdown preview</a></li><li><a href="/formatting#tool-markdown-formats" data-mm-item data-name="Markdown formats" data-cat="Formatting" data-kw="bold italic spoiler code format discord preview raw markdown bold italic underline strikethrough spoiler">Markdown formats</a></li><li><a href="/formatting#tool-cheatsheet" data-mm-item data-name="Markdown cheat sheet" data-cat="Formatting" data-kw="syntax reference guide help cheatsheet reference syntax help">Markdown cheat sheet</a></li><li><a href="/formatting#tool-mention" data-mm-item data-name="Mention formatter" data-cat="Formatting" data-kw="ping tag user role channel ping @ user role channel id">Mention formatter</a></li><li><a href="/formatting#templates" data-mm-item data-name="Templates" data-cat="Formatting" data-kw="announcement rules preset message announcement rules preset message">Templates</a></li><li><a href="/formatting#tool-ansi" data-mm-item data-name="ANSI colors" data-cat="Formatting" data-kw="terminal codeblock colorize colour code block terminal">ANSI colors</a></li><li><a href="/formatting#tool-message-length" data-mm-item data-name="Message length" data-cat="Formatting" data-kw="character count limit characters count limit 2000 lines words">Message length</a></li><li><a href="/formatting#tool-splitter" data-mm-item data-name="Message splitter" data-cat="Formatting" data-kw="split long message 2000 characters chunks parts limit nitro 4000 break paste multiple messages long message chunks 2000">Message splitter</a></li><li><a href="/formatting#tool-text-cleaner" data-mm-item data-name="Text cleaner" data-cat="Formatting" data-kw="whitespace trim strip markdown clean trim whitespace">Text cleaner</a></li><li><a href="/formatting#tool-table" data-mm-item data-name="Table formatter" data-cat="Formatting" data-kw="table ascii align columns csv tsv spreadsheet markdown code block monospace grid box drawing ascii columns csv tsv">Table formatter</a></li></ul></div></li><li class="mm-cat" data-cat="text-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-text-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7V5h16v2M12 5v14M9 19h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Text Tools</span><span class="mm-count" aria-label="8 tools">8</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-text-tools" hidden><a class="mm-all" href="/text-tools">All Text Tools<span aria-hidden="true">→</span></a><p class="mm-group">Symbols &amp; icons</p><ul><li><a href="/text-tools#tool-symbols" data-mm-item data-name="Brackets &amp; symbols" data-cat="Text Tools" data-kw="symbols brackets dividers arrows shapes stars box drawing flags flag country regional letters indicator emoji symbols special characters unicode brackets dividers separators arrows shapes stars box drawing borders math bullets copy paste flags flag country countries territory regional letters indicator england scotland wales emoji">Brackets &amp; symbols</a></li><li><a href="/text-tools#tool-icons" data-mm-item data-name="Logos &amp; icons" data-cat="Text Tools" data-kw="logos icons emoji channel profile heart check logos logo icons icon emoji channel name profile bio heart check bell status marks decorations">Logos &amp; icons</a></li></ul><p class="mm-group">Text</p><ul><li><a href="/text-tools#tool-borders" data-mm-item data-name="Border generator" data-cat="Text Tools" data-kw="box frame border outline box frame border outline">Border generator</a></li><li><a href="/text-tools#tool-invisible" data-mm-item data-name="Invisible characters" data-cat="Text Tools" data-kw="zero width space blank hidden character zero width space blank hidden character">Invisible characters</a></li><li><a href="/text-tools#tool-unicode" data-mm-item data-name="Unicode inspector" data-cat="Text Tools" data-kw="unicode inspector code point utf-8 utf-16 hidden characters zero width invisible homoglyph combining emoji debug weird text u+ hidden zero width code point">Unicode inspector</a></li><li><a href="/text-tools#tool-case" data-mm-item data-name="Case converter" data-cat="Text Tools" data-kw="uppercase lowercase title sentence alternating transform uppercase lowercase title sentence alternating transform">Case converter</a></li><li><a href="/text-tools#tool-counter" data-mm-item data-name="Text counter" data-cat="Text Tools" data-kw="word count character count letters sentences paragraphs lines reading time bytes utf-8 graphemes emoji length counter word count length">Text counter</a></li><li><a href="/text-tools#tool-lines" data-mm-item data-name="Line tools" data-cat="Text Tools" data-kw="line tools sort lines remove duplicates dedupe reverse shuffle number lines prefix suffix join split trim empty list cleaner alphabetical sort dedupe unique list">Line tools</a></li></ul></div></li><li class="mm-cat" data-cat="developer-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-developer-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Developer Tools</span><span class="mm-count" aria-label="13 tools">13</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-developer-tools" hidden><a class="mm-all" href="/developer-tools" aria-current="page">All Developer Tools<span aria-hidden="true">→</span></a><ul><li><a href="/developer-tools#tool-json" data-mm-item data-name="JSON formatter" data-cat="Developer Tools" data-kw="validate pretty print minify format minify validate">JSON formatter</a></li><li><a href="/developer-tools#tool-json-csv" data-mm-item data-name="JSON to CSV" data-cat="Developer Tools" data-kw="json to csv convert array objects table spreadsheet excel export flatten delimiter convert array objects table spreadsheet flatten">JSON to CSV</a></li><li><a href="/developer-tools#tool-encoder" data-mm-item data-name="Text encoder / decoder" data-cat="Developer Tools" data-kw="base64 base64url hex hexadecimal binary html entities unicode escape json string rot13 utf-8 text encoding decode base64 hex hexadecimal binary html entities unicode escape json string rot13 utf-8 encode decode">Text encoder / decoder</a></li><li><a href="/developer-tools#tool-url" data-mm-item data-name="URL encoder / decoder" data-cat="Developer Tools" data-kw="percent encode component query string percent encode decode query">URL encoder / decoder</a></li><li><a href="/developer-tools#tool-url-parser" data-mm-item data-name="URL parser" data-cat="Developer Tools" data-kw="url parser query string parameters params host path hash fragment port protocol split inspect decode utm query string params host path">URL parser</a></li><li><a href="/developer-tools#tool-jwt" data-mm-item data-name="JWT decoder" data-cat="Developer Tools" data-kw="jwt json web token decode bearer header payload claims exp iat expiry expires signature jws oauth access token json web token bearer exp">JWT decoder</a></li><li><a href="/developer-tools#tool-regex" data-mm-item data-name="Regex tester" data-cat="Developer Tools" data-kw="regex regular expression tester match groups replace flags javascript pattern test capture named regular expression match groups">Regex tester</a></li><li><a href="/developer-tools#tool-cron" data-mm-item data-name="Cron explainer" data-cat="Developer Tools" data-kw="cron expression explainer schedule crontab minute hour day month weekday next run times schedule crontab minute hour weekday next run">Cron explainer</a></li><li><a href="/developer-tools#tool-base" data-mm-item data-name="Number base converter" data-cat="Developer Tools" data-kw="number base converter binary octal decimal hexadecimal hex bit bitfield bits set flags integer bigint permissions bitfield binary hex bigint">Number base converter</a></li><li><a href="/developer-tools#tool-uuid" data-mm-item data-name="UUID generator" data-cat="Developer Tools" data-kw="guid random unique id multiple bulk guid random id">UUID generator</a></li><li><a href="/developer-tools#tool-password" data-mm-item data-name="Password generator" data-cat="Developer Tools" data-kw="password generator random strong secure string characters symbols length passphrase token random strong secure token symbols length">Password generator</a></li><li><a href="/developer-tools#tool-hash" data-mm-item data-name="Hash generator" data-cat="Developer Tools" data-kw="sha256 sha1 sha512 checksum fingerprint sha1 sha256 sha512 checksum">Hash generator</a></li><li><a href="/developer-tools#tool-diff" data-mm-item data-name="Text diff" data-cat="Developer Tools" data-kw="compare changes added removed lines compare difference">Text diff</a></li></ul></div></li><li><a class="mm-row" href="/colors" data-mm-item data-name="Colors" data-cat="" data-kw="Palettes Contrast check CSS values"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.7 0 3.9 3.1 5.4 5 5.4 1.4 0 1.9.8 1.9 1.7 0 1.2.6 2.2 2 2.2 4.6 0 8.1-3.4 8.1-8 0-5.2-3.6-9-8.5-9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="8.2" cy="11" r="1" fill="currentColor"/><circle cx="12" cy="7.8" r="1" fill="currentColor"/><circle cx="15.8" cy="11" r="1" fill="currentColor"/></svg></span><span class="mm-label">Colors</span></a></li><li><a class="mm-row" href="/library" data-mm-item data-name="Presets &amp; Templates" data-cat="" data-kw="Presets Templates Your own items Import / export"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 4.5h4.5v15H5zM10.5 4.5H15v15h-4.5zM16.3 5.6l3.7-1 3.2 14-3.7 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" transform="translate(-1.5 0) scale(.93)"/></svg></span><span class="mm-label">Presets &amp; Templates</span></a></li><li class="mm-sep"><a class="mm-row" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 6.5h14a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5h-6.5l-4 3v-3H5A1.5 1.5 0 013.5 15V8A1.5 1.5 0 015 6.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Support server</span><span class="mm-ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></li><li><button type="button" class="mm-row mm-sc" data-shortcuts-open aria-haspopup="dialog"><span class="mm-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="mm-label">Keyboard shortcuts</span></button></li></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="cat-page cat-developer-tools">
+<nav class="tool-breadcrumb page-crumb" aria-label="Breadcrumb"><a href="/">Luka's Utils</a> <span aria-hidden="true">/</span> <span aria-current="page">Developer Tools</span></nav>
+
+  <section class="discord-tools hub" id="developer-tools">
+    <div class="section-head">
+      <h1 class="section-title page-title">Developer Tools</h1>
+    </div>
+    <p class="section-note">Small developer utilities. They all run locally, so nothing you paste leaves your browser.</p>
+
+    <div class="section-layout">
+      <nav class="section-sidebar group-nav-sidebar tool-nav" id="tool-nav" aria-label="Developer Tools">
+        <button class="tool-nav-toggle" id="tool-nav-toggle" type="button" aria-expanded="false" aria-controls="tool-nav-list">
+          <span class="tool-nav-toggle-label">Tools</span>
+          <span class="tool-nav-current" id="tool-nav-current">All tools</span>
+          <svg class="tool-nav-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="tool-nav-list" id="tool-nav-list">
+          <a class="tool-nav-all active" href="#developer-tools" data-tool="" aria-current="true">All tools</a>
+          <div class="tool-nav-group">
+            
+            <ul><li><a href="#tool-json" data-tool="tool-json">JSON formatter</a></li><li><a href="#tool-json-csv" data-tool="tool-json-csv">JSON to CSV</a></li><li><a href="#tool-encoder" data-tool="tool-encoder">Text encoder / decoder</a></li><li><a href="#tool-url" data-tool="tool-url">URL encoder / decoder</a></li><li><a href="#tool-url-parser" data-tool="tool-url-parser">URL parser</a></li><li><a href="#tool-jwt" data-tool="tool-jwt">JWT decoder</a></li><li><a href="#tool-regex" data-tool="tool-regex">Regex tester</a></li><li><a href="#tool-cron" data-tool="tool-cron">Cron explainer</a></li><li><a href="#tool-base" data-tool="tool-base">Number base converter</a></li><li><a href="#tool-uuid" data-tool="tool-uuid">UUID generator</a></li><li><a href="#tool-password" data-tool="tool-password">Password generator</a></li><li><a href="#tool-hash" data-tool="tool-hash">Hash generator</a></li><li><a href="#tool-diff" data-tool="tool-diff">Text diff</a></li></ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="section-content">
+        <div class="tool-search-row">
+          <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="text" id="tool-search-input" placeholder="Find a tool on this page" aria-label="Find a tool on this page" autocomplete="off">
+        </div>
+        <p class="results-empty" id="tool-search-empty" hidden>Nothing matches that.</p>
+
+    <div class="tool-group" id="group-developer">
+      <h2 class="group-title sr-only">Developer</h2>
+      <div class="tool-grid">
+        <div id="tool-json" class="panel" data-keywords="validate pretty print minify">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">JSON formatter</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: JSON formatter" title="Help: JSON formatter"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="JSON formatter"><p>Paste JSON to check that it is valid, then pretty-print or minify it.</p></template></div>
+          <p class="panel-sub">Paste JSON to validate, pretty-print, or minify it.</p>
+          <div class="case-group" id="json-fmt-mode-toggle">
+            <button type="button" class="case-btn active" data-json-mode="format">Format</button>
+            <button type="button" class="case-btn" data-json-mode="minify">Minify</button>
+          </div>
+          <textarea id="json-fmt-input" class="text-input textarea" rows="4" placeholder="Paste JSON"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <pre class="output-text" id="json-fmt-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-json-fmt" type="button">Copy</button>
+        <details class="lu-faq" data-faq-for="tool-json"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>Does it change my numbers?</summary><div class="lu-a"><p>No. It re-indents the text without reading the values, so a very large number like <code>12345678901234567890</code> stays exactly as typed instead of being rounded.</p></div></details><details class="lu-q"><summary>Why does it say Invalid JSON?</summary><div class="lu-a"><p>The message is your browser's own. Common causes are single quotes instead of double quotes, a trailing comma, a missing quote around a key, or comments. JSON allows none of these.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-json-csv" class="panel span-2" data-keywords="json to csv convert array objects table spreadsheet excel export flatten delimiter">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">JSON to CSV</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: JSON to CSV" title="Help: JSON to CSV"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="JSON to CSV"><p>Turns a JSON array of objects into CSV. Each object becomes a row, and the keys become the column headings.</p><p class="lu-ex"><strong>Example:</strong> <code>[{"a":1,"b":2}]</code> becomes two lines, <code>a,b</code> and <code>1,2</code>.</p></template></div>
+          <p class="panel-sub">Turn a JSON array into CSV you can paste into a spreadsheet. Each object becomes a row and each key a column.</p>
+          <label class="sr-only" for="j2c-input">JSON</label>
+          <textarea id="j2c-input" class="text-input textarea" rows="6" spellcheck="false" autocomplete="off" placeholder='[{"name":"Ada","roles":["admin"],"meta":{"id":1}}]'></textarea>
+          <div class="enc-controls">
+            <label class="enc-opt">Separator <select id="j2c-delim" class="text-input select-input" aria-label="Separator"><option value=",">Comma</option><option value=";">Semicolon</option><option value="&#9;">Tab</option></select></label>
+          </div>
+          <div class="t10-checks" role="group" aria-label="Options" style="margin-bottom:10px">
+            <label class="enc-opt"><input type="checkbox" id="j2c-header" checked> Header row</label>
+            <label class="enc-opt"><input type="checkbox" id="j2c-flat" checked> Flatten nested objects (a.b)</label>
+            <label class="enc-opt"><input type="checkbox" id="j2c-formula"> Prefix cells starting with = + - @</label>
+          </div>
+          <p class="t10-msg" id="j2c-msg" role="status" aria-live="polite"></p>
+          <div class="output-box"><span class="output-label">CSV <span id="j2c-count" class="t10-count"></span></span><pre class="output-text t10-scroll" id="j2c-output" aria-live="polite"></pre></div>
+          <div class="btn-row"><button class="btn-outline small" id="j2c-copy" type="button">Copy CSV</button><button class="btn-outline small" id="j2c-clear" type="button">Clear</button></div>
+          <p class="enc-fineprint">Nested lists are written into the cell as JSON. Whole numbers of 16 digits or more are kept exactly as written. The prefix option adds an apostrophe so a spreadsheet does not treat text as a formula.</p>
+        <details class="lu-faq" data-faq-for="tool-json-csv"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>What shapes of JSON does it accept?</summary><div class="lu-a"><p>An array of objects is the usual case. An array of arrays becomes plain rows with no heading, a single object becomes one row, and an array of plain values becomes one column called value.</p></div></details><details class="lu-q"><summary>What if the objects have different keys?</summary><div class="lu-a"><p>The columns are all the keys found, in the order they first appear. A row that lacks a key gets an empty cell.</p></div></details><details class="lu-q"><summary>What does Flatten nested objects do?</summary><div class="lu-a"><p>It turns <code>{"a":{"b":1}}</code> into a column called <code>a.b</code>. With it off, the nested object is written into the cell as JSON. Lists are always written into the cell as JSON.</p></div></details><details class="lu-q"><summary>Will long ID numbers be damaged?</summary><div class="lu-a"><p>No. Whole numbers of 16 digits or more are read as text and written exactly as typed, so Discord IDs written as numbers keep every digit. Some spreadsheets still round long numbers when they open the file, so format the column as text there.</p></div></details><details class="lu-q"><summary>What does the formula option do?</summary><div class="lu-a"><p>A spreadsheet may treat a cell that starts with =, +, - or @ as a formula. Turning this on adds an apostrophe in front of such cells. It changes your data slightly, so leave it off unless you will open the file in a spreadsheet and do not trust the source.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-encoder" class="panel" data-keywords="base64 base64url hex hexadecimal binary html entities unicode escape json string rot13 utf-8 text encoding decode">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Text encoder / decoder</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Text encoder / decoder" title="Help: Text encoder / decoder"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Text encoder / decoder"><p>Converts text to and from Base64, hex, binary, HTML entities, Unicode escapes, JSON strings and ROT13.</p><p><strong>These are encodings, not encryption.</strong> Anyone can reverse them, so they do not protect private data. For percent-encoding a URL, use the URL encoder.</p></template></div>
+          <p class="panel-sub">Convert text to and from Base64, hex, binary, HTML entities, Unicode escapes, JSON strings and ROT13. For percent-encoding a URL, use the URL encoder below.</p>
+          <div class="enc-controls">
+            <div class="case-group" id="encoder-mode-toggle" role="group" aria-label="Direction">
+              <button type="button" class="case-btn active" data-enc-mode="encode">Encode</button>
+              <button type="button" class="case-btn" data-enc-mode="decode">Decode</button>
+            </div>
+            <div class="lu-hrow"><select id="encoder-format" class="text-input select-input" aria-label="Format">
+              <optgroup label="Bytes as text (UTF-8)">
+                <option value="base64">Base64</option>
+                <option value="base64url">Base64 (URL-safe)</option>
+                <option value="hex">Hexadecimal</option>
+                <option value="binary">Binary</option>
+              </optgroup>
+              <optgroup label="Text escapes">
+                <option value="html">HTML entities</option>
+                <option value="unicode">Unicode escapes</option>
+                <option value="json">JSON string</option>
+              </optgroup>
+              <optgroup label="Letter substitution">
+                <option value="rot13">ROT13</option>
+              </optgroup>
+            </select><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Format" title="Help: Format"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Format"><p>The format to convert to or from. Base64, hex and binary work on the UTF-8 bytes of your text. The rest work on characters.</p><p>All of them are encodings, not encryption: anyone can reverse them.</p></template></div>
+          </div>
+          <div class="enc-opts" id="encoder-opts"></div>
+          <p class="enc-note" id="encoder-note"></p>
+          <textarea id="encoder-input" class="text-input textarea" rows="4" placeholder="Text to encode" aria-label="Input" spellcheck="false" autocomplete="off"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <pre class="output-text enc-output" id="encoder-output" aria-live="polite"></pre>
+          </div>
+          <div class="btn-row">
+            <button class="btn-outline small" id="copy-encoder" type="button">Copy result</button>
+            <button class="btn-outline small" id="swap-encoder" type="button" title="Move the result into the input and switch direction">Swap</button>
+            <button class="btn-outline small" id="clear-encoder" type="button">Clear</button>
+          </div>
+          <p class="enc-fineprint">These are encodings, not encryption. Anyone can reverse them, so they don't protect private data.</p>
+        <details class="lu-faq" data-faq-for="tool-encoder"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Is Base64 encryption?</summary><div class="lu-a"><p>No. Encoding changes how data is written so it can travel safely, and anyone can decode it with no key. Encryption needs a secret key to read it. Do not use Base64, hex or ROT13 to hide passwords or private data.</p></div></details><details class="lu-q"><summary>Why does decoding say the bytes are not readable text?</summary><div class="lu-a"><p>Base64, hex and binary decode to bytes, and this tool shows them as UTF-8 text. Data such as an image or a file is valid Base64 but not text, so it cannot be shown here.</p></div></details><details class="lu-q"><summary>What is the difference between Base64 and Base64 (URL-safe)?</summary><div class="lu-a"><p>URL-safe uses <code>-</code> and <code>_</code> instead of <code>+</code> and <code>/</code> and leaves off the <code>=</code> padding, so it is safe in links and file names. Decoding accepts either form, with or without padding.</p></div></details><details class="lu-q"><summary>Does it handle emoji and accents?</summary><div class="lu-a"><p>Yes. Text is turned into UTF-8 bytes first, so non-English characters and emoji round-trip correctly in the byte formats (Base64, hex, binary).</p></div></details><details class="lu-q"><summary>Which format escapes text for JSON or HTML?</summary><div class="lu-a"><p>"JSON string" escapes quotes, backslashes and line breaks so the text can sit inside a JSON string. "HTML entities" escapes <code>&amp; &lt; &gt; " '</code> so text can sit inside HTML.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-url" class="panel" data-keywords="percent encode component query string">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">URL encoder / decoder</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: URL encoder / decoder" title="Help: URL encoder / decoder"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="URL encoder / decoder"><p>Percent-encodes or decodes a string, a query value or a whole URL.</p><p class="lu-ex"><strong>Example:</strong> <code>a b&amp;c</code> becomes <code>a%20b%26c</code>.</p></template></div>
+          <p class="panel-sub">Percent-encode or decode a string, query value, or full URL.</p>
+          <div class="case-group" id="url-mode-toggle">
+            <button type="button" class="case-btn active" data-url-mode="encode">Encode</button>
+            <button type="button" class="case-btn" data-url-mode="decode">Decode</button>
+          </div>
+          <textarea id="url-encode-input" class="text-input textarea" rows="3" placeholder="Text or URL"></textarea>
+          <div class="output-box">
+            <span class="output-label">Result</span>
+            <div class="output-text" id="url-encode-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-url-encode" type="button">Copy</button>
+        <details class="lu-faq" data-faq-for="tool-url"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>Why is my whole link encoded, including the https://?</summary><div class="lu-a"><p>The tool encodes everything, which is right for a single value (like a search term in a query string). To read a whole link, use the URL parser instead.</p></div></details><details class="lu-q"><summary>Why does decoding fail?</summary><div class="lu-a"><p>The text has a <code>%</code> that is not followed by two hex digits, or the decoded bytes are not valid text.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-url-parser" class="panel span-2" data-keywords="url parser query string parameters params host path hash fragment port protocol split inspect decode utm">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">URL parser</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: URL parser" title="Help: URL parser"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="URL parser"><p>Splits a link into protocol, host, port, path, query and fragment, and shows its query parameters as a table.</p><p>It only reads the text. It never opens the link.</p></template></div>
+          <p class="panel-sub">Split a link into its parts and read its query parameters as a table. To encode or decode a whole string, use the URL encoder.</p>
+          <label class="sr-only" for="urlp-input">URL</label>
+          <input type="text" id="urlp-input" class="text-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://example.com:8080/path/page?x=1&amp;y=two#section">
+          <p class="t10-msg" id="urlp-msg" role="status" aria-live="polite"></p>
+          <dl class="t10-kv t10-copyrows" id="urlp-parts" hidden></dl>
+          <div class="t10-table-wrap" id="urlp-params-wrap" hidden><table class="t10-table"><caption class="sr-only">Query parameters</caption><thead><tr><th scope="col">Parameter</th><th scope="col">Value</th></tr></thead><tbody id="urlp-params"></tbody></table></div>
+          <div class="btn-row"><button class="btn-outline small" id="urlp-copy-json" type="button" hidden>Copy parameters as JSON</button><button class="btn-outline small" id="urlp-clear" type="button">Clear</button></div>
+        <details class="lu-faq" data-faq-for="tool-url-parser"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">3 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>What if I leave off https://?</summary><div class="lu-a"><p>The tool assumes https:// and tells you it did.</p></div></details><details class="lu-q"><summary>How are repeated parameters shown?</summary><div class="lu-a"><p>Each one is listed in the table. In "Copy parameters as JSON", a name used more than once becomes a list.</p></div></details><details class="lu-q"><summary>Why does it warn about a username or password?</summary><div class="lu-a"><p>A link with credentials inside can leak them when shared. Avoid sharing those links.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-jwt" class="panel span-2" data-keywords="jwt json web token decode bearer header payload claims exp iat expiry expires signature jws oauth access token">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">JWT decoder</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: JWT decoder" title="Help: JWT decoder"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="JWT decoder"><p>Reads the header and claims inside a JSON Web Token.</p><p>It only <strong>decodes</strong> the token. It does not check the signature, so do not treat the contents as trusted.</p></template></div>
+          <p class="panel-sub">Read the header and claims inside a JSON Web Token. This only decodes it. It does <strong>not</strong> check the signature, so don't treat the contents as trusted.</p>
+          <label class="sr-only" for="jwt-input">JWT</label>
+          <textarea id="jwt-input" class="text-input textarea" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="eyJhbGciOiJIUzI1NiIs…"></textarea>
+          <p class="t10-msg" id="jwt-msg" role="status" aria-live="polite"></p>
+          <div id="jwt-out" hidden>
+            <div class="t10-warn" id="jwt-warn" hidden></div>
+            <dl class="t10-kv" id="jwt-times"></dl>
+            <div class="t10-two">
+              <div class="output-box"><span class="output-label">Header</span><pre class="output-text t10-wrap" id="jwt-header"></pre></div>
+              <div class="output-box"><span class="output-label">Payload</span><pre class="output-text t10-wrap" id="jwt-payload"></pre></div>
+            </div>
+            <div class="output-box"><span class="output-label">Signature (not verified)</span><pre class="output-text t10-wrap" id="jwt-sig"></pre></div>
+          </div>
+          <div class="btn-row"><button class="btn-outline small" id="jwt-copy-payload" type="button">Copy payload</button><button class="btn-outline small" id="jwt-clear" type="button">Clear</button></div>
+          <p class="enc-fineprint">Tokens are decoded in your browser and never saved or sent. Treat a real token like a password anyway: don't paste live ones into places you don't trust.</p>
+        <details class="lu-faq" data-faq-for="tool-jwt"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">4 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Does it check that the token is genuine?</summary><div class="lu-a"><p>No. Anyone can write a token with any contents. Verifying the signature needs the key, which this tool does not have, so it only reads what is inside.</p></div></details><details class="lu-q"><summary>Is a JWT encrypted?</summary><div class="lu-a"><p>A normal signed JWT is only encoded, so its contents are readable by anyone who has it. That is why you can read it here. A token with five parts is an encrypted one (JWE) and cannot be read without the key.</p></div></details><details class="lu-q"><summary>Is it safe to paste a real token?</summary><div class="lu-a"><p>It is decoded in your browser and never saved or sent. Even so, treat a real token like a password and avoid pasting live ones into places you do not trust.</p></div></details><details class="lu-q"><summary>How are the dates worked out?</summary><div class="lu-a"><p><code>iat</code>, <code>nbf</code> and <code>exp</code> are seconds since 1970. The tool shows them in UTC and your own time, and says whether the token has expired. A value that looks like milliseconds is flagged.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-regex" class="panel span-2" data-keywords="regex regular expression tester match groups replace flags javascript pattern test capture named">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Regex tester</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Regex tester" title="Help: Regex tester"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Regex tester"><p>Try a JavaScript regular expression on some text. See each match and its groups, and preview a replacement.</p><p class="lu-ex"><strong>Example:</strong> pattern <code>(\w+)@(\w+)\.com</code></p><p>Other languages may behave differently.</p></template></div>
+          <p class="panel-sub">Try a JavaScript regular expression against some text. See each match and its groups, and preview a replacement.</p>
+          <div class="t10-field"><label class="t10-label" for="rx-pattern">Pattern</label>
+            <div class="t10-rx"><span aria-hidden="true">/</span><input type="text" id="rx-pattern" class="text-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="(\w+)@(\w+)\.com"><span aria-hidden="true">/</span><input type="text" id="rx-flags" class="text-input t10-flags" value="g" maxlength="8" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Flags"></div></div>
+          <div class="enc-opts" id="rx-flag-help"><div class="lu-hrow"><span class="t10-hint">Flags: g all matches, i ignore case, m multiline, s dot matches newline, u unicode, y sticky</span><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Flags" title="Help: Flags"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Flags"><p>Flags change how the pattern runs. Type them together.</p><ul><li><code>g</code> all matches, not just the first</li><li><code>i</code> ignore case</li><li><code>m</code> ^ and $ match at each line</li><li><code>s</code> dot matches a new line</li><li><code>u</code> full Unicode</li><li><code>y</code> sticky</li></ul></template></div></div>
+          <label class="sr-only" for="rx-text">Test text</label>
+          <textarea id="rx-text" class="text-input textarea" rows="5" spellcheck="false" autocomplete="off" placeholder="Text to test against"></textarea>
+          <div class="t10-field"><div class="lu-hrow"><label class="t10-label" for="rx-replace">Replace with <span class="t10-opt">optional, $1 $&amp; $&lt;name&gt; work</span></label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Replace with" title="Help: Replace with"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Replace with"><p>Leave empty to only test. Otherwise the result shows the text with each match replaced. <code>$1</code> is the first group, <code>$&amp;</code> the whole match.</p></template></div>
+            <input type="text" id="rx-replace" class="text-input" autocomplete="off" spellcheck="false"></div>
+          <p class="t10-msg" id="rx-msg" role="status" aria-live="polite"></p>
+          <div class="output-box" id="rx-hl-box" hidden><span class="output-label">Matches highlighted</span><pre class="output-text t10-wrap" id="rx-hl"></pre></div>
+          <div class="t10-table-wrap" id="rx-table-wrap" hidden><table class="t10-table"><thead><tr><th scope="col">#</th><th scope="col">Match</th><th scope="col">At</th><th scope="col">Groups</th></tr></thead><tbody id="rx-body"></tbody></table></div>
+          <div class="output-box" id="rx-rep-box" hidden><span class="output-label">After replacing</span><pre class="output-text t10-wrap" id="rx-rep"></pre></div>
+          <div class="btn-row"><button class="btn-outline small" id="rx-copy-pattern" type="button">Copy as /pattern/flags</button><button class="btn-outline small" id="rx-copy-rep" type="button" hidden>Copy replaced text</button></div>
+          <p class="enc-fineprint">Runs in your browser's JavaScript engine, so other languages can differ in lookbehind, named groups and flags. A pattern that takes more than about two seconds is stopped.</p>
+        <details class="lu-faq" data-faq-for="tool-regex"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Will my pattern work in Python, PHP or another language?</summary><div class="lu-a"><p>Not always. This runs in your browser's JavaScript engine, so lookbehind, named groups, flags and some escapes can differ in other languages.</p></div></details><details class="lu-q"><summary>Why does it say the pattern took too long?</summary><div class="lu-a"><p>Some patterns, like nested quantifiers <code>(a+)+</code>, can take enormous time on some text. After about two seconds the test is stopped so the page does not freeze.</p></div></details><details class="lu-q"><summary>What do the flags mean?</summary><div class="lu-a"><p><code>g</code> all matches, <code>i</code> ignore case, <code>m</code> multiline, <code>s</code> dot matches newline, <code>u</code> unicode and <code>y</code> sticky. Type them together, like <code>gi</code>.</p></div></details><details class="lu-q"><summary>How do I use groups in a replacement?</summary><div class="lu-a"><p><code>$1</code>, <code>$2</code> insert groups, <code>$&amp;</code> the whole match and <code>$&lt;name&gt;</code> a named group.</p></div></details><details class="lu-q"><summary>Are there limits?</summary><div class="lu-a"><p>Test text up to 100,000 characters, and only the first 500 matches are listed.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-cron" class="panel span-2" data-keywords="cron expression explainer schedule crontab minute hour day month weekday next run times">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Cron explainer</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Cron explainer" title="Help: Cron explainer"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Cron explainer"><p>Reads a standard five-field cron expression in plain words and lists the next times it will run.</p><p class="lu-ex"><strong>Example:</strong> <code>*/15 9-17 * * 1-5</code> runs every 15 minutes from 09:00 to 17:59, Monday to Friday.</p></template></div>
+          <p class="panel-sub">Paste a standard five-field cron expression to read it in plain words and see when it runs next.</p>
+          <label class="t10-label" for="cron-input">Cron expression</label>
+          <input type="text" id="cron-input" class="text-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="*/15 9-17 * * 1-5" value="*/15 9-17 * * 1-5">
+          <div class="enc-controls" style="margin-top:10px">
+            <label class="enc-opt">Show times in <select id="cron-zone" class="text-input select-input" aria-label="Show times in"><option value="local">Your time zone</option><option value="utc">UTC</option></select></label>
+          </div>
+          <p class="t10-msg" id="cron-msg" role="status" aria-live="polite"></p>
+          <div class="output-box"><span class="output-label">In words</span><pre class="output-text t10-wrap" id="cron-words" aria-live="polite"></pre></div>
+          <div class="output-box"><span class="output-label">Next runs</span><pre class="output-text t10-wrap" id="cron-next" aria-live="polite"></pre></div>
+          <div class="btn-row"><button class="btn-outline small" id="cron-copy" type="button">Copy explanation</button><button class="btn-outline small" id="cron-clear" type="button">Clear</button></div>
+          <p class="enc-fineprint">Fields are minute, hour, day of month, month and day of week. Names such as MON or JAN and the shortcuts @hourly, @daily, @weekly, @monthly and @yearly work. When both day fields are set, a day matches if either one does, as in standard cron. Seconds, ? L W and # (Quartz and Spring) are not supported. Your server's own time zone decides when a real job runs.</p>
+        <details class="lu-faq" data-faq-for="tool-cron"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>What are the five fields?</summary><div class="lu-a"><p>In order: minute (0-59), hour (0-23), day of month (1-31), month (1-12 or JAN-DEC) and day of week (0-7 or SUN-SAT, where 0 and 7 both mean Sunday). A star means every value, a comma makes a list, a dash makes a range and a slash sets a step.</p></div></details><details class="lu-q"><summary>Why does a day-of-month and a weekday together run more often than expected?</summary><div class="lu-a"><p>In standard cron, when both the day of month and the day of week are set (neither starts with a star), a day counts if it matches either one. So <code>0 0 1 * mon</code> runs on the 1st and on every Monday.</p></div></details><details class="lu-q"><summary>Does it support seconds, ? L W or #?</summary><div class="lu-a"><p>No. Those belong to Quartz and Spring style cron. This tool explains the standard five-field form used by crontab, and says so if you paste something else.</p></div></details><details class="lu-q"><summary>Which time zone are the next runs in?</summary><div class="lu-a"><p>You can show them in your own time zone or in UTC. A real job runs in the time zone of the server or service that schedules it, so check that setting separately. Times that a clock change skips are left out.</p></div></details><details class="lu-q"><summary>Why does it say no run was found?</summary><div class="lu-a"><p>Some schedules can never happen, such as 31 February. It looks eight years ahead, which also covers 29 February.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-base" class="panel" data-keywords="number base converter binary octal decimal hexadecimal hex bit bitfield bits set flags integer bigint permissions">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Number base converter</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Number base converter" title="Help: Number base converter"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Number base converter"><p>Converts whole numbers between binary, octal, decimal and hex, and shows which bits are set. It handles numbers larger than 64 bits.</p><p class="lu-ex"><strong>Example:</strong> <code>0xFF</code> is 255, which is eight bits set.</p></template></div>
+          <p class="panel-sub">Convert whole numbers between binary, octal, decimal and hex, and see which bits are set. Handles numbers larger than 64 bits.</p>
+          <div class="enc-controls">
+            <div class="lu-hrow"><label class="enc-opt">Input is <select id="base-from" class="text-input select-input" aria-label="Input base"><option value="auto">Detect (0x, 0b, 0o)</option><option value="10">Decimal</option><option value="16">Hexadecimal</option><option value="2">Binary</option><option value="8">Octal</option></select></label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Input is" title="Help: Input is"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Input is"><p>How to read what you typed. "Detect" uses a <code>0x</code>, <code>0b</code> or <code>0o</code> prefix and otherwise assumes decimal.</p></template></div>
+          </div>
+          <label class="sr-only" for="base-input">Number</label>
+          <input type="text" id="base-input" class="text-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. 0xFF, 1101 or 2147483647">
+          <p class="t10-msg" id="base-msg" role="status" aria-live="polite"></p>
+          <dl class="t10-kv t10-copyrows" id="base-out"></dl>
+          <div class="output-box" id="base-bits-box" hidden><span class="output-label">Bits set (0 is the lowest)</span><div class="output-text t10-wrap" id="base-bits"></div></div>
+          <div class="enc-opts"><div class="lu-hrow"><label class="enc-opt"><input type="checkbox" id="base-names"> Name the bits as Discord permissions</label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Permission names" title="Help: Permission names"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Permission names"><p>Labels each set bit with the Discord permission that uses that bit. Useful for reading a permissions number.</p></template></div></div>
+        <details class="lu-faq" data-faq-for="tool-base"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">3 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>How does Detect work?</summary><div class="lu-a"><p>With "Detect", a <code>0x</code>, <code>0b</code> or <code>0o</code> prefix picks hex, binary or octal, and anything else is read as decimal. If your input is hex without a prefix, choose Hexadecimal.</p></div></details><details class="lu-q"><summary>What does "Name the bits as Discord permissions" do?</summary><div class="lu-a"><p>It labels each set bit with the Discord permission of that number, so you can see what a permissions integer grants. Bits above 31 are shown without a name.</p></div></details><details class="lu-q"><summary>Why is a negative number shown with a minus sign?</summary><div class="lu-a"><p>Negative numbers are shown as a minus sign plus the number, not as two's complement, and no bits are listed for them.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-uuid" class="panel" data-keywords="guid random unique id multiple bulk">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">UUID generator</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: UUID generator" title="Help: UUID generator"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="UUID generator"><p>Generates random version 4 UUIDs, one or up to 50 at a time.</p></template></div>
+          <p class="panel-sub">Generates random v4 UUIDs.</p>
+          <div class="uuid-count-row">
+            <input type="number" id="uuid-count-input" class="text-input" value="1" min="1" max="50">
+            <button class="btn-outline small" id="generate-uuid" type="button">Generate</button>
+          </div>
+          <div class="tool-output" id="uuid-output"></div>
+          <button class="btn-outline small" id="copy-all-uuid" type="button" hidden>Copy all</button>
+        <details class="lu-faq" data-faq-for="tool-uuid"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>Are the UUIDs really random?</summary><div class="lu-a"><p>They come from your browser's secure random generator when it has one. Random UUIDs are not guaranteed to be unique, but a repeat is astronomically unlikely.</p></div></details><details class="lu-q"><summary>Can I make more than one?</summary><div class="lu-a"><p>Yes, set a number from 1 to 50 and a "Copy all" button appears for lists.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-password" class="panel" data-keywords="password generator random strong secure string characters symbols length passphrase token">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Password generator</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Password generator" title="Help: Password generator"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Password generator"><p>Makes random passwords from the kinds of character you pick. Everything happens in your browser, and nothing is sent anywhere or saved.</p></template></div>
+          <p class="panel-sub">Make random passwords or tokens. They are created on your device and are not sent or stored anywhere.</p>
+          <div class="enc-controls">
+            <label class="enc-opt">Length <input type="number" id="pw-length" class="text-input" min="4" max="128" value="20" inputmode="numeric" style="width:84px" aria-label="Length"></label>
+            <label class="enc-opt">How many <input type="number" id="pw-count" class="text-input" min="1" max="20" value="1" inputmode="numeric" style="width:76px" aria-label="How many"></label>
+          </div>
+          <div class="t10-checks" role="group" aria-label="Characters to use" style="margin-bottom:10px">
+            <label class="enc-opt"><input type="checkbox" id="pw-lower" checked> a-z</label>
+            <label class="enc-opt"><input type="checkbox" id="pw-upper" checked> A-Z</label>
+            <label class="enc-opt"><input type="checkbox" id="pw-digits" checked> 0-9</label>
+            <label class="enc-opt"><input type="checkbox" id="pw-symbols" checked> Symbols</label>
+            <label class="enc-opt"><input type="checkbox" id="pw-similar"> Skip look-alikes (O 0 l 1 I)</label>
+          </div>
+          <p class="t10-msg" id="pw-msg" role="status" aria-live="polite"></p>
+          <div class="output-box"><span class="output-label">Password <span id="pw-strength" class="t10-count"></span></span><pre class="output-text t10-wrap" id="pw-output" aria-live="polite"></pre></div>
+          <div class="btn-row"><button class="copy-btn" id="pw-generate" type="button">Generate new</button><button class="btn-outline small" id="pw-copy" type="button">Copy</button></div>
+          <p class="enc-fineprint">The strength figure is an estimate of how many guesses a random pick from this set would need, in bits. Longer is stronger than adding symbols. Use a different password for every account.</p>
+        <details class="lu-faq" data-faq-for="tool-password"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Is this random enough for a real password?</summary><div class="lu-a"><p>It uses your browser's secure random generator, the same source used for encryption keys, and it avoids the small bias that a plain remainder would add. If the browser has no secure generator, the tool says so and makes nothing.</p></div></details><details class="lu-q"><summary>What does the bits figure mean?</summary><div class="lu-a"><p>It is an estimate of how hard a purely random pick from this character set is to guess: each extra bit doubles the work. Around 80 bits or more is very strong for most accounts. It does not measure a password you made up yourself.</p></div></details><details class="lu-q"><summary>Why does every kind I ticked always appear?</summary><div class="lu-a"><p>One character from each ticked kind is placed first and the rest are filled randomly, then everything is shuffled. That keeps sites with composition rules happy, and costs very little strength.</p></div></details><details class="lu-q"><summary>What does "Skip look-alikes" remove?</summary><div class="lu-a"><p>It removes O, 0, I, l, 1 and | from the choices, which are easy to mix up when you read or retype a password.</p></div></details><details class="lu-q"><summary>Are the passwords saved or logged?</summary><div class="lu-a"><p>No. They live only on this page until you generate again or leave. Copy one into a password manager straight away.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-hash" class="panel" data-keywords="sha256 sha1 sha512 checksum fingerprint">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Hash generator</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Hash generator" title="Help: Hash generator"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Hash generator"><p>Computes a SHA-1, SHA-256 or SHA-512 hash of your text, locally in your browser.</p><p>A hash is a fingerprint, not a way to get the text back.</p></template></div>
+          <p class="panel-sub">Computes a cryptographic hash locally — your text never leaves the browser.</p>
+          <div class="case-group" id="hash-algo-toggle">
+            <button type="button" class="case-btn" data-hash-algo="SHA-1">SHA-1</button>
+            <button type="button" class="case-btn active" data-hash-algo="SHA-256">SHA-256</button>
+            <button type="button" class="case-btn" data-hash-algo="SHA-512">SHA-512</button>
+          </div>
+          <textarea id="hash-input" class="text-input textarea" rows="3" placeholder="Text to hash"></textarea>
+          <div class="output-box">
+            <span class="output-label">Hash</span>
+            <div class="output-text" id="hash-output"></div>
+          </div>
+          <button class="btn-outline small" id="copy-hash" type="button">Copy</button>
+        <details class="lu-faq" data-faq-for="tool-hash"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">3 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Is a hash the same as encryption?</summary><div class="lu-a"><p>No. A hash cannot be turned back into the text, and there is no key. It is used to check that data has not changed.</p></div></details><details class="lu-q"><summary>Should I hash passwords with this?</summary><div class="lu-a"><p>No. Plain SHA hashes are too fast and are not suitable for storing passwords. Use a purpose-built password hashing method in your own software.</p></div></details><details class="lu-q"><summary>Does my text leave the browser?</summary><div class="lu-a"><p>No. It is hashed on this page with your browser's built-in crypto and not sent anywhere.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-diff" class="panel span-2" data-keywords="compare changes added removed lines">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Text diff</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Text diff" title="Help: Text diff"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Text diff"><p>Compares two texts line by line. Green lines were added and red lines were removed.</p></template></div>
+          <p class="panel-sub">Compares line by line. Green is added, red is removed.</p>
+          <div class="diff-inputs">
+            <textarea id="diff-input-a" class="text-input textarea" rows="5" placeholder="Original text"></textarea>
+            <textarea id="diff-input-b" class="text-input textarea" rows="5" placeholder="Changed text"></textarea>
+          </div>
+          <div class="diff-output" id="diff-output"></div>
+        <details class="lu-faq" data-faq-for="tool-diff"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>What counts as a change?</summary><div class="lu-a"><p>A whole line. If one word changes, the old line shows as removed and the new one as added.</p></div></details><details class="lu-q"><summary>Are there limits?</summary><div class="lu-a"><p>Up to 2000 lines per side and about 400,000 characters in total, so the browser stays responsive.</p></div></details></div></details>
+        </div>
+      </div>
+    </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <nav class="footer-cats" aria-label="All tool pages"><a href="/styles">Text styles</a><a href="/discord-tools">Discord Tools</a><a href="/embeds-webhooks">Embeds &amp; Webhooks</a><a href="/formatting">Formatting</a><a href="/text-tools">Text Tools</a><a href="/developer-tools">Developer Tools</a><a href="/colors">Colors</a><a href="/library">Presets &amp; Templates</a></nav>
+    <div class="footer-links">
+      <a class="footer-support-link" href="/">Home →</a>
+      <button type="button" class="footer-support-link footer-sc-btn" data-shortcuts-open aria-haspopup="dialog">Keyboard shortcuts</button>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="/changelog">Changelog →</a>
+      <a class="footer-support-link" href="/privacy">Privacy →</a>
+      <a class="footer-support-link" href="/terms">Terms →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/catalog.js"></script>
+<script src="/tool-page-shim.js"></script>
+<script src="/script.js"></script>
+<script src="/tools10.js"></script>
+<script src="/library.js"></script>
+<script src="/menu.js"></script>
+<script src="/shortcuts.js"></script>
+<script src="/help15.js"></script>
+</body>
+</html>

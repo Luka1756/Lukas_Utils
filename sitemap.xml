@@ -1,35 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lukas-utils.vercel.app/</loc>
-    <lastmod>2026-10-19</lastmod>
+    <loc>https://lukas-utils.in/</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/changelog</loc>
-    <lastmod>2026-10-19</lastmod>
+    <loc>https://lukas-utils.in/styles</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-timestamp-generator</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/discord-tools</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-embed-builder</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/embeds-webhooks</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-snowflake-decoder</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/formatting</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-permissions-calculator</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/text-tools</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-markdown-preview</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/developer-tools</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
   <url>
-    <loc>https://lukas-utils.vercel.app/discord-role-color-converter</loc>
-    <lastmod>2026-10-12</lastmod>
+    <loc>https://lukas-utils.in/colors</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/library</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/changelog</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/privacy</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/terms</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-timestamp-generator</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-embed-builder</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-snowflake-decoder</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-permissions-calculator</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-markdown-preview</loc>
+    <lastmod>2026-10-20</lastmod>
+  </url>
+  <url>
+    <loc>https://lukas-utils.in/discord-role-color-converter</loc>
+    <lastmod>2026-10-20</lastmod>
   </url>
 </urlset>

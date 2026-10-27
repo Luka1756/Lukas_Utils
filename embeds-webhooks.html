@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embeds &amp; Webhooks — Luka&#x27;s Utils</title>
+<meta name="description" content="Discord embed builder with a live preview, embed validator, webhook message builder, payload generator, code snippets and a webhook URL inspector. Free, runs in your browser.">
+<link rel="canonical" href="https://lukas-utils.in/embeds-webhooks">
+<meta name="theme-color" content="#0c0d0d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luka's Utils">
+<meta property="og:title" content="Embeds &amp; Webhooks — Luka&#x27;s Utils">
+<meta property="og:description" content="Discord embed builder with a live preview, embed validator, webhook message builder, payload generator, code snippets and a webhook URL inspector. Free, runs in your browser.">
+<meta property="og:url" content="https://lukas-utils.in/embeds-webhooks">
+<meta property="og:image" content="https://lukas-utils.in/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Luka's Utils — Discord formatting and text tools">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Embeds &amp; Webhooks — Luka&#x27;s Utils">
+<meta name="twitter:description" content="Discord embed builder with a live preview, embed validator, webhook message builder, payload generator, code snippets and a webhook URL inspector. Free, runs in your browser.">
+<meta name="twitter:image" content="https://lukas-utils.in/og-image.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Luka's Utils", "item": "https://lukas-utils.in/"}, {"@type": "ListItem", "position": 2, "name": "Embeds & Webhooks", "item": "https://lukas-utils.in/embeds-webhooks"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebPage", "name": "Embeds & Webhooks — Luka's Utils", "url": "https://lukas-utils.in/embeds-webhooks", "description": "Discord embed builder with a live preview, embed validator, webhook message builder, payload generator, code snippets and a webhook URL inspector. Free, runs in your browser.", "isPartOf": {"@type": "WebSite", "name": "Luka's Utils", "url": "https://lukas-utils.in/"}}
+</script>
+<script>
+  // Match the saved theme and Example box state before first paint.
+  try {
+    if (localStorage.getItem('lu_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    if (localStorage.getItem('lu_example_hidden') === '1') document.documentElement.classList.add('example-hidden');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body data-page="embeds-webhooks">
+
+<div class="bg-fx" aria-hidden="true"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <a class="logo" href="/" aria-label="Luka's Utils home">
+      <span class="logo-mark" aria-hidden="true">✦</span>
+      <span class="logo-text">Luka's Utils</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="/styles">Styles</a><a href="/discord-tools">Discord</a><a href="/embeds-webhooks" aria-current="page">Embeds</a><a href="/formatting">Formatting</a><a href="/text-tools">Text</a><a href="/developer-tools">Developer</a><a href="/colors">Colors</a><a href="/library">Library</a>
+    </nav>
+
+    <div class="header-actions">
+      <a class="text-btn support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server</a>
+      <button class="icon-btn example-toggle" id="example-toggle" type="button" aria-pressed="true" aria-label="Hide example box" title="Hide example box">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h6M7 12h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="off-slash" d="M4 20L20 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2.5v2.4M12 19.1v2.4M4.5 4.5l1.7 1.7M17.8 17.8l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.5 19.5l1.7-1.7M17.8 6.2l1.7-1.7"/></g></svg>
+      </button>
+      
+      <button class="icon-btn" id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></g></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-active="embeds-webhooks">
+    <nav class="mm-panel" aria-label="Site menu">
+      <div class="mm-head">
+        <div class="mm-search">
+          <label class="sr-only" for="mm-search">Search tools</label>
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="search" id="mm-search" placeholder="Search 54 tools" autocomplete="off" spellcheck="false" enterkeyhint="go">
+        </div>
+        <button type="button" class="mm-close" id="mm-close" aria-label="Close menu"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></button>
+      </div>
+      <ul class="mm-results" id="mm-results" hidden></ul>
+      <p class="mm-empty" id="mm-empty" hidden>No tool matches that. Try a shorter word.</p>
+      <ul class="mm-list" id="mm-list"><li><a class="mm-row" href="/"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 11l8-6.5 8 6.5M6 9.8V19h12V9.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Home</span></a></li><li><a class="mm-row" href="/styles" data-mm-item data-name="Text styles" data-cat="" data-kw="Unicode fonts Discord syntax Symbols Favorites"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5l1.9 5.4 5.4 1.9-5.4 1.9L12 18.1l-1.9-5.4-5.4-1.9 5.4-1.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M18.5 16.5v3M17 18h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="mm-label">Text styles</span></a></li><li class="mm-cat" data-cat="discord-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-discord-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 6.5h14v9H12l-4 3v-3H5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Discord Tools</span><span class="mm-count" aria-label="12 tools">12</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-discord-tools" hidden><a class="mm-all" href="/discord-tools">All Discord Tools<span aria-hidden="true">→</span></a><p class="mm-group">Time</p><ul><li><a href="/discord-tools#tool-timestamp" data-mm-item data-name="Timestamp builder" data-cat="Discord Tools" data-kw="clock unix epoch relative discord tag clock date time epoch relative &lt;t: countdown">Timestamp builder</a></li><li><a href="/discord-tools#tool-unix" data-mm-item data-name="Unix timestamp" data-cat="Discord Tools" data-kw="epoch convert date discord tag epoch seconds milliseconds date convert">Unix timestamp</a></li></ul><p class="mm-group">Discord tools</p><ul><li><a href="/discord-tools#tool-snowflake" data-mm-item data-name="Snowflake decoder" data-cat="Discord Tools" data-kw="id creation date decode id user server channel message created date">Snowflake decoder</a></li><li><a href="/discord-tools#tool-discord-link" data-mm-item data-name="Link parser" data-cat="Discord Tools" data-kw="message link channel link jump url copy link ids guild server channel message id snowflake created parse jump link message link ids">Link parser</a></li><li><a href="/discord-tools#tool-permissions" data-mm-item data-name="Permissions calculator" data-cat="Discord Tools" data-kw="perms bitfield integer bot role perms bitfield integer bot role admin">Permissions calculator</a></li><li><a href="/discord-tools#tool-oauth-url" data-mm-item data-name="Bot invite link" data-cat="Discord Tools" data-kw="bot invite oauth2 authorize add bot link client id scope applications.commands permissions url invite bot oauth2 authorize add bot">Bot invite link</a></li><li><a href="/discord-tools#tool-intents" data-mm-item data-name="Gateway intents" data-cat="Discord Tools" data-kw="gateway intents bitfield bot privileged message content presences members discord.js discord.py intent number bitfield privileged message content">Gateway intents</a></li><li><a href="/discord-tools#tool-role-color" data-mm-item data-name="Role color converter" data-cat="Discord Tools" data-kw="hex rgb decimal role hex decimal colour bot role">Role color converter</a></li><li><a href="/discord-tools#tool-cdn" data-mm-item data-name="CDN image URL" data-cat="Discord Tools" data-kw="avatar icon banner link url avatar icon banner image link">CDN image URL</a></li><li><a href="/discord-tools#tool-emoji" data-mm-item data-name="Emoji tag" data-cat="Discord Tools" data-kw="custom emoji format cdn custom emoji nitro animated">Emoji tag</a></li><li><a href="/discord-tools#tool-invite-formatter" data-mm-item data-name="Invite formatter" data-cat="Discord Tools" data-kw="server link code server link code">Invite formatter</a></li><li><a href="/discord-tools#tool-invite-lookup" data-mm-item data-name="Invite lookup" data-cat="Discord Tools" data-kw="server info api server info api">Invite lookup</a></li></ul></div></li><li class="mm-cat" data-cat="embeds-webhooks"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-embeds-webhooks"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4 9.5h16" stroke="currentColor" stroke-width="1.7"/></svg></span><span class="mm-label">Embeds &amp; Webhooks</span><span class="mm-count" aria-label="8 tools">8</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-embeds-webhooks" hidden><a class="mm-all" href="/embeds-webhooks" aria-current="page">All Embeds &amp; Webhooks<span aria-hidden="true">→</span></a><ul><li><a href="/embeds-webhooks#tool-embed" data-mm-item data-name="Embed builder" data-cat="Embeds &amp; Webhooks" data-kw="json fields preview bot webhook json fields preview bot webhook send">Embed builder</a></li><li><a href="/embeds-webhooks#tool-embed-check" data-mm-item data-name="Embed validator" data-cat="Embeds &amp; Webhooks" data-kw="embed json validator limits character 6000 fields 25 title 256 description 4096 payload check webhook errors limits 6000 fields validate errors">Embed validator</a></li><li><a href="/embeds-webhooks#tool-webhook-builder" data-mm-item data-name="Webhook message builder" data-cat="Embeds &amp; Webhooks" data-kw="webhook bot preview username avatar username avatar content">Webhook message builder</a></li><li><a href="/embeds-webhooks#tool-message-preview" data-mm-item data-name="Message preview" data-cat="Embeds &amp; Webhooks" data-kw="chat bubble render chat render">Message preview</a></li><li><a href="/embeds-webhooks#tool-webhook-payload" data-mm-item data-name="Webhook payload" data-cat="Embeds &amp; Webhooks" data-kw="bot post json content json post request curl">Webhook payload</a></li><li><a href="/embeds-webhooks#tool-webhook-code" data-mm-item data-name="Webhook code snippets" data-cat="Embeds &amp; Webhooks" data-kw="webhook code snippet curl python requests javascript fetch node post example send message script curl fetch requests script">Webhook code snippets</a></li><li><a href="/embeds-webhooks#tool-webhook-inspector" data-mm-item data-name="Webhook URL inspector" data-cat="Embeds &amp; Webhooks" data-kw="webhook url inspect parse id token created date thread id check valid format leaked secret token id valid leaked">Webhook URL inspector</a></li><li><a href="/embeds-webhooks#tool-image-url" data-mm-item data-name="Image preview &amp; link checker" data-cat="Embeds &amp; Webhooks" data-kw="image url link preview picture photo png jpg gif webp download upload host hotlink embed thumbnail image url link preview picture photo png jpg gif webp download upload host hotlink thumbnail">Image preview &amp; link checker</a></li></ul></div></li><li class="mm-cat" data-cat="formatting"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-formatting"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Formatting</span><span class="mm-count" aria-label="10 tools">10</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-formatting" hidden><a class="mm-all" href="/formatting">All Formatting<span aria-hidden="true">→</span></a><ul><li><a href="/formatting#tool-markdown-preview" data-mm-item data-name="Markdown preview" data-cat="Formatting" data-kw="render html live preview headings lists links discord message spoiler subtext bold italic spoiler quote code render">Markdown preview</a></li><li><a href="/formatting#tool-markdown-formats" data-mm-item data-name="Markdown formats" data-cat="Formatting" data-kw="bold italic spoiler code format discord preview raw markdown bold italic underline strikethrough spoiler">Markdown formats</a></li><li><a href="/formatting#tool-cheatsheet" data-mm-item data-name="Markdown cheat sheet" data-cat="Formatting" data-kw="syntax reference guide help cheatsheet reference syntax help">Markdown cheat sheet</a></li><li><a href="/formatting#tool-mention" data-mm-item data-name="Mention formatter" data-cat="Formatting" data-kw="ping tag user role channel ping @ user role channel id">Mention formatter</a></li><li><a href="/formatting#templates" data-mm-item data-name="Templates" data-cat="Formatting" data-kw="announcement rules preset message announcement rules preset message">Templates</a></li><li><a href="/formatting#tool-ansi" data-mm-item data-name="ANSI colors" data-cat="Formatting" data-kw="terminal codeblock colorize colour code block terminal">ANSI colors</a></li><li><a href="/formatting#tool-message-length" data-mm-item data-name="Message length" data-cat="Formatting" data-kw="character count limit characters count limit 2000 lines words">Message length</a></li><li><a href="/formatting#tool-splitter" data-mm-item data-name="Message splitter" data-cat="Formatting" data-kw="split long message 2000 characters chunks parts limit nitro 4000 break paste multiple messages long message chunks 2000">Message splitter</a></li><li><a href="/formatting#tool-text-cleaner" data-mm-item data-name="Text cleaner" data-cat="Formatting" data-kw="whitespace trim strip markdown clean trim whitespace">Text cleaner</a></li><li><a href="/formatting#tool-table" data-mm-item data-name="Table formatter" data-cat="Formatting" data-kw="table ascii align columns csv tsv spreadsheet markdown code block monospace grid box drawing ascii columns csv tsv">Table formatter</a></li></ul></div></li><li class="mm-cat" data-cat="text-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-text-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7V5h16v2M12 5v14M9 19h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Text Tools</span><span class="mm-count" aria-label="8 tools">8</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-text-tools" hidden><a class="mm-all" href="/text-tools">All Text Tools<span aria-hidden="true">→</span></a><p class="mm-group">Symbols &amp; icons</p><ul><li><a href="/text-tools#tool-symbols" data-mm-item data-name="Brackets &amp; symbols" data-cat="Text Tools" data-kw="symbols brackets dividers arrows shapes stars box drawing flags flag country regional letters indicator emoji symbols special characters unicode brackets dividers separators arrows shapes stars box drawing borders math bullets copy paste flags flag country countries territory regional letters indicator england scotland wales emoji">Brackets &amp; symbols</a></li><li><a href="/text-tools#tool-icons" data-mm-item data-name="Logos &amp; icons" data-cat="Text Tools" data-kw="logos icons emoji channel profile heart check logos logo icons icon emoji channel name profile bio heart check bell status marks decorations">Logos &amp; icons</a></li></ul><p class="mm-group">Text</p><ul><li><a href="/text-tools#tool-borders" data-mm-item data-name="Border generator" data-cat="Text Tools" data-kw="box frame border outline box frame border outline">Border generator</a></li><li><a href="/text-tools#tool-invisible" data-mm-item data-name="Invisible characters" data-cat="Text Tools" data-kw="zero width space blank hidden character zero width space blank hidden character">Invisible characters</a></li><li><a href="/text-tools#tool-unicode" data-mm-item data-name="Unicode inspector" data-cat="Text Tools" data-kw="unicode inspector code point utf-8 utf-16 hidden characters zero width invisible homoglyph combining emoji debug weird text u+ hidden zero width code point">Unicode inspector</a></li><li><a href="/text-tools#tool-case" data-mm-item data-name="Case converter" data-cat="Text Tools" data-kw="uppercase lowercase title sentence alternating transform uppercase lowercase title sentence alternating transform">Case converter</a></li><li><a href="/text-tools#tool-counter" data-mm-item data-name="Text counter" data-cat="Text Tools" data-kw="word count character count letters sentences paragraphs lines reading time bytes utf-8 graphemes emoji length counter word count length">Text counter</a></li><li><a href="/text-tools#tool-lines" data-mm-item data-name="Line tools" data-cat="Text Tools" data-kw="line tools sort lines remove duplicates dedupe reverse shuffle number lines prefix suffix join split trim empty list cleaner alphabetical sort dedupe unique list">Line tools</a></li></ul></div></li><li class="mm-cat" data-cat="developer-tools"><button type="button" class="mm-row mm-toggle" aria-expanded="false" aria-controls="mm-sub-developer-tools"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mm-label">Developer Tools</span><span class="mm-count" aria-label="13 tools">13</span><svg class="mm-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="mm-sub" id="mm-sub-developer-tools" hidden><a class="mm-all" href="/developer-tools">All Developer Tools<span aria-hidden="true">→</span></a><ul><li><a href="/developer-tools#tool-json" data-mm-item data-name="JSON formatter" data-cat="Developer Tools" data-kw="validate pretty print minify format minify validate">JSON formatter</a></li><li><a href="/developer-tools#tool-json-csv" data-mm-item data-name="JSON to CSV" data-cat="Developer Tools" data-kw="json to csv convert array objects table spreadsheet excel export flatten delimiter convert array objects table spreadsheet flatten">JSON to CSV</a></li><li><a href="/developer-tools#tool-encoder" data-mm-item data-name="Text encoder / decoder" data-cat="Developer Tools" data-kw="base64 base64url hex hexadecimal binary html entities unicode escape json string rot13 utf-8 text encoding decode base64 hex hexadecimal binary html entities unicode escape json string rot13 utf-8 encode decode">Text encoder / decoder</a></li><li><a href="/developer-tools#tool-url" data-mm-item data-name="URL encoder / decoder" data-cat="Developer Tools" data-kw="percent encode component query string percent encode decode query">URL encoder / decoder</a></li><li><a href="/developer-tools#tool-url-parser" data-mm-item data-name="URL parser" data-cat="Developer Tools" data-kw="url parser query string parameters params host path hash fragment port protocol split inspect decode utm query string params host path">URL parser</a></li><li><a href="/developer-tools#tool-jwt" data-mm-item data-name="JWT decoder" data-cat="Developer Tools" data-kw="jwt json web token decode bearer header payload claims exp iat expiry expires signature jws oauth access token json web token bearer exp">JWT decoder</a></li><li><a href="/developer-tools#tool-regex" data-mm-item data-name="Regex tester" data-cat="Developer Tools" data-kw="regex regular expression tester match groups replace flags javascript pattern test capture named regular expression match groups">Regex tester</a></li><li><a href="/developer-tools#tool-cron" data-mm-item data-name="Cron explainer" data-cat="Developer Tools" data-kw="cron expression explainer schedule crontab minute hour day month weekday next run times schedule crontab minute hour weekday next run">Cron explainer</a></li><li><a href="/developer-tools#tool-base" data-mm-item data-name="Number base converter" data-cat="Developer Tools" data-kw="number base converter binary octal decimal hexadecimal hex bit bitfield bits set flags integer bigint permissions bitfield binary hex bigint">Number base converter</a></li><li><a href="/developer-tools#tool-uuid" data-mm-item data-name="UUID generator" data-cat="Developer Tools" data-kw="guid random unique id multiple bulk guid random id">UUID generator</a></li><li><a href="/developer-tools#tool-password" data-mm-item data-name="Password generator" data-cat="Developer Tools" data-kw="password generator random strong secure string characters symbols length passphrase token random strong secure token symbols length">Password generator</a></li><li><a href="/developer-tools#tool-hash" data-mm-item data-name="Hash generator" data-cat="Developer Tools" data-kw="sha256 sha1 sha512 checksum fingerprint sha1 sha256 sha512 checksum">Hash generator</a></li><li><a href="/developer-tools#tool-diff" data-mm-item data-name="Text diff" data-cat="Developer Tools" data-kw="compare changes added removed lines compare difference">Text diff</a></li></ul></div></li><li><a class="mm-row" href="/colors" data-mm-item data-name="Colors" data-cat="" data-kw="Palettes Contrast check CSS values"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.7 0 3.9 3.1 5.4 5 5.4 1.4 0 1.9.8 1.9 1.7 0 1.2.6 2.2 2 2.2 4.6 0 8.1-3.4 8.1-8 0-5.2-3.6-9-8.5-9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="8.2" cy="11" r="1" fill="currentColor"/><circle cx="12" cy="7.8" r="1" fill="currentColor"/><circle cx="15.8" cy="11" r="1" fill="currentColor"/></svg></span><span class="mm-label">Colors</span></a></li><li><a class="mm-row" href="/library" data-mm-item data-name="Presets &amp; Templates" data-cat="" data-kw="Presets Templates Your own items Import / export"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 4.5h4.5v15H5zM10.5 4.5H15v15h-4.5zM16.3 5.6l3.7-1 3.2 14-3.7 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" transform="translate(-1.5 0) scale(.93)"/></svg></span><span class="mm-label">Presets &amp; Templates</span></a></li><li class="mm-sep"><a class="mm-row" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener"><span class="mm-icon"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 6.5h14a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5h-6.5l-4 3v-3H5A1.5 1.5 0 013.5 15V8A1.5 1.5 0 015 6.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="mm-label">Support server</span><span class="mm-ext" aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></li><li><button type="button" class="mm-row mm-sc" data-shortcuts-open aria-haspopup="dialog"><span class="mm-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="mm-label">Keyboard shortcuts</span></button></li></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="cat-page cat-embeds-webhooks">
+<nav class="tool-breadcrumb page-crumb" aria-label="Breadcrumb"><a href="/">Luka's Utils</a> <span aria-hidden="true">/</span> <span aria-current="page">Embeds &amp; Webhooks</span></nav>
+
+  <section class="live-text-wrap">
+    <div class="panel live-text-panel">
+      <div class="panel-head">
+        <span class="panel-label">Your text</span>
+        <span class="char-count"><span id="char-current">0</span> / <span id="char-max">1000</span></span>
+      </div>
+      <div class="input-row">
+        <input type="text" id="live-input" placeholder="Example" autocomplete="off" spellcheck="false">
+        <button class="clear-btn" id="live-clear" type="button" aria-label="Clear text">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="live-controls">
+        <div class="case-group" role="group" aria-label="Text case">
+          <button type="button" class="case-btn active" data-case="none">AA</button>
+          <button type="button" class="case-btn" data-case="lower">aa</button>
+          <button type="button" class="case-btn" data-case="title">Aa</button>
+        </div>
+        <div class="size-group">
+          <input type="range" id="size-range" min="14" max="34" value="22" aria-label="Preview size">
+          <span id="size-label">22px</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="live-text-hint">Type once, everything below updates — the styles grid, Discord formats, templates, all of it.</p>
+
+  <section class="discord-tools hub" id="embeds-webhooks">
+    <div class="section-head">
+      <h1 class="section-title page-title">Embeds &amp; Webhooks</h1>
+    </div>
+    <p class="section-note">Build an embed, preview the message around it, and copy the payload. The embed you build here feeds the webhook tools below it. The only thing that contacts Discord is the Embed Builder's Send to Discord button, and only when you click it.</p>
+    <p class="tool-page-links">Open as a standalone page: <a href="/discord-embed-builder">Discord Embed Builder</a></p>
+
+    <div class="section-layout">
+      <nav class="section-sidebar group-nav-sidebar tool-nav" id="tool-nav" aria-label="Embeds &amp; Webhooks">
+        <button class="tool-nav-toggle" id="tool-nav-toggle" type="button" aria-expanded="false" aria-controls="tool-nav-list">
+          <span class="tool-nav-toggle-label">Tools</span>
+          <span class="tool-nav-current" id="tool-nav-current">All tools</span>
+          <svg class="tool-nav-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="tool-nav-list" id="tool-nav-list">
+          <a class="tool-nav-all active" href="#embeds-webhooks" data-tool="" aria-current="true">All tools</a>
+          <div class="tool-nav-group">
+            
+            <ul><li><a href="#tool-embed" data-tool="tool-embed">Embed builder</a></li><li><a href="#tool-embed-check" data-tool="tool-embed-check">Embed validator</a></li><li><a href="#tool-webhook-builder" data-tool="tool-webhook-builder">Webhook message builder</a></li><li><a href="#tool-message-preview" data-tool="tool-message-preview">Message preview</a></li><li><a href="#tool-webhook-payload" data-tool="tool-webhook-payload">Webhook payload</a></li><li><a href="#tool-webhook-code" data-tool="tool-webhook-code">Webhook code snippets</a></li><li><a href="#tool-webhook-inspector" data-tool="tool-webhook-inspector">Webhook URL inspector</a></li><li><a href="#tool-image-url" data-tool="tool-image-url">Image preview &amp; link checker</a></li></ul>
+          </div>
+        </div>
+      </nav>
+
+      <div class="section-content">
+        <div class="tool-search-row">
+          <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <input type="text" id="tool-search-input" placeholder="Find a tool on this page" aria-label="Find a tool on this page" autocomplete="off">
+        </div>
+        <p class="results-empty" id="tool-search-empty" hidden>Nothing matches that.</p>
+
+    <div class="tool-group" id="group-embeds">
+      <h2 class="group-title sr-only">Embeds &amp; webhooks</h2>
+      <div class="tool-grid">
+        <div class="panel span-2" id="tool-embed" data-keywords="json fields preview bot webhook">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Embed builder</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Embed builder" title="Help: Embed builder"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Embed builder"><p>Build an embed, watch the preview update, then copy its JSON or send it to a Discord channel through a webhook.</p><p>Warnings appear if you go over one of Discord's limits. Sending is optional: the URL is only used when you press Send to Discord.</p></template></div>
+          <p class="panel-sub">Edit an embed and see exactly what it'll look like in Discord.</p>
+
+          <label class="embed-section-label" for="embed-message-content">Message content <span class="optional-tag">optional</span></label>
+          <textarea id="embed-message-content" class="text-input textarea" rows="2" placeholder="Text that would appear above the embed"></textarea>
+
+          <div class="embed-builder-grid">
+            <div class="embed-editor-col">
+              <div class="embed-form">
+                <p class="embed-section-label">Basic</p>
+                <input type="text" id="embed-title-input" class="text-input" placeholder="Title" autocomplete="off" maxlength="256">
+                <textarea id="embed-description-input" class="text-input textarea" rows="3" placeholder="Description" maxlength="4096"></textarea>
+                <input type="text" id="embed-url-input" class="text-input" placeholder="Title link URL (optional)" autocomplete="off">
+                <div class="color-input-row">
+                  <input type="color" id="embed-color-swatch">
+                  <input type="text" id="embed-color-hex" spellcheck="false" placeholder="#22D3EE">
+                </div>
+                <div class="lu-hrow"><label class="checkbox-row"><input type="checkbox" id="embed-timestamp-toggle"> Include current timestamp</label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Timestamp" title="Help: Timestamp"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Timestamp"><p>Adds a time to the embed footer. It uses the moment you copy or send, so it is different each time.</p></template></div>
+
+                <p class="embed-section-label">Author</p>
+                <input type="text" id="embed-author-input" class="text-input" placeholder="Author name" autocomplete="off" maxlength="256">
+                <input type="text" id="embed-author-url-input" class="text-input" placeholder="Author link URL (optional)" autocomplete="off">
+                <input type="text" id="embed-author-icon-input" class="text-input" placeholder="Author icon URL (optional)" autocomplete="off">
+
+                <p class="embed-section-label">Images</p>
+                <input type="text" id="embed-thumbnail-input" class="text-input" placeholder="Thumbnail image URL" autocomplete="off">
+                <input type="text" id="embed-image-input" class="text-input" placeholder="Large image URL" autocomplete="off">
+
+                <div class="embed-fields-head">
+                  <span class="embed-section-label no-margin">Fields</span>
+                  <button type="button" class="btn-outline small" id="embed-add-field">+ Add field</button>
+                </div>
+                <div class="embed-fields-list" id="embed-fields-list"></div>
+
+                <p class="embed-section-label">Footer</p>
+                <input type="text" id="embed-footer-input" class="text-input" placeholder="Footer text" autocomplete="off" maxlength="2048">
+                <input type="text" id="embed-footer-icon-input" class="text-input" placeholder="Footer icon URL (optional)" autocomplete="off">
+              </div>
+
+              <div class="embed-warnings" id="embed-warnings" hidden></div>
+
+              <div class="lu-hrow"><p class="embed-section-label">Send</p><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Sending" title="Help: Sending"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Sending"><p>Paste a webhook URL to post this message to its channel. Create one in Discord under channel settings, Integrations, Webhooks.</p><p>The URL is not saved and is only used when you press Send to Discord. Anyone with the full URL can post to that channel.</p></template></div>
+              <div class="pw-field"><input type="password" id="embed-webhook-url" class="text-input" placeholder="Discord webhook URL" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button type="button" class="pw-toggle" id="embed-webhook-toggle" aria-controls="embed-webhook-url" aria-pressed="false" aria-label="Show webhook URL" title="Show webhook URL"><svg class="pw-icon pw-eye" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><svg class="pw-icon pw-eye-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" hidden><path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.5 7.6A16 16 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1M9.9 9.9a3 3 0 0 0 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+              <p class="webhook-privacy-note">Never saved, never logged — only used the moment you click Send. The eye only hides it on screen.</p>
+              <label class="embed-thread-label" for="embed-thread-id">Thread ID <span class="embed-thread-opt">optional</span></label>
+              <input type="text" id="embed-thread-id" class="text-input" placeholder="To post inside a thread, paste its numeric ID" autocomplete="off" inputmode="numeric" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="embed-thread-hint">
+              <p class="webhook-privacy-note" id="embed-thread-hint">Leave empty to post in the webhook's channel. The thread must belong to that channel.</p>
+              <details class="reference-details embed-send-options">
+                <summary>Send options</summary>
+                <input type="text" id="embed-sender-name" class="text-input" placeholder="Bot name (optional)" autocomplete="off" maxlength="80">
+                <input type="text" id="embed-sender-avatar" class="text-input" placeholder="Bot avatar URL (optional)" autocomplete="off" spellcheck="false">
+                
+              </details>
+              <div class="embed-actions">
+                <button class="btn-solid" id="send-to-discord" type="button">Send to Discord</button>
+                <button class="btn-outline" id="clear-embed" type="button">Clear</button>
+                <button class="btn-outline" id="reset-embed" type="button">Reset</button>
+              </div>
+              <div class="send-status" id="send-status" role="status" aria-live="polite" hidden></div>
+
+              <details class="reference-details embed-json-details">
+                <summary>&lt;/&gt; View JSON</summary>
+                <div class="output-box">
+                  <span class="output-label">Embed JSON</span>
+                  <pre class="output-text" id="embed-json-output"></pre>
+                </div>
+                <div class="embed-dev-actions">
+                  <button class="btn-outline small" id="copy-embed-json" type="button">Copy JSON</button>
+                  <button class="btn-outline small" id="copy-embed-webhook-payload" type="button">Copy Webhook Payload</button>
+                </div>
+              </details>
+            </div>
+
+            <div class="embed-preview-col">
+              <p class="embed-section-label">Preview</p>
+              <div class="embed-live-message">
+                <div class="mp-avatar">E</div>
+                <div class="mp-body">
+                  <div class="mp-head"><span class="mp-username">Embed Preview</span><span class="wh-tag">BOT</span><span class="mp-time" id="embed-preview-time"></span></div>
+                  <div class="mp-content" id="embed-content-preview"></div>
+                  <div class="embed-preview" id="embed-preview"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <details class="lu-faq" data-faq-for="tool-embed"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">6 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Is my webhook URL saved?</summary><div class="lu-a"><p>No. It is a password-style field, it is never stored in the browser or logged, and it is only used when you press Send. The eye button only hides it on screen.</p></div></details><details class="lu-q"><summary>Which channel does the message go to?</summary><div class="lu-a"><p>The channel the webhook was created for. To post somewhere else, make a webhook in that channel. To post inside a thread, add the thread ID and the message goes there.</p></div></details><details class="lu-q"><summary>What is the difference between Copy JSON and Copy Webhook Payload?</summary><div class="lu-a"><p>Copy JSON gives the embed object itself. The webhook payload wraps it with your message content and bot name so it can be sent to a webhook directly.</p></div></details><details class="lu-q"><summary>Does the preview match Discord exactly?</summary><div class="lu-a"><p>No, it is a close guide for layout and content. The embed preview shows descriptions and field text as typed and does not turn Markdown into bold or links, although Discord does. Use the Markdown preview to check formatting.</p></div></details><details class="lu-q"><summary>Why did Send fail?</summary><div class="lu-a"><p>The message tells you why. "Doesn't recognize that webhook" means the URL is incomplete or deleted. A rate-limit message says how long to wait. "Rejected" names the field Discord objected to. A timeout means delivery is not confirmed, so check the channel before sending again. A bot name containing "discord" or "clyde" is refused by Discord.</p></div></details><details class="lu-q"><summary>What do "Inline" and "Include current timestamp" do?</summary><div class="lu-a"><p>Inline fields sit side by side instead of stacked. The timestamp adds the moment you copy or send, not a fixed time, so it changes each time. A colour on its own with no other content counts as empty and is not sent.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-embed-check" class="panel span-2" data-keywords="embed json validator limits character 6000 fields 25 title 256 description 4096 payload check webhook errors">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Embed &amp; payload validator</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Embed &amp; payload validator" title="Help: Embed &amp; payload validator"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Embed &amp; payload validator"><p>Paste a webhook payload, a single embed or a list of embeds. It checks Discord's size limits and common mistakes before you send anything.</p><p>It does not check that image links load.</p></template></div>
+          <p class="panel-sub">Paste a webhook payload, an embed, or a list of embeds. It checks Discord's size limits and common mistakes before you send anything.</p>
+          <div class="btn-row t10-presets"><button class="btn-outline small" id="echeck-sample" type="button">Load an example</button><button class="btn-outline small" id="echeck-builder" type="button">Use my embed builder embed</button></div>
+          <label class="sr-only" for="echeck-input">Payload JSON</label>
+          <textarea id="echeck-input" class="text-input textarea" rows="8" placeholder='{"content":"Hello","embeds":[{"title":"Title","description":"Text"}]}' spellcheck="false" autocomplete="off"></textarea>
+          <div class="t10-summary" id="echeck-summary" aria-live="polite"></div>
+          <ul class="t10-issues" id="echeck-issues"></ul>
+          <p class="enc-fineprint">Limits checked: content 2000, up to 10 embeds, title 256, description 4096, up to 25 fields, field name 256, value 1024, footer 2048, author 256, and 6000 characters across one message's embeds. It does not check that image links load.</p>
+        <details class="lu-faq" data-faq-for="tool-embed-check"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>What can I paste?</summary><div class="lu-a"><p>A full webhook message (an object with <code>content</code> or <code>embeds</code>), a single embed object, or a list of embeds. "Use my embed builder embed" loads the one you built above.</p></div></details><details class="lu-q"><summary>What is the difference between an error and a warning?</summary><div class="lu-a"><p>Errors are things Discord would reject, such as text over a limit. Warnings are things it will probably ignore, such as an unknown field name or an empty embed.</p></div></details><details class="lu-q"><summary>Why is an empty field value an error here?</summary><div class="lu-a"><p>Discord needs every field to have a name and a value. The Embed builder fills an empty one with an invisible character for you, but a payload you paste is checked as written.</p></div></details><details class="lu-q"><summary>Why does it say my colour must be a number?</summary><div class="lu-a"><p>In JSON an embed colour is a decimal number, not hex text. The message gives the number to use, for example 2282478 for <code>#22D3EE</code>.</p></div></details><details class="lu-q"><summary>What does it not check?</summary><div class="lu-a"><p>Whether links and images load, Discord rules outside size and shape (such as blocked names), and buttons or other components. Passing here is not a guarantee Discord will accept it.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-webhook-builder" class="panel span-2" data-keywords="webhook bot preview username avatar">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Webhook message builder</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Webhook message builder" title="Help: Webhook message builder"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Webhook message builder"><p>A local preview of how a webhook message would look: its name, avatar, text and the embed you built above.</p><p>Nothing is sent from here. Sending lives in the Embed builder.</p></template></div>
+          <p class="panel-sub">A local preview of what a webhook message would look like. Nothing is sent from this tool (sending lives in the Embed Builder) — uses the embed above if you've built one.</p>
+          <div class="embed-form">
+            <input type="text" id="webhook-username-input" class="text-input" placeholder="Webhook name (optional)" autocomplete="off">
+            <input type="text" id="webhook-avatar-input" class="text-input" placeholder="Avatar image URL (optional)" autocomplete="off">
+            <textarea id="webhook-content-input" class="text-input textarea" rows="2" placeholder="Message content"></textarea>
+          </div>
+          <p class="panel-sub embed-preview-label">Preview</p>
+          <div class="message-preview-box" id="webhook-preview-box"></div>
+        <details class="lu-faq" data-faq-for="tool-webhook-builder"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">3 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Can I send from here?</summary><div class="lu-a"><p>No. This is a preview only. Use the Embed builder to send, or the Webhook code snippets tool to get a script that sends.</p></div></details><details class="lu-q"><summary>Does it include my embed?</summary><div class="lu-a"><p>Yes, if you have built one in the Embed builder, it appears under the message text.</p></div></details><details class="lu-q"><summary>Why does my avatar show a letter?</summary><div class="lu-a"><p>If the avatar link is empty or the image fails to load, the first letter of the name is shown instead. The link must be a direct link to an image.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-message-preview" class="panel span-2" data-keywords="chat bubble render">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Message preview</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Message preview" title="Help: Message preview"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Message preview"><p>A rough picture of how your text would look as a Discord message, with your embed under it if you built one. The text comes from the Example box at the top of the page.</p></template></div>
+          <p class="panel-sub">A rough approximation of how your text (from the box at the top of the page) would look as a message, with your embed below it if you've built one.</p>
+          <div class="message-preview-box" id="message-preview-box"></div>
+        <details class="lu-faq" data-faq-for="tool-message-preview"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>Where does the text come from?</summary><div class="lu-a"><p>From the Example box at the top of the page, with its AA / aa / Aa case setting applied. Type there and this preview updates.</p></div></details><details class="lu-q"><summary>How accurate is it?</summary><div class="lu-a"><p>It is a guide, not a copy. It uses this site's own Markdown renderer, which does not draw mentions, custom emoji or timestamps, and real Discord can differ on edge cases.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-webhook-payload" class="panel span-2" data-keywords="bot post json content">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Webhook payload</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Webhook payload" title="Help: Webhook payload"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Webhook payload"><p>Combines the text from the top of the page and the embed you built into the JSON a Discord webhook expects. Copy it and send it as a POST request.</p></template></div>
+          <p class="panel-sub">Combines your text (from the top of the page) and the embed you built above into a payload ready for a Discord webhook <code>POST</code>.</p>
+          <div class="output-box">
+            <span class="output-label">Payload JSON</span>
+            <pre class="output-text" id="webhook-payload-output"></pre>
+          </div>
+          <button class="btn-outline small" id="copy-webhook-payload" type="button">Copy</button>
+        <details class="lu-faq" data-faq-for="tool-webhook-payload"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">2 questions</span></summary><div class="lu-faq-body"><details class="lu-q"><summary>What do I do with this JSON?</summary><div class="lu-a"><p>Send it as the body of a POST request to your webhook URL with the header <code>Content-Type: application/json</code>. The Webhook code snippets tool writes that request for you.</p></div></details><details class="lu-q"><summary>Why is it just {}?</summary><div class="lu-a"><p>There is nothing to send yet. The text comes from the Example box and the embed from the Embed builder. A colour on its own does not count as an embed.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-webhook-code" class="panel span-2" data-keywords="webhook code snippet curl python requests javascript fetch node post example send message script">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Webhook code snippets</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Webhook code snippets" title="Help: Webhook code snippets"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Webhook code snippets"><p>Turns a message payload into a ready-to-run cURL, JavaScript or Python snippet. The URL is a placeholder you replace, so no webhook URL is needed here.</p><p>Keep the real URL out of public code.</p></template></div>
+          <p class="panel-sub">Turn a message payload into a ready-to-run snippet. The URL is a placeholder you fill in, so no webhook URL is needed here.</p>
+          <div class="case-group" id="wcode-lang" role="group" aria-label="Language">
+            <button type="button" class="case-btn active" data-wcode-lang="curl">cURL</button>
+            <button type="button" class="case-btn" data-wcode-lang="js">JavaScript</button>
+            <button type="button" class="case-btn" data-wcode-lang="python">Python</button>
+          </div>
+          <label class="sr-only" for="wcode-input">Payload JSON</label>
+          <textarea id="wcode-input" class="text-input textarea" rows="5" spellcheck="false" autocomplete="off" aria-label="Payload JSON">{"content": "Hello from my script"}</textarea>
+          <div class="enc-opts"><div class="lu-hrow"><label class="enc-opt"><input type="checkbox" id="wcode-wait"> Add <code>?wait=true</code> (returns the created message)</label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: ?wait=true" title="Help: ?wait=true"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="?wait=true"><p>Adds <code>?wait=true</code> to the URL. Discord then waits until the message exists and sends it back, instead of answering at once.</p></template></div>
+            <div class="lu-hrow"><label class="enc-opt">Thread ID <input type="text" id="wcode-thread" class="text-input t10-inline" inputmode="numeric" placeholder="optional" autocomplete="off" aria-label="Thread ID"></label><button type="button" class="lu-help" data-lu-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Thread ID" title="Help: Thread ID"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Thread ID"><p>To post inside an existing thread, paste its ID. Turn on Developer Mode in Discord, right-click the thread and choose Copy ID.</p></template></div></div>
+          <p class="t10-msg" id="wcode-msg" role="status" aria-live="polite"></p>
+          <div class="output-box"><span class="output-label">Snippet</span><pre class="output-text t10-wrap" id="wcode-output"></pre></div>
+          <div class="btn-row"><button class="btn-outline small" id="wcode-copy" type="button">Copy snippet</button></div>
+          <p class="enc-fineprint">Keep the real URL out of public repositories. Load it from an environment variable or a secrets file.</p>
+        <details class="lu-faq" data-faq-for="tool-webhook-code"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">5 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>What do I replace in the snippet?</summary><div class="lu-a"><p><code>WEBHOOK_ID</code> and <code>WEBHOOK_TOKEN</code> in the URL. Better still, read the whole URL from an environment variable so it never ends up in your code.</p></div></details><details class="lu-q"><summary>What does ?wait=true do?</summary><div class="lu-a"><p>Discord waits until the message exists and returns it, instead of answering straight away with nothing. Use it when your script needs the sent message or a real success result.</p></div></details><details class="lu-q"><summary>Why does the cURL command fail on Windows?</summary><div class="lu-a"><p>The cURL snippet is written for bash or zsh. In Windows cmd, save the JSON to <code>payload.json</code> and use <code>-d @payload.json</code> instead.</p></div></details><details class="lu-q"><summary>What do the JavaScript and Python snippets need?</summary><div class="lu-a"><p>The JavaScript uses top-level await, so use an <code>.mjs</code> file or an async function (Node 18 or newer, or a browser). The Python needs the <code>requests</code> package.</p></div></details><details class="lu-q"><summary>Have these snippets been tested against Discord?</summary><div class="lu-a"><p>They are templates built from your payload, not run against a real webhook by this site. Test with a throwaway webhook in a private channel first.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-webhook-inspector" class="panel" data-keywords="webhook url inspect parse id token created date thread id check valid format leaked secret">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Webhook URL inspector</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Webhook URL inspector" title="Help: Webhook URL inspector"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Webhook URL inspector"><p>Checks the format of a webhook URL and shows its ID, creation date and options. It never contacts Discord, so it cannot say whether the webhook still exists.</p><p>Anyone with the full URL can post to that channel.</p></template></div>
+          <p class="panel-sub">Check the format of a webhook URL and see its ID, creation date and options. It never contacts Discord, so it can't tell you whether the webhook still exists.</p>
+          <div class="t10-field"><label class="t10-label" for="whi-input">Webhook URL</label>
+            <div class="pw-field"><input type="password" id="whi-input" class="text-input" placeholder="https://discord.com/api/webhooks/…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <button type="button" class="pw-toggle" data-pw-toggle="whi-input" aria-controls="whi-input" aria-pressed="false" aria-label="Show webhook URL" title="Show webhook URL">
+              <svg class="pw-icon pw-eye" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+              <svg class="pw-icon pw-eye-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" hidden><path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 6A10 10 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.5 7.6A16 16 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1M9.9 9.9a3 3 0 0 0 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button></div></div>
+          <p class="t10-msg" id="whi-msg" role="status" aria-live="polite"></p>
+          <dl class="t10-kv" id="whi-out" hidden></dl>
+          <p class="enc-fineprint">Anyone who has the full URL can post to that channel. If one has been shared or posted publicly, delete the webhook in Discord and make a new one. The eye only hides the URL on screen. It is never saved or sent.</p>
+        <details class="lu-faq" data-faq-for="tool-webhook-inspector"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">4 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Does it contact Discord?</summary><div class="lu-a"><p>No. It only reads the text you paste, so it cannot tell you whether the webhook still exists or works.</p></div></details><details class="lu-q"><summary>What counts as a valid format?</summary><div class="lu-a"><p><code>https://discord.com/api/webhooks/ID/TOKEN</code>, with discord.com, ptb, canary or the old discordapp.com. The ID is 17 to 20 digits and the token a long run of letters, numbers, <code>-</code> and <code>_</code>. Tokens are normally 68 characters, so a different length is flagged as possibly cut off.</p></div></details><details class="lu-q"><summary>Why is the token hidden in the results?</summary><div class="lu-a"><p>Only the first and last four characters are shown, so a screenshot of the results does not leak the whole token.</p></div></details><details class="lu-q"><summary>My webhook URL was shared publicly. What now?</summary><div class="lu-a"><p>Delete that webhook in Discord (channel settings, Integrations) and make a new one. Anyone who has the full URL can post to the channel until you do.</p></div></details></div></details>
+        </div>
+
+        <div id="tool-image-url" class="panel" data-keywords="image url link preview picture photo png jpg gif webp download upload host hotlink embed thumbnail">
+          <div class="lu-hrow lu-hrow-title"><h4 class="panel-title small">Image preview &amp; link checker</h4><button type="button" class="lu-help" data-lu-help data-lu-title-help aria-haspopup="dialog" aria-expanded="false" aria-label="Help: Image preview &amp; link checker" title="Help: Image preview &amp; link checker"><span aria-hidden="true">?</span></button><template class="lu-help-src" data-title="Image preview &amp; link checker"><p>Check that an image link loads, preview an image from your device, or upload it to ImgBB to get a public link.</p><p>The link preview is loaded by your browser from the site that hosts the image. "Your image" only <strong>previews on your device</strong> until you press Upload to ImgBB.</p></template></div>
+          <p class="panel-sub">Check that an image link loads, preview an image from your device, or upload it to ImgBB to get a public link. Nothing is uploaded unless you press Upload.</p>
+          <div class="case-group" id="imgurl-tabs" role="tablist" aria-label="Direction">
+            <button type="button" class="case-btn active" role="tab" id="imgurl-tab-url" aria-selected="true" aria-controls="imgurl-pane-url" data-img-tab="url">URL &rarr; Image</button>
+            <button type="button" class="case-btn" role="tab" id="imgurl-tab-file" aria-selected="false" aria-controls="imgurl-pane-file" data-img-tab="file">Your image <span class="imgurl-badge">upload</span></button>
+          </div>
+
+          <div id="imgurl-pane-url" class="imgurl-pane" role="tabpanel" aria-labelledby="imgurl-tab-url">
+            <form id="imgurl-form" class="imgurl-row" autocomplete="off" novalidate>
+              <input type="text" id="imgurl-input" class="text-input" inputmode="url" placeholder="https://example.com/picture.png" aria-label="Image URL" spellcheck="false" autocapitalize="off" autocorrect="off">
+              <button type="submit" class="btn-outline" id="imgurl-preview">Preview</button>
+              <button type="button" class="btn-outline" id="imgurl-clear">Clear</button>
+            </form>
+            <p class="imgurl-status" id="imgurl-status" role="status" aria-live="polite"></p>
+            <div class="imgurl-stage" id="imgurl-stage" hidden>
+              <img id="imgurl-img" alt="Preview of the image at the address you entered" referrerpolicy="no-referrer" decoding="async">
+            </div>
+            <div class="imgurl-result" id="imgurl-result" hidden>
+              <span class="output-label">Source URL</span>
+              <div class="imgurl-source">
+                <input type="text" id="imgurl-source" class="text-input" readonly aria-label="Source URL">
+                <button type="button" class="btn-outline" id="imgurl-copy">Copy</button>
+              </div>
+              <div class="btn-row">
+                <button type="button" class="btn-outline small" id="imgurl-download">Download</button>
+                <a class="btn-outline small imgurl-open" id="imgurl-open" target="_blank" rel="noopener noreferrer">Open in new tab</a>
+              </div>
+            </div>
+            <p class="enc-fineprint">The preview loads straight from the website that hosts the image, so that site can see your IP address and browser details. Checking a link uploads nothing, and Luka's Utils saves nothing. Only http and https links to public addresses are accepted. A link that loads here may still not work for everyone, or may stop working later.</p>
+          </div>
+
+          <div id="imgurl-pane-file" class="imgurl-pane" role="tabpanel" aria-labelledby="imgurl-tab-file" hidden>
+            <div class="imgurl-callout" role="note">
+              <strong>Choosing an image only previews it on your device.</strong> Nothing leaves your device and no public link is made unless you press <em>Upload to ImgBB</em> below. Its name isn't saved.
+            </div>
+            <label class="imgurl-drop" id="imgfile-drop" for="imgfile-input">
+              <span class="imgurl-drop-title">Choose an image</span>
+              <span class="imgurl-drop-sub">or drop one here. Preview: PNG, JPG, GIF, WebP, AVIF, BMP or SVG, up to 20 MB. Upload: PNG, JPG, GIF or WebP, up to 4 MB.</span>
+              <input type="file" id="imgfile-input" class="sr-only" accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.avif,.bmp,.svg">
+            </label>
+            <p class="imgurl-status" id="imgfile-status" role="status" aria-live="polite"></p>
+            <div class="imgurl-stage" id="imgfile-stage" hidden>
+              <img id="imgfile-img" alt="Preview of the image you chose">
+            </div>
+            <div class="imgurl-result" id="imgfile-result" hidden>
+              <dl class="imgurl-facts" id="imgfile-facts"></dl>
+              <div class="imgup" id="imgup">
+                <span class="output-label">Upload to ImgBB <span class="imgurl-badge">optional</span></span>
+                <p class="imgup-note" id="imgup-note">Uploading sends this image from your device to this website's server, which passes it on to ImgBB, a separate image host. <strong>The link is public:</strong> anyone who gets it can open the image, so don't upload anything private. Clearing the preview here does not delete an image that has been uploaded.</p>
+                <p class="imgup-limit" id="imgup-limit">Upload limit: 4 MB. PNG, JPG, GIF or WebP only. Your file is sent exactly as it is, never resized or compressed.</p>
+                <div class="imgup-row">
+                  <label class="enc-opt" for="imgup-expiry">Keep for <select id="imgup-expiry" class="text-input select-input"><option value="never">No automatic deletion</option><option value="1h">1 hour</option><option value="1d">1 day</option><option value="7d">7 days</option><option value="30d">30 days</option></select></label>
+                  <button type="button" class="copy-btn" id="imgup-btn" aria-describedby="imgup-note imgup-limit">Upload to ImgBB</button>
+                </div>
+                <p class="imgurl-status" id="imgup-status" role="status" aria-live="polite"></p>
+              </div>
+              <div class="btn-row"><button type="button" class="btn-outline small" id="imgfile-clear">Clear</button></div>
+            </div>
+            <div class="imgup-done" id="imgup-done" hidden>
+              <span class="output-label">Uploaded to ImgBB</span>
+              <div class="imgurl-source">
+                <input type="text" id="imgup-url" class="text-input" readonly aria-label="Public image URL">
+                <button type="button" class="btn-outline" id="imgup-copy">Copy URL</button>
+              </div>
+              <div class="btn-row">
+                <a class="btn-outline small imgurl-open" id="imgup-open" target="_blank" rel="noopener noreferrer">Open image</a>
+                <button type="button" class="btn-outline small" id="imgup-copy-delete" hidden>Copy delete link</button>
+                <button type="button" class="btn-outline small" id="imgup-hide">Hide this</button>
+              </div>
+              <p class="enc-fineprint" id="imgup-done-note"></p>
+            </div>
+            <details class="sym-about imgurl-host" id="imgurl-host">
+              <summary>Getting a link to your image</summary>
+              <p>A link only exists once your image is stored on a website. You can use the Upload to ImgBB button above, or upload it yourself somewhere else and paste the link here to check it.</p>
+              <ol>
+                <li>Upload the image on a site of your choice. Discord also works: send it in a channel or message, then right-click it (press and hold on a phone) and choose Copy Link. Links to Discord attachments don't always last, so test one before you rely on it.</li>
+                <li>Copy the <strong>direct link to the image file</strong>, the one that opens just the picture. A link to a page that shows the picture won't preview.</li>
+                <li>Paste it into the URL &rarr; Image tab. If it loads, the link works from your browser. That doesn't prove it works for everyone, or that it will keep working.</li>
+              </ol>
+              <p>Some sites that offer uploading, as examples:</p>
+              <ul class="imgurl-links">
+                <li><a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer">ImgBB</a></li>
+                <li><a href="https://catbox.moe/" target="_blank" rel="noopener noreferrer">Catbox</a></li>
+                <li><a href="https://freeimage.host/" target="_blank" rel="noopener noreferrer">Freeimage.host</a></li>
+              </ul>
+              <p>I haven't checked these sites' rules, limits or how long they keep files, so read those first. Anyone with the link can open the image, so don't upload anything private.</p>
+              <button type="button" class="btn-outline small" id="imgurl-goto-url">Check a link</button>
+            </details>
+          </div>
+        <details class="lu-faq" data-faq-for="tool-image-url"><summary><span class="lu-faq-title">Help &amp; FAQs</span><span class="lu-faq-count">6 questions</span></summary><div class="lu-faq-body"><div class="lu-faq-tools"><button type="button" class="lu-faq-all" data-lu-faq-all>Expand all</button></div><details class="lu-q"><summary>Does it upload my image?</summary><div class="lu-a"><p>Only if you press Upload to ImgBB. Choosing a file just previews it on your device. Pressing the button sends the image to this site's server, which passes it on to ImgBB, a separate image host, and shows the public link only if ImgBB confirms it. <strong>Anyone who has the link can open the image</strong>, so do not upload anything private, sensitive or that belongs to someone else. ImgBB hosts it under its own terms, which this site does not control.</p></div></details><details class="lu-q"><summary>Does Clear delete the uploaded image?</summary><div class="lu-a"><p>No. Clearing the preview, hiding the link box or leaving the page only affects this page. The image stays on ImgBB. Copy the delete link when it is shown if you may want to remove the image later, and keep it private, because anyone who has it can delete the image.</p></div></details><details class="lu-q"><summary>What does "Keep for" do?</summary><div class="lu-a"><p>It asks ImgBB to delete the image automatically after 1 hour, 1 day, 7 days or 30 days. This page cannot confirm that the deletion happens. With "No automatic deletion", ImgBB's own rules decide how long it stays.</p></div></details><details class="lu-q"><summary>Which files can I upload or preview, and why can an upload fail?</summary><div class="lu-a"><p>Uploads take PNG, JPG, GIF and WebP up to 4 MB, sent exactly as they are, never resized or compressed. A file that looks cut short is refused. The preview also shows AVIF, BMP and SVG, up to 20 MB, but those cannot be uploaded. An upload can fail because of the limit on how often uploads can be made, ImgBB being busy or unreachable, or uploading not yet being set up on this site. The message says which, nothing is shown as uploaded unless ImgBB confirmed it, and the button cannot send the same image twice at once.</p></div></details><details class="lu-q"><summary>Why does a link not load, or not download?</summary><div class="lu-a"><p>The address may be wrong or the file removed, it may not be a format browsers show, or the site blocks use on other websites. If it is a page that shows the image, copy the image's own address instead. An <code>http</code> link may be blocked on a secure page, so try <code>https</code>. Showing an image is allowed for any site, but downloading needs the host to permit other websites to fetch it. If it does not, use Open in new tab and save from there. A link that loads here may still not work in Discord or for everyone.</p></div></details><details class="lu-q"><summary>What does the link preview send to the other site?</summary><div class="lu-a"><p>Your browser requests the image directly, so the site hosting it can see your IP address and browser details, like any web page you visit. Luka's Utils does not copy or keep it.</p></div></details></div></details>
+        </div>
+      </div>
+    </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-brand-name">Luka's Utils</p>
+    <p class="footer-tagline">Built by one person, improved whenever something bugs me about it.</p>
+    <nav class="footer-cats" aria-label="All tool pages"><a href="/styles">Text styles</a><a href="/discord-tools">Discord Tools</a><a href="/embeds-webhooks">Embeds &amp; Webhooks</a><a href="/formatting">Formatting</a><a href="/text-tools">Text Tools</a><a href="/developer-tools">Developer Tools</a><a href="/colors">Colors</a><a href="/library">Presets &amp; Templates</a></nav>
+    <div class="footer-links">
+      <a class="footer-support-link" href="/">Home →</a>
+      <button type="button" class="footer-support-link footer-sc-btn" data-shortcuts-open aria-haspopup="dialog">Keyboard shortcuts</button>
+      <a class="footer-support-link" href="https://discord.gg/4bDS65PTFN" target="_blank" rel="noopener">Support server →</a>
+      <a class="footer-support-link" href="/changelog">Changelog →</a>
+      <a class="footer-support-link" href="/privacy">Privacy →</a>
+      <a class="footer-support-link" href="/terms">Terms →</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/catalog.js"></script>
+<script src="/tool-page-shim.js"></script>
+<script src="/script.js"></script>
+<script src="/tools10.js"></script>
+<script src="/library.js"></script>
+<script src="/menu.js"></script>
+<script src="/shortcuts.js"></script>
+<script src="/help15.js"></script>
+</body>
+</html>
