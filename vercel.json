@@ -2,6 +2,108 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "api/upload.js": { "maxDuration": 30 }
-  }
+    "api/upload.js": {
+      "maxDuration": 30
+    },
+    "api/shorten.js": {
+      "maxDuration": 20
+    }
+  },
+  "redirects": [
+    {
+      "source": "/discord-timestamp-generator",
+      "destination": "/discord-tools#tool-timestamp",
+      "permanent": true
+    },
+    {
+      "source": "/discord-timestamp-generator.html",
+      "destination": "/discord-tools#tool-timestamp",
+      "permanent": true
+    },
+    {
+      "source": "/discord-embed-builder",
+      "destination": "/embeds-webhooks#tool-embed",
+      "permanent": true
+    },
+    {
+      "source": "/discord-embed-builder.html",
+      "destination": "/embeds-webhooks#tool-embed",
+      "permanent": true
+    },
+    {
+      "source": "/discord-snowflake-decoder",
+      "destination": "/discord-tools#tool-snowflake",
+      "permanent": true
+    },
+    {
+      "source": "/discord-snowflake-decoder.html",
+      "destination": "/discord-tools#tool-snowflake",
+      "permanent": true
+    },
+    {
+      "source": "/discord-permissions-calculator",
+      "destination": "/discord-tools#tool-permissions",
+      "permanent": true
+    },
+    {
+      "source": "/discord-permissions-calculator.html",
+      "destination": "/discord-tools#tool-permissions",
+      "permanent": true
+    },
+    {
+      "source": "/discord-markdown-preview",
+      "destination": "/formatting#tool-markdown-preview",
+      "permanent": true
+    },
+    {
+      "source": "/discord-markdown-preview.html",
+      "destination": "/formatting#tool-markdown-preview",
+      "permanent": true
+    },
+    {
+      "source": "/discord-role-color-converter",
+      "destination": "/discord-tools#tool-role-color",
+      "permanent": true
+    },
+    {
+      "source": "/discord-role-color-converter.html",
+      "destination": "/discord-tools#tool-role-color",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'sha256-ElShUWg/R0NC6WIMZp3N2FKE5siI90ZKCnHMHJYcUhk=' 'sha256-NcLsS5H62AnsZic9iQn5oA+6Mfcm7FxX38D/SPsgXr0=' 'sha256-UeaAjysDsx9SJ4IhAPRKiy+tWYnkZ7EZXaQ+6eoz6sk='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        }
+      ]
+    }
+  ]
 }
